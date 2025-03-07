@@ -1,0 +1,46 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs
+*.log
+pids
+*.pid
+*.seed
+
+# Build directories
+/dist
+/build
+
+# Dependency directories
+jspm_packages/
+
+# VSCode specific
+.vscode/
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+
+# Test coverage folder
+coverage/
+
+# dotenv files
+.env.local
+.env.*.local
+
+# Optional, if you're using a specific IDE:
+.idea/
+*.sublime-workspace
+*.sublime-project
