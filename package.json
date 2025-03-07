@@ -7,5 +7,23 @@
     "fs": "^0.0.1-security",
     "mongoose": "^8.12.1",
     "nodemon": "^3.1.9"
-  }
+  },
+  "name": "main_ticket_system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Albokharyabdelrahman/Main_ticket_system.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Albokharyabdelrahman/Main_ticket_system/issues"
+  },
+  "homepage": "https://github.com/Albokharyabdelrahman/Main_ticket_system#readme"
 }
