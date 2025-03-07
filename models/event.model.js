@@ -10,7 +10,8 @@ const eventSchema = new mongoose.Schema({
   totalTickets: { type: Number, required: true },
   organizerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
-  image: { type: String } // Renamed "Image" to "image"
+  image: { type: String }, // Renamed "Image" to "image"
+  Date:{type: Date}
 });
 
 module.exports = mongoose.model("Event", eventSchema);
