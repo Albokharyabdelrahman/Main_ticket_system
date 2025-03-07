@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -26,8 +27,4 @@
     "url": "https://github.com/Albokharyabdelrahman/Main_ticket_system/issues"
   },
   "homepage": "https://github.com/Albokharyabdelrahman/Main_ticket_system#readme"
-=======
-    "mongoose": "^8.12.1"
-  }
-
 }
