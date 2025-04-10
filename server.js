@@ -9,7 +9,7 @@ const Booking = require("./models/booking.model");
 const app = express();
 app.use(express.json()); // Middleware for JSON parsing
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 7000;
 const MONGO_URI = process.env.MONGO_URI;
 
 // 🔹 Connect to MongoDB
