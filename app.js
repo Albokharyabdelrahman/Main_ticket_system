@@ -3,11 +3,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+
 // Import routes
-const authRoutes = require("./routes/authRoutes"); // Authentication routes (register, login, etc.)
-const userRoutes = require("./routes/userRoutes"); // User-related routes (profile, etc.)
-const eventRoutes = require("./routes/eventRoutes"); // Event-related routes
-const bookingRoutes = require("./routes/bookingRoutes"); // Booking-related routes
+const authRoutes = require("./Routes/authRoutes.js"); // Authentication routes (register, login, etc.)
+const userRoutes = require("./Routes/userRoutes.js"); // User-related routes (profile, etc.)
+const eventRoutes = require("./Routes/eventRoutes.js"); // Event-related routes
+const bookingRoutes = require("./Routes/bookingRoutes.js"); // Booking-related routes
 
 const app = express();
 

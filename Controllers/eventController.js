@@ -1,5 +1,7 @@
 const Event = require("../models/Event");
 const User = require("../models/User");
+const mongoose = require("mongoose");
+
 
 // Create Event
 exports.createEvent = async (req, res) => {
@@ -46,18 +48,39 @@ exports.getAllEvents = async (req, res) => {
   }
 };
 
+
+
+
 // Get event by ID
+
 exports.getEventById = async (req, res) => {
+  const id = req.params.id.trim(); // Ensure any extra spaces are removed
+
+  // Validate if the ID is a proper ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid event ID format" });
+  }
+
   try {
-    const event = await Event.findById(req.params.id);
+    // Find the event by _id, as a proper ObjectId
+    const event = await Event.findById(id);
+
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
-    res.json(event);
+
+    res.status(200).json(event);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error fetching event:", err);
+    res.status(500).json({ error: "Server error. Please try again later." });
   }
 };
+
+
+
+
+
 
 // Update event (only organizers can update their events)
 exports.updateEvent = async (req, res) => {
