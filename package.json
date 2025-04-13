@@ -1,11 +1,18 @@
 {
   "dependencies": {
+    "@faker-js/faker": "^9.6.0",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "faker": "^6.6.6",
     "fs": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
+    "mocha": "^8.4.0",
     "mongoose": "^8.12.1",
     "nodemon": "^3.1.9"
   },
@@ -26,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/Albokharyabdelrahman/Main_ticket_system/issues"
   },
-  "homepage": "https://github.com/Albokharyabdelrahman/Main_ticket_system#readme"
+  "homepage": "https://github.com/Albokharyabdelrahman/Main_ticket_system#readme",
+  "devDependencies": {
+    "supertest": "^7.1.0"
+  }
 }
