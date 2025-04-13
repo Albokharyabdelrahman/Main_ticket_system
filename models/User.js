@@ -1,15 +1,18 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, required: true, unique: true },
-  password: String,
-  role: {
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: {
       type: String,
-      enum: ['Admin', 'Organizer', 'User'], 
+      enum: ['Admin', 'Organizer', 'User'],
       required: true
+    },
+    profilePicture: { type: String}
   },
-  profilePicture: String
-});
+  { timestamps: true } // ⏱️ Automatically adds createdAt and updatedAt
+);
 
 module.exports = mongoose.model("User", userSchema);
