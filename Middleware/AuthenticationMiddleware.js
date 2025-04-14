@@ -16,8 +16,8 @@ module.exports = function AuthenticationMiddleware(req, res, next) {
     token = req.headers.authorization.split(" ")[1];
   }
   // Or extract from raw cookie header (if not using cookie-parser)
-  else if (req.headers.cookie) {
-    const rawCookies = req.headers.cookie.split("; ");
+  else if (req.headers.cookie) {  
+    const rawCookies = req.headers.cookie.split("; "); //Used only if Cookie-Parser is not installed
     const tokenCookie = rawCookies.find(c => c.startsWith("token="));
     if (tokenCookie) token = tokenCookie.split("=")[1];
   }
