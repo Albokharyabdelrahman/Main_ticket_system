@@ -66,19 +66,28 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ error: "Invalid credentials." });
     }
 
-    // Generate JWT
+    // Create token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ token });
-  } catch (err) {
-    console.error("Server error during login:", err);
-    res.status(500).json({ error: err.message || "Internal Server Error" });
+    // 🔐 Send JWT in cookie
+    res.cookie("token", token, {
+      httpOnly: true,         // prevent JS access
+      secure: false,          // true in production with HTTPS
+      sameSite: "Lax",        // or "Strict"/"None" depending on setup
+      maxAge: 60 * 60 * 1000  // 1 hour
+    });
+
+	res.status(200).json({ token });  } catch (err) 
+{
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 
 // Password Reset functionality (Placeholder for now)

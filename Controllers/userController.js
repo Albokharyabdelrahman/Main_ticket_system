@@ -6,17 +6,23 @@ const secretKey = process.env.SECRET_KEY;
 
 // Update Profile (any user)
 exports.updateProfile = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, profilePicture } = req.body;
 
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ message: "User not found mista" });
 
+    // Update only the fields provided
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = await bcrypt.hash(password, 10);
+    if (profilePicture) user.profilePicture = profilePicture;
 
     await user.save();
-    res.json({ message: "Profile updated", user });
+
+    // Exclude password in response
+    const { password: pwd, ...userWithoutPassword } = user.toObject();
+    res.json({ message: "Profile updated", user: userWithoutPassword });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

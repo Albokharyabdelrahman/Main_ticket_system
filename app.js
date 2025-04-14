@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+
+
 
 
 // Import routes
@@ -11,7 +14,7 @@ const eventRoutes = require("./Routes/eventRoutes.js"); // Event-related routes
 const bookingRoutes = require("./Routes/bookingRoutes.js"); // Booking-related routes
 
 const app = express();
-
+app.use(cookieParser());
 // Middleware for JSON parsing
 app.use(express.json());
 
