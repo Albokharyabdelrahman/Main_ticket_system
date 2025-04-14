@@ -1,11 +1,16 @@
 const Booking = require("../models/Booking");
 const Event = require("../models/Event");
 
-// Book tickets for an event
 exports.bookTickets = async (req, res) => {
   const { eventId, ticketsBooked } = req.body;
 
   try {
+    // Check if the user is authenticated
+    if (!req.user || !req.user.userId) {
+      console.log("User object:", req.user); // Log the user object
+      return res.status(401).json({ error: "User not authenticated " });
+    }
+
     // Check if the event exists
     const event = await Event.findById(eventId);
     if (!event) {
@@ -22,7 +27,7 @@ exports.bookTickets = async (req, res) => {
 
     // Create a new booking
     const booking = new Booking({
-      userId: req.user._id,
+      userId: req.user.userId, // Use userId from the token
       eventId: eventId,
       ticketsBooked: ticketsBooked,
       totalPrice: totalPrice,
@@ -39,11 +44,11 @@ exports.bookTickets = async (req, res) => {
 
     res.status(201).json(booking);
   } catch (err) {
+    console.error("Error during booking:", err); // Log the error
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get a booking by ID (added the missing function)
 exports.getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id).populate("eventId");

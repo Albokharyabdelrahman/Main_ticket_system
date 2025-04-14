@@ -2,15 +2,16 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const secretKey = process.env.SECRET_KEY;
+const Event = require('../models/Event');
 
 
-// Update Profile (any user)
+
 exports.updateProfile = async (req, res) => {
   const { name, email, password, profilePicture } = req.body;
 
   try {
     const user = await User.findById(req.user.userId);
-    if (!user) return res.status(404).json({ message: "User not found mista" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // Update only the fields provided
     if (name) user.name = name;
@@ -27,11 +28,10 @@ exports.updateProfile = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
 // Get Profile
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user.userId).select("-password");
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -96,24 +96,39 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// Get User Bookings (for user)
+const Booking = require('../models/Booking');
+
 exports.getUserBookings = async (req, res) => {
   try {
-    // Assuming the user has a 'bookings' field that stores booking data
-    const user = await User.findById(req.user._id).populate("bookings");
-    res.json(user.bookings);
+    // Check if the user is authenticated
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Find bookings for the authenticated user
+    const bookings = await Booking.find({ userId: req.user.userId }).populate('eventId');
+
+    res.json(bookings);
   } catch (err) {
+    console.error("Error fetching user bookings:", err); // Log the error
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get User Events (for organizer)
+
 exports.getUserEvents = async (req, res) => {
   try {
-    // Assuming the user has an 'events' field that stores event data
-    const user = await User.findById(req.user._id).populate("events");
-    res.json(user.events);
+    // Check if the user is authenticated
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Find events organized by the authenticated user
+    const events = await Event.find({ organizerId: req.user.userId });
+
+    res.json(events);
   } catch (err) {
+    console.error("Error fetching user events:", err); // Log the error
     res.status(500).json({ error: err.message });
   }
 };
