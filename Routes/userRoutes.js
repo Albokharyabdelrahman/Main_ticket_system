@@ -10,15 +10,14 @@ const {
   updateUserRole,
   deleteUser,
   getUserBookings,
-  getUserEvents,
-  getUserEventAnalytics,
+  getAnalytics
 } = require("../controllers/userController");
 
 // ✅ Specific routes first (static paths)
 router.get("/profile", AuthenticationMiddleware, getProfile);
 router.put("/profile", AuthenticationMiddleware, updateProfile);
 router.get("/bookings", AuthenticationMiddleware, AuthorizationMiddleware("User"), getUserBookings);
-//router.get("/events/analytics", AuthenticationMiddleware, AuthorizationMiddleware("Organizer"), getUserEventAnalytics);
+router.get("/events/analytics", AuthenticationMiddleware, AuthorizationMiddleware("Organizer"), getAnalytics);
 
 // ✅ Then general routes
 router.get("/", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), getAllUsers);

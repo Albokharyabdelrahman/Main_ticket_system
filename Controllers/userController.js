@@ -5,7 +5,6 @@ const secretKey = process.env.SECRET_KEY;
 const Event = require('../models/Event');
 
 
-
 exports.updateProfile = async (req, res) => {
   const { name, email, password, profilePicture } = req.body;
 
@@ -116,34 +115,44 @@ exports.getUserBookings = async (req, res) => {
 };
 
 
-exports.getUserEvents = async (req, res) => {
+exports.getAnalytics = async (req, res) => {
   try {
-    // Check if the user is authenticated
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+    // 🔐 Check if user is authenticated and is an Organizer
+    if (!req.user || !req.user.userId || req.user.role !== "Organizer") {
+      console.log("Unauthorized access attempt by user:", req.user);
+      return res.status(403).json({ error: "Only organizers can access analytics" });
     }
 
-    // Find events organized by the authenticated user
-    const events = await Event.find({ organizerId: req.user.userId });
+    // 🔍 Find events for this organizer (with ID verification)
+    const events = await Event.find({ 
+      organizerId: req.user.userId 
+    });
 
-    res.json(events);
+    if (!events.length) {
+      console.log("No events found for organizer:", req.user.userId);
+      return res.status(404).json({ error: "No events found for this organizer" });
+    }
+
+    // 📊 Calculate analytics
+    const analytics = events.map(event => {
+      // Verify organizer owns this event (additional security check)
+      if (event.organizerId.toString() !== req.user.userId.toString()) {
+        console.log("Organizer ID mismatch for event:", event._id);
+        return null;
+      }
+
+      const percentageBooked = ((event.totalTickets - event.availableTickets) / event.totalTickets) * 100;
+      return {
+        eventId: event._id,
+        title: event.title,
+        percentageBooked: percentageBooked.toFixed(2)
+      };
+    }).filter(analytic => analytic !== null);
+
+    res.status(200).json(analytics);
   } catch (err) {
-    console.error("Error fetching user events:", err); // Log the error
-    res.status(500).json({ error: err.message });
+    console.error("Analytics error:", err);
+    res.status(500).json({ error: "Server error while fetching analytics" });
   }
 };
 
-// Get User Event Analytics (for organizer)
-exports.getUserEventAnalytics = async (req, res) => {
-  try {
-    // Example function, replace with actual logic
-    const user = await User.findById(req.user._id).populate("events");
-    const analytics = user.events.map(event => ({
-      eventName: event.name,
-      bookingsCount: event.bookings.length
-    }));
-    res.json(analytics);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};

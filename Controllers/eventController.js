@@ -154,30 +154,3 @@ exports.changeEventStatus = async (req, res) => {
   }
 };
 
-exports.getAnalytics = async (req, res) => {
-  try {
-    // Check if req.user is present
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ error: "Unauthorized - Invalid token" });
-    }
-
-    const events = await Event.find({ organizerId: req.user._id });
-
-    if (!events.length) {
-      return res.status(404).json({ error: "No events found for this organizer" });
-    }
-
-    const analytics = events.map(event => {
-      const percentageBooked = ((event.totalTickets - event.availableTickets) / event.totalTickets) * 100;
-      return {
-        eventId: event._id,
-        title: event.title,
-        percentageBooked: percentageBooked.toFixed(2)
-      };
-    });
-
-    res.json(analytics);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};

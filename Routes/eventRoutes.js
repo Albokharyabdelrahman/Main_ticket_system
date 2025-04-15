@@ -12,12 +12,11 @@ const {
   getEventById,
   updateEvent,
   deleteEvent,
-  getAnalytics // Renamed the analytics function
 } = require("../Controllers/eventController");
 
 // PUBLIC ROUTES
 router.get("/", getAllEvents);                     // Get list of all events
-router.get("/analytics", authenticationMiddleware, authorizeRoles("Organizer"), getAnalytics); // Analytics for organizer's events
+//router.get("/analytics", authenticationMiddleware, authorizeRoles("Organizer"), getcAnalytics); // Analytics for organizer's events
 router.get("/:id", getEventById);                   // Get details of a single event
 
 // PRIVATE ROUTES (Organizer)
