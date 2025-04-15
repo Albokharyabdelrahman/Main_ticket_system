@@ -156,29 +156,28 @@ exports.changeEventStatus = async (req, res) => {
 
 exports.getAnalytics = async (req, res) => {
   try {
-    // Check if the user is authenticated
-    if (!req.user || !req.user.userId) {
-      console.log("User object:", req.user); // Log the user object
-      return res.status(401).json({ error: "User not authenticated" });
+    // Check if req.user is present
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: "Unauthorized - Invalid token" });
     }
 
-    // Find events organized by the authenticated user
-    const events = await Event.find({ organizerId: req.user.userId });
-    console.log("Events found:", events); // Log the events found
+    const events = await Event.find({ organizerId: req.user._id });
 
     if (!events.length) {
       return res.status(404).json({ error: "No events found for this organizer" });
     }
 
-    // Calculate analytics for each event
     const analytics = events.map(event => {
       const percentageBooked = ((event.totalTickets - event.availableTickets) / event.totalTickets) * 100;
-      return { eventId: event._id, title: event.title, percentageBooked };
+      return {
+        eventId: event._id,
+        title: event.title,
+        percentageBooked: percentageBooked.toFixed(2)
+      };
     });
 
     res.json(analytics);
   } catch (err) {
-    console.error("Error fetching event analytics:", err); // Log the error
     res.status(500).json({ error: err.message });
   }
 };

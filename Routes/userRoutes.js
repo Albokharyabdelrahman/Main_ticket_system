@@ -18,8 +18,7 @@ const {
 router.get("/profile", AuthenticationMiddleware, getProfile);
 router.put("/profile", AuthenticationMiddleware, updateProfile);
 router.get("/bookings", AuthenticationMiddleware, AuthorizationMiddleware("User"), getUserBookings);
-router.get("/events", AuthenticationMiddleware, AuthorizationMiddleware("Organizer"), getUserEvents);
-router.get("/events/analytics", AuthenticationMiddleware, AuthorizationMiddleware("Organizer"), getUserEventAnalytics);
+//router.get("/events/analytics", AuthenticationMiddleware, AuthorizationMiddleware("Organizer"), getUserEventAnalytics);
 
 // ✅ Then general routes
 router.get("/", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), getAllUsers);
