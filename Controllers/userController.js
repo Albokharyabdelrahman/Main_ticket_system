@@ -10,7 +10,7 @@ exports.updateProfile = async (req, res) => {
 
   try {
     const user = await User.findById(req.user.userId);
-    if (!user) return res.status(404).json({ message: "User not found mista" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // Update only the fields provided
     if (name) user.name = name;
