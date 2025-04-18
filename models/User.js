@@ -10,15 +10,17 @@ const userSchema = new mongoose.Schema(
       enum: ['Admin', 'Organizer', 'User'],
       required: true
     },
-    profilePicture: { type: String, 
-       otp: {
+    profilePicture: { type: String }, 
+    otp: {
       code: String,
       expiresAt: Date
     },
     otpVerified: {
       type: Boolean,
       default: false
-    }}
+    },
+  otpExpires: { type: Date }, // OTP expiration date
+
   },
   { timestamps: true } // ⏱️ Automatically adds createdAt and updatedAt
   
