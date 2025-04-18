@@ -66,7 +66,7 @@ if (require.main === module) {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
 }
-router.use((req, res, next)=>{
+app.use((req, res, next)=>{
     console.log('time',Date.now())
     next()
 
