@@ -37,14 +37,28 @@ exports.createEvent = async (req, res) => {
 
 
 // Get all events
+exports.getApprovedEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ status: 'approved' });
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.getAllEvents = async (req, res) => {
   try {
+    const user = await User.findById(req.user.userId);
+    if (!user || user.role !== 'Admin') {
+      return res.status(403).json({ error: 'Access denied: Admins only' });
+    }
+
     const events = await Event.find();
     res.json(events);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Get event by ID
 exports.getEventById = async (req, res) => {

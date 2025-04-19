@@ -11,7 +11,7 @@ const {
   deleteUser,
   getUserBookings,
   getAnalytics
-} = require("../controllers/userController");
+} = require("../Controllers/userController");
 
 // ✅ Specific routes first (static paths)
 router.get("/profile", AuthenticationMiddleware, getProfile);
@@ -22,7 +22,7 @@ router.get("/events/analytics", AuthenticationMiddleware, AuthorizationMiddlewar
 // ✅ Then general routes
 router.get("/", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), getAllUsers);
 router.get("/:id", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), getUserById);
-router.put("/:id", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), updateUserRole);
+router.put("/:id", AuthenticationMiddleware, AuthorizationMiddleware("Admin"),   updateUserRole,);
 router.delete("/:id", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), deleteUser);
 
 module.exports = router;
