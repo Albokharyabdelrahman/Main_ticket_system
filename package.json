@@ -14,7 +14,8 @@
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mocha": "^11.1.0",
-    "mongoose": "^8.12.1"
+    "mongoose": "^8.12.1",
+    "nodemailer": "^6.10.1"
   },
   "name": "main_ticket_system",
   "version": "1.0.0",
