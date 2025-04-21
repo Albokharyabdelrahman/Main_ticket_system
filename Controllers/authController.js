@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const crypto = require('crypto');
+const postmark = require("postmark");
+const otpStore = new Map();
+const client = new postmark.ServerClient("ad6fc1db-6e07-461f-a127-de40809fddd7");
 
 exports.registerUser = async (req, res) => {
   const { name, email, password, role, profilePicture } = req.body;
@@ -92,7 +96,7 @@ exports.loginUser = async (req, res) => {
 
 // Password Reset functionality (Placeholder for now)
 // Password Reset functionality
-exports.forgetPassword = async (req, res) => {
+exports.forgetOldPassword = async (req, res) => {
   const { name, email } = req.body;
 
   // Validate required fields
@@ -135,4 +139,102 @@ exports.forgetPassword = async (req, res) => {
     console.error("Server error during password reset:", err);
     return res.status(500).json({ error: err.message || "Internal Server Error" });
   }
+};
+// Send OTP to user's email
+exports.sendOtp = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  const otp = crypto.randomInt(100000, 999999);
+
+  // Store OTP with expiration
+  otpStore.set(email, { otp, expiresAt: Date.now() + 500000 * 60 * 1000 });
+
+  try {
+    await client.sendEmail({
+      From: "yassin.azab@student.giu-uni.de",
+      To: email,
+      Subject: "Your OTP Code",
+      TextBody: `Your OTP code is ${otp}`,
+      HtmlBody: `<p>Your OTP code is <strong>${otp}</strong></p>`,
+      MessageStream: "outbound",
+    });
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.error("Error sending OTP:", err);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+};
+
+// Verify OTP
+exports.forgotPassword = async (req, res) => {
+  const { email, otp, newPassword, mode } = req.body;
+
+  if (!email || !mode) return res.status(400).json({ message: "Email and mode are required" });
+
+  if (mode === "send") {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found." });
+
+    const generatedOtp = crypto.randomInt(100000, 999999);
+    otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 500000 * 60 * 1000 });
+
+    try {
+      await client.sendEmail({
+        From: "yassin.azab@student.giu-uni.de",
+        To: email,
+        Subject: "Your OTP Code",
+        TextBody: `Your OTP code is ${generatedOtp}`,
+        HtmlBody: `<p>Your OTP code is <strong>${generatedOtp}</strong></p>`,
+        MessageStream: "outbound",
+      });
+
+      return res.json({ message: "OTP sent successfully" });
+    } catch (err) {
+      console.error("Error sending OTP:", err);
+      return res.status(500).json({ error: "Failed to send OTP" });
+    }
+  }
+
+  if (mode === "verify") {
+    if (!otp || !newPassword) {
+      return res.status(400).json({ message: "OTP and new password are required" });
+    }
+
+    const stored = otpStore.get(email);
+    if (!stored) return res.status(400).json({ message: "No OTP found for this email" });
+
+    if (Date.now() > stored.expiresAt) {
+      otpStore.delete(email);
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    if (stored.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP", expectedOtp: stored.otp });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const updatedUser = await User.findOneAndUpdate(
+        { email },
+        { password: hashedPassword }
+      );
+
+      if (!updatedUser) return res.status(404).json({ message: "User not found" });
+
+      otpStore.delete(email);
+      return res.json({ message: "Password updated successfully", newPassword, hashedPassword });
+    } catch (err) {
+      console.error("Error updating password:", err);
+      return res.status(500).json({ message: "Failed to update password" });
+    }
+  }
+
+  res.status(400).json({ message: "Invalid mode" });
 };
