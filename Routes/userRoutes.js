@@ -14,8 +14,8 @@ const {
 } = require("../Controllers/userController");
 
 // ✅ Specific routes first (static paths)
-router.get("/profile", AuthenticationMiddleware, getProfile);
-router.put("/profile", AuthenticationMiddleware, updateProfile);
+router.get("/profile", AuthenticationMiddleware, AuthorizationMiddleware("User"), getProfile);
+router.put("/profile", AuthenticationMiddleware, AuthorizationMiddleware("User"), updateProfile);
 router.get("/bookings", AuthenticationMiddleware, AuthorizationMiddleware("User"), getUserBookings);
 router.get("/events/analytics", AuthenticationMiddleware, AuthorizationMiddleware("Organizer"), getAnalytics);
 

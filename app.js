@@ -66,10 +66,9 @@ if (require.main === module) {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
 }
-app.use((req, res, next)=>{
-    console.log('time',Date.now())
-    next()
-
-})
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 module.exports = app; // Export the app for testing
