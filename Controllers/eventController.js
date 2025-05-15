@@ -3,15 +3,15 @@ const User = require("../models/User");
 
 // Create Event
 exports.createEvent = async (req, res) => {
-  const { title, location, price, category, description, availableTickets, totalTickets, image, organizerId } = req.body;
-
-  try {
-    // Check if the organizerId is provided in the body
-    if (!organizerId) {
-      return res.status(400).json({ message: "Organizer ID is required" });
+    try {
+    // 🛡️ Ensure user is logged in and is an Organizer
+    if (!req.user || req.user.role !== "Organizer") {
+      return res.status(403).json({ message: "Only organizers can create events" });
     }
+    const { title, location, price, category, description, availableTickets, totalTickets, image } = req.body;
+    // 🎯 Use organizer ID from authenticated user
+    const organizerId = req.user.userId;
 
-    // Create a new event with the provided organizerId
     const event = new Event({
       title,
       location,
@@ -20,15 +20,14 @@ exports.createEvent = async (req, res) => {
       description,
       availableTickets,
       totalTickets,
-      organizerId, // Use the organizerId from the request body
+      organizerId,
       image,
-      date: new Date(), // Set the current date and time for the event
-      status: 'pending' // Default status when creating an event
+      date: new Date(),
+      status: 'pending'
     });
 
-    // Save the event to the database
     await event.save();
-    res.status(201).json(event); // Send the created event in the response
+    res.status(201).json(event);
 
   } catch (err) {
     res.status(400).json({ error: err.message });
