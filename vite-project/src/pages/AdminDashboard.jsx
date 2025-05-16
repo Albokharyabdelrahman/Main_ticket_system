@@ -3,6 +3,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import UserRow from "../components/UserRow";
 
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
@@ -211,6 +212,7 @@ const updateEvent = () =>
           {/* Result/Feedback */}
 
          {/* Editable form if updating an event or user */}
+
 {editingObj && (
   <div style={{
     marginTop: 16,
@@ -222,11 +224,11 @@ const updateEvent = () =>
     maxHeight: 350,
     overflowY: "auto"
   }}>
-    <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        try {
-          if (editingType === "event") {
+    {editingType === "event" ? (
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          try {
             await axios.put(
               `http://localhost:7000/api/v1/events/${editingObj._id}`,
               editingObj,
@@ -235,99 +237,124 @@ const updateEvent = () =>
             setEditingObj(null);
             setEditingType(null);
             setQuickActionMsg("Event updated successfully!");
-          } else if (editingType === "user") {
+          } catch (err) {
+            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+          }
+        }}
+      >
+        {Object.entries(editingObj).map(([k, v]) => {
+          // Skip password and MongoDB internal fields, etc
+          if (
+            k === "__v" ||
+            k === "createdAt" ||
+            k === "updatedAt" ||
+            k === "password"
+          ) return null;
+          return (
+            <div key={k} style={{ marginBottom: 8 }}>
+              <label style={{ color: "#64748b", textTransform: "capitalize", marginRight: 8 }}>
+                {k}
+              </label>
+              {k === "image" ? (
+                <div style={{display: "flex", alignItems: "center", gap: 10}}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{marginBottom: 8}}
+                    onChange={async e => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setEditingObj(obj => ({ ...obj, image: reader.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  {v && (
+                    <img
+                      src={v}
+                      alt="Preview"
+                      style={{ width: 40, height: 40, borderRadius: "8px", objectFit: "cover", border: "1px solid #ccc"}}
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={v}
+                  style={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 4,
+                    padding: 4,
+                    minWidth: 180
+                  }}
+                  onChange={e => setEditingObj(obj => ({ ...obj, [k]: e.target.value }))}
+                />
+              )}
+            </div>
+          );
+        })}
+        <button type="submit" style={{
+          marginTop: 12,
+          padding: '8px 16px',
+          background: "#4f46e5",
+          color: "#fff",
+          border: "none",
+          borderRadius: 4,
+          fontWeight: "600",
+          cursor: "pointer"
+        }}>Save</button>
+        <button type="button" onClick={() => {setEditingObj(null); setEditingType(null);}} style={{
+          marginLeft: 12,
+          padding: '8px 16px',
+          background: "#64748b",
+          color: "#fff",
+          border: "none",
+          borderRadius: 4,
+          fontWeight: "600",
+          cursor: "pointer"
+        }}>Cancel</button>
+      </form>
+    ) : editingType === "user" ? (
+      <UserRow
+        user={editingObj}
+        onSave={async (updatedUser) => {
+          try {
             await axios.put(
-              `http://localhost:7000/api/v1/users/${editingObj._id}`,
-              editingObj,
+              `http://localhost:7000/api/v1/users/${updatedUser._id}`,
+              updatedUser,
               { withCredentials: true }
             );
             setEditingObj(null);
             setEditingType(null);
             setQuickActionMsg("User updated successfully!");
+          } catch (err) {
+            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
           }
-        } catch (err) {
-          setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
-        }
-      }}
-    >
-      {Object.entries(editingObj).map(([k, v]) => {
-        // Skip password and MongoDB internal fields, etc
-        if (
-          k === "__v" ||
-          k === "createdAt" ||
-          k === "updatedAt" ||
-          k === "password"
-        ) return null;
-        return (
-          <div key={k} style={{ marginBottom: 8 }}>
-            <label style={{ color: "#64748b", textTransform: "capitalize", marginRight: 8 }}>
-              {k}
-            </label>
-
-            {k === "profilePic" ? (
-  <div style={{display: "flex", alignItems: "center", gap: 10}}>
-    <input
-      type="file"
-      accept="image/*"
-      style={{marginBottom: 8}}
-      onChange={async e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setEditingObj(obj => ({ ...obj, profilePic: reader.result }));
-        };
-        reader.readAsDataURL(file);
-      }}
-    />
-    {v && (
-      <img
-        src={v}
-        alt="Preview"
-        style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", border: "1px solid #ccc"}}
+        }}
+        onCancel={() => {
+          setEditingObj(null);
+          setEditingType(null);
+        }}
+        onDelete={async (deletedUser) => {
+          try {
+            await axios.delete(
+              `http://localhost:7000/api/v1/users/${deletedUser._id}`,
+              { withCredentials: true }
+            );
+            setEditingObj(null);
+            setEditingType(null);
+            setQuickActionMsg("User deleted successfully!");
+          } catch (err) {
+            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+          }
+        }}
       />
-    )}
+    ) : null}
   </div>
-) : (
-  <input
-    type="text"
-    value={v}
-    style={{
-      border: "1px solid #e5e7eb",
-      borderRadius: 4,
-      padding: 4,
-      minWidth: 180
-    }}
-    onChange={e => setEditingObj(obj => ({ ...obj, [k]: e.target.value }))}
-  />
 )}
 
-          </div>
-        );
-      })}
-      <button type="submit" style={{
-        marginTop: 12,
-        padding: '8px 16px',
-        background: "#4f46e5",
-        color: "#fff",
-        border: "none",
-        borderRadius: 4,
-        fontWeight: "600",
-        cursor: "pointer"
-      }}>Save</button>
-      <button type="button" onClick={() => {setEditingObj(null); setEditingType(null);}} style={{
-        marginLeft: 12,
-        padding: '8px 16px',
-        background: "#64748b",
-        color: "#fff",
-        border: "none",
-        borderRadius: 4,
-        fontWeight: "600",
-        cursor: "pointer"
-      }}>Cancel</button>
-    </form>
-  </div>
-)}
 
 {/* Pretty JSON renderer if not editing */}
 {!editingObj && quickActionMsg && (
