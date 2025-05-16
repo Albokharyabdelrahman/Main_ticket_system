@@ -51,6 +51,23 @@ export default function UserRow({ user, onSave, onCancel, onDelete }) {
                   />
                 )}
               </div>
+            ) : k === "role" ? (
+              <select
+                value={v}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 4,
+                  padding: 4,
+                  minWidth: 180,
+                }}
+                onChange={(e) =>
+                  setEditObj((obj) => ({ ...obj, [k]: e.target.value }))
+                }
+              >
+                <option value="Admin">Admin</option>
+                <option value="Organizer">Organizer</option>
+                <option value="User">User</option>
+              </select>
             ) : (
               <input
                 type="text"
