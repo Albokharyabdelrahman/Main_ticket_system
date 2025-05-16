@@ -3,50 +3,132 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import UserRow from "../components/UserRow";
 
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
-const UserDashboard = () => {
+const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
+  const [quickActionMsg, setQuickActionMsg] = useState("");
+  const [editingObj, setEditingObj] = useState(null);      // the object (user/event) being edited
+  const [editingType, setEditingType] = useState(null);    // 'event' or 'user'
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-  const res = await axios.get(`${API_BASE_URL}/users/profile`, {
-    withCredentials: true, // 🔥 This tells Axios to send cookies
-  });
-
-        console.log("DEBUG: Profile fetch successful:", res.data);
+        const res = await axios.get(
+          "http://localhost:7000/api/v1/users/profile",
+          {
+            withCredentials: true,
+          }
+        );
         setProfile(res.data.user);
       } catch (err) {
-        console.error("DEBUG: Profile fetch error:", err);
-        if (err.response) {
-          console.error("DEBUG: Server responded with:", err.response.status, err.response.data);
-        }
         setError("Failed to load profile. Please try again.");
       }
     };
-
     fetchProfile();
   }, []);
 
   const handleLogout = async () => {
-  try {
-  const BASE_URL = "http://localhost:5173/login";
-  await axios.get(`${BASE_URL}`, { withCredentials: true }); // ✅ fixed extra }
-  localStorage.removeItem("token");
-  logout(); // Clear context state
-  window.location.href = BASE_URL; // Redirect to base URL
-} catch (err) {
-  console.error("Logout failed:", err);
-}
-};
+    const BASE_URL = "http://localhost:5173/login";
+    await axios.get(BASE_URL, { withCredentials: true });
+    localStorage.removeItem("token");
+    logout();
+    window.location.href = BASE_URL;
+  };
 
+  // Helper for buttons with prompt for :id
+  const promptAndCall = async (message, apiCall) => {
+    const id = window.prompt(message);
+    if (id) {
+      try {
+        const res = await apiCall(id);
+        setQuickActionMsg(JSON.stringify(res.data));
+      } catch (err) {
+        setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+      }
+    }
+  };
 
-   return (
+  // EVENTS
+  const getAllEvents = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:7000/api/v1/events/all",
+        { withCredentials: true }
+      );
+      setQuickActionMsg(JSON.stringify(res.data));
+    } catch (err) {
+      setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+const updateEvent = () =>
+  promptAndCall("Enter event ID to update:", async (id) => {
+    const res = await axios.get(
+      `http://localhost:7000/api/v1/events/${id}`,
+      { withCredentials: true }
+    );
+    setEditingType("event");
+    setEditingObj(res.data); // Or use proper path to event object if wrapped
+    setQuickActionMsg("");
+    return res;
+  });
+
+  const deleteEvent = () =>
+    promptAndCall("Enter event ID to delete:", async (id) =>
+      axios.delete(
+        `http://localhost:7000/api/v1/events/${id}`,
+        { withCredentials: true }
+      )
+    );
+
+  // USERS
+  const viewProfile = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:7000/api/v1/users/",
+        { withCredentials: true }
+      );
+      setQuickActionMsg(JSON.stringify(res.data));
+    } catch (err) {
+      setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const updateUserProfile = () =>
+  promptAndCall("Enter user ID to update profile:", async (id) => {
+    const res = await axios.get(
+      `http://localhost:7000/api/v1/users/${id}`,
+      { withCredentials: true }
+    );
+    setEditingType("user");
+    setEditingObj(res.data); // Or use proper path to user object if wrapped
+    setQuickActionMsg("");
+    return res;
+  });
+
+  const getUserProfile = () =>
+    promptAndCall("Enter user ID to get profile:", async (id) =>
+      axios.get(
+        `http://localhost:7000/api/v1/users/${id}`,
+        { withCredentials: true }
+      )
+    );
+
+  const deleteUser = () =>
+    promptAndCall("Enter user ID to delete:", async (id) =>
+      axios.delete(
+        `http://localhost:7000/api/v1/users/${id}`,
+        { withCredentials: true }
+      )
+    );
+
+  return (
     <div style={styles.pageContainer}>
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
@@ -80,35 +162,275 @@ const UserDashboard = () => {
           <h1 style={styles.title}>
             Welcome back, <span style={styles.highlight}>{profile?.name || "User"}</span>!
           </h1>
-          <img src={logo} alt="BookedIn Logo" style={styles.logo} />
+          {profile?.profilePic ? (
+  <img
+    src={profile.profilePic}
+    alt="Profile"
+    style={{
+      width: 60,
+      height: 60,
+      borderRadius: "50%",
+      objectFit: "cover",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+      border: "2px solid #4f46e5",
+      marginLeft: 12
+    }}
+  />
+) : (
+  <img src={logo} alt="BookedIn Logo" style={styles.logo} />
+)}
         </div>
-        
-        <div style={styles.dashboardButtons}>
-          <button style={styles.actionButton}>
-            <span style={styles.buttonIcon}>🎫</span>
-            <span>Book Tickets</span>
-          </button>
-          <button style={styles.actionButton}>
-            <span style={styles.buttonIcon}>📋</span>
-            <span>View My Bookings</span>
-          </button>
-          <button style={styles.actionButton}>
-            <span style={styles.buttonIcon}>🔍</span>
-            <span>Find Booking</span>
-          </button>
-        </div>
-        
         <div style={styles.contentCard}>
           <h3 style={styles.cardTitle}>Quick Actions</h3>
-          <p style={styles.cardText}>
-            Get started with these options or explore more features from the menu.
-          </p>
+          <div style={{display: "flex", flexDirection: "column", gap: "12px"}}>
+
+            {/* Events */}
+            <button style={styles.actionButton} onClick={getAllEvents}>
+              Get All Events
+            </button>
+            <button style={styles.actionButton} onClick={updateEvent}>
+              Update Event
+            </button>
+            <button style={styles.actionButton} onClick={deleteEvent}>
+              Delete an Event
+            </button>
+
+            {/* Users */}
+            <button style={styles.actionButton} onClick={viewProfile}>
+              View All Profiles
+            </button>
+            <button style={styles.actionButton} onClick={getUserProfile}>
+              Get profile of a user
+            </button>
+            <button style={styles.actionButton} onClick={updateUserProfile}>
+              Upate profile of a user
+            </button>
+            <button style={styles.actionButton} onClick={deleteUser}>
+              Delete a user
+            </button>
+          </div>
+          {/* Result/Feedback */}
+
+         {/* Editable form if updating an event or user */}
+
+{editingObj && (
+  <div style={{
+    marginTop: 16,
+    background: "#f1f5f9",
+    padding: 12,
+    borderRadius: 8,
+    color: "#333",
+    fontSize: "13px",
+    maxHeight: 350,
+    overflowY: "auto"
+  }}>
+    {editingType === "event" ? (
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          try {
+            await axios.put(
+              `http://localhost:7000/api/v1/events/${editingObj._id}`,
+              editingObj,
+              { withCredentials: true }
+            );
+            setEditingObj(null);
+            setEditingType(null);
+            setQuickActionMsg("Event updated successfully!");
+          } catch (err) {
+            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+          }
+        }}
+      >
+        {Object.entries(editingObj).map(([k, v]) => {
+          // Skip password and MongoDB internal fields, etc
+          if (
+            k === "__v" ||
+            k === "createdAt" ||
+            k === "updatedAt" ||
+            k === "password"
+          ) return null;
+          return (
+            <div key={k} style={{ marginBottom: 8 }}>
+              <label style={{ color: "#64748b", textTransform: "capitalize", marginRight: 8 }}>
+                {k}
+              </label>
+              {k === "image" ? (
+                <div style={{display: "flex", alignItems: "center", gap: 10}}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{marginBottom: 8}}
+                    onChange={async e => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setEditingObj(obj => ({ ...obj, image: reader.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  {v && (
+                    <img
+                      src={v}
+                      alt="Preview"
+                      style={{ width: 40, height: 40, borderRadius: "8px", objectFit: "cover", border: "1px solid #ccc"}}
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={v}
+                  style={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 4,
+                    padding: 4,
+                    minWidth: 180
+                  }}
+                  onChange={e => setEditingObj(obj => ({ ...obj, [k]: e.target.value }))}
+                />
+              )}
+            </div>
+          );
+        })}
+        <button type="submit" style={{
+          marginTop: 12,
+          padding: '8px 16px',
+          background: "#4f46e5",
+          color: "#fff",
+          border: "none",
+          borderRadius: 4,
+          fontWeight: "600",
+          cursor: "pointer"
+        }}>Save</button>
+        <button type="button" onClick={() => {setEditingObj(null); setEditingType(null);}} style={{
+          marginLeft: 12,
+          padding: '8px 16px',
+          background: "#64748b",
+          color: "#fff",
+          border: "none",
+          borderRadius: 4,
+          fontWeight: "600",
+          cursor: "pointer"
+        }}>Cancel</button>
+      </form>
+    ) : editingType === "user" ? (
+      <UserRow
+        user={editingObj}
+        onSave={async (updatedUser) => {
+          try {
+            await axios.put(
+              `http://localhost:7000/api/v1/users/${updatedUser._id}`,
+              updatedUser,
+              { withCredentials: true }
+            );
+            setEditingObj(null);
+            setEditingType(null);
+            setQuickActionMsg("User updated successfully!");
+          } catch (err) {
+            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+          }
+        }}
+        onCancel={() => {
+          setEditingObj(null);
+          setEditingType(null);
+        }}
+        onDelete={async (deletedUser) => {
+          try {
+            await axios.delete(
+              `http://localhost:7000/api/v1/users/${deletedUser._id}`,
+              { withCredentials: true }
+            );
+            setEditingObj(null);
+            setEditingType(null);
+            setQuickActionMsg("User deleted successfully!");
+          } catch (err) {
+            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+          }
+        }}
+      />
+    ) : null}
+  </div>
+)}
+
+
+{/* Pretty JSON renderer if not editing */}
+{!editingObj && quickActionMsg && (
+  <div style={{
+    marginTop: 16,
+    background: "#f1f5f9",
+    padding: 12,
+    borderRadius: 8,
+    color: "#333",
+    fontSize: "13px",
+    maxHeight: 350,
+    overflowY: "auto"
+  }}>
+    {(() => {
+      let parsed;
+      try {
+        parsed = JSON.parse(quickActionMsg);
+      } catch (e) {
+        // It's likely an error message string
+        return quickActionMsg;
+      }
+      if (Array.isArray(parsed)) {
+        return parsed.map((item, idx) => (
+          <div
+            key={item._id || idx}
+            style={{
+              border: "1px solid #e5e7eb",
+              borderRadius: 8,
+              padding: 10,
+              marginBottom: 10,
+              background: "#fff"
+            }}
+          >
+            {Object.entries(item).map(([k, v]) => (
+              <div key={k} style={{
+                marginBottom: 2,
+                fontSize: k === "name" ? "15px" : "13px",
+                fontWeight: k === "name" ? "600" : "400"
+              }}>
+                <span style={{
+                  color: "#64748b",
+                  textTransform: "capitalize"
+                }}>{k}</span>: <span style={{ color: "#334155" }}>{v + ""}</span>
+              </div>
+            ))}
+          </div>
+        ));
+      } else if (typeof parsed === "object") {
+        return (
+          <div style={{
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            padding: 10,
+            background: "#fff"
+          }}>
+            {Object.entries(parsed).map(([k, v]) => (
+              <div key={k}>
+                <span style={{ color: "#64748b", textTransform: "capitalize" }}>{k}</span>: <span style={{ color: "#334155" }}>{v + ""}</span>
+              </div>
+            ))}
+          </div>
+        );
+      } else {
+        return JSON.stringify(parsed);
+      }
+    })()}
+  </div>
+)}
+
         </div>
       </main>
     </div>
   );
 };
 
+// (Keep styles object as in your original code)
 const styles = {
   pageContainer: {
     display: "flex",
@@ -173,9 +495,6 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     transition: "all 0.3s ease",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-    }
   },
   logoutText: {
     marginRight: "10px",
@@ -206,11 +525,6 @@ const styles = {
   highlight: {
     color: "#4f46e5",
   },
-  dashboardButtons: {
-    display: "flex",
-    gap: "20px",
-    marginBottom: "40px",
-  },
   actionButton: {
     padding: "18px 25px",
     backgroundColor: "#ffffff",
@@ -226,13 +540,6 @@ const styles = {
     boxShadow: "0 4px 6px rgba(79, 70, 229, 0.1)",
     transition: "all 0.3s ease",
     flex: 1,
-    "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 6px 12px rgba(79, 70, 229, 0.15)",
-    }
-  },
-  buttonIcon: {
-    fontSize: "20px",
   },
   contentCard: {
     backgroundColor: "#ffffff",
@@ -246,16 +553,6 @@ const styles = {
     color: "#1e293b",
     margin: "0 0 15px 0",
   },
-  cardText: {
-    fontSize: "15px",
-    color: "#64748b",
-    lineHeight: "1.6",
-    margin: "0",
-  },
-  logo: {
-    width: "120px",
-    height: "auto",
-  },
   error: {
     backgroundColor: "rgba(239, 68, 68, 0.9)",
     padding: "12px 16px",
@@ -265,6 +562,10 @@ const styles = {
     fontSize: "14px",
     color: "white",
   },
+  logo: {
+    width: "120px",
+    height: "auto",
+  },
 };
 
-export default UserDashboard;
+export default AdminDashboard;
