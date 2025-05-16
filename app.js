@@ -19,7 +19,11 @@ app.use(cookieParser());
 app.use(express.json());
 
 // Enable CORS if needed
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173",    // Your frontend URL
+  credentials: true                   // Allow cookies and credentials
+}));
 
 // MongoDB connection
 const PORT = process.env.PORT || 7000;
