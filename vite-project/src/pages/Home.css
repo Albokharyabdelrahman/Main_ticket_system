@@ -63,3 +63,26 @@ body, html, #root {
   background-color: #ffffff40;
   transform: scale(1.05);
 }
+
+/* Strong CTA design for Explore Events button */
+/* Strong CTA design for Explore Events button */
+.explore-btn {
+  all: unset;
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.explore-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(to right, #5a67d8, #6b46c1);
+}
