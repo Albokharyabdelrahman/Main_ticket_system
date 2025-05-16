@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 // Provide your logo image here (as import or URL string)
-import logo from '../logo.png';// <-- Make sure this path matches your project
+import logo from './logo.png';// <-- Make sure this path matches your project
 
 export default function Login() {
   // State variables
@@ -31,23 +31,38 @@ export default function Login() {
 
   // Submit handler
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsLoading(true);
+  e.preventDefault();
+  setError("");
+  setSuccess("");
+  setIsLoading(true);
 
-    try {
-      await axios.post("http://localhost:7000/api/v1/login", data, {
-        withCredentials: true,
-      });
-      setSuccess("Login successful! Redirecting...");
-      setTimeout(() => navigate("/"), 1500); // Go to homepage after login
-    } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
-    } finally {
-      setIsLoading(false);
-    }
+  try {
+    // Send login request (set cookie)
+    await axios.post("http://localhost:7000/api/v1/login", data, {
+      withCredentials: true,
+    });
+
+    // Fetch profile to get role
+    const res = await axios.get("http://localhost:7000/api/v1/users/profile", {
+      withCredentials: true,
+    });
+
+    const role = res.data.user.role;
+    setSuccess("Login successful! Redirecting...");
+
+    // Redirect based on role
+    setTimeout(() => {
+      if (role === "Admin") navigate("/AdminDashboard");
+      else if (role === "Organizer") navigate("/OrganizerDashboard");
+      else navigate("/UserDashboard");
+    }, 1500);
+  } catch (err) {
+    setError(err.response?.data?.error || "Login failed");
+  } finally {
+    setIsLoading(false);
   }
+}
+
 
   // Button style based on hover and loading state
   const buttonStyle = {

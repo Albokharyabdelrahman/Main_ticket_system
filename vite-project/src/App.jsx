@@ -1,11 +1,13 @@
 import { BrowserRouter } from "react-router-dom";
 import MyRoutes from "./router/Routes";
-import Navbar from "./components/Navbar";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
     <BrowserRouter>
-      <MyRoutes />
+        <AuthProvider> {/* Must wrap Routes */}
+        <MyRoutes />
+        </AuthProvider>
     </BrowserRouter>
   );
 }

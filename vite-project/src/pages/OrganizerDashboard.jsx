@@ -33,7 +33,7 @@ const UserDashboard = () => {
     fetchProfile();
   }, []);
 
- const handleLogout = async () => {
+   const handleLogout = async () => {
   try {
   const BASE_URL = "http://localhost:5173/login";
   await axios.get(`${BASE_URL}`, { withCredentials: true }); // ✅ fixed extra }
@@ -43,7 +43,6 @@ const UserDashboard = () => {
 } catch (err) {
   console.error("Logout failed:", err);
 }
-
 };
 
 
@@ -51,7 +50,7 @@ const UserDashboard = () => {
     <div style={styles.pageContainer}>
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
-          <h2 style={styles.sidebarTitle}>User Profile</h2>
+          <h2 style={styles.sidebarTitle}>Organizer Profile</h2>
         </div>
         {error && <p style={styles.error}>{error}</p>}
         {profile && (
