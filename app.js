@@ -3,6 +3,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+
+
+
+
 // Import routes
 const authRoutes = require("./Routes/authRoutes.js"); // Authentication routes (register, login, etc.)
 const userRoutes = require("./Routes/userRoutes.js"); // User-related routes (profile, etc.)
@@ -15,7 +19,11 @@ app.use(cookieParser());
 app.use(express.json());
 
 // Enable CORS if needed
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173",    // Your frontend URL
+  credentials: true                   // Allow cookies and credentials
+}));
 
 // MongoDB connection
 const PORT = process.env.PORT || 7000;
@@ -62,10 +70,9 @@ if (require.main === module) {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
 }
-app.use((req, res, next)=>{
-    console.log('time',Date.now())
-    next()
-
-})
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 module.exports = app; // Export the app for testing

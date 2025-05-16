@@ -10,9 +10,12 @@ const userSchema = new mongoose.Schema(
       enum: ['Admin', 'Organizer', 'User'],
       required: true
     },
-    profilePicture: { type: String}
+    profilePicture: { type: String }
   },
   { timestamps: true } // ⏱️ Automatically adds createdAt and updatedAt
+  
 );
+
+
 
 module.exports = mongoose.model("User", userSchema);

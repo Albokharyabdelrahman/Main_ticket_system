@@ -12,4 +12,4 @@ yassin's comment
 momen's comment 
 
 badr's comment
-
+to test forgetPassword, mode should be "send" for sending OTP, "verify" for verifying OTP.
