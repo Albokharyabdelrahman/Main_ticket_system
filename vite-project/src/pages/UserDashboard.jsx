@@ -15,97 +15,131 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-  const res = await axios.get(`${API_BASE_URL}/users/profile`, {
-    withCredentials: true, // 🔥 This tells Axios to send cookies
-  });
-
+        const res = await axios.get(`${API_BASE_URL}/users/profile`, {
+          withCredentials: true,
+        });
         console.log("DEBUG: Profile fetch successful:", res.data);
         setProfile(res.data.user);
       } catch (err) {
         console.error("DEBUG: Profile fetch error:", err);
         if (err.response) {
-          console.error("DEBUG: Server responded with:", err.response.status, err.response.data);
+          console.error(
+            "DEBUG: Server responded with:",
+            err.response.status,
+            err.response.data
+          );
         }
         setError("Failed to load profile. Please try again.");
       }
     };
-
     fetchProfile();
   }, []);
 
- const handleLogout = async () => {
-  try {
-  const BASE_URL = "http://localhost:5173/login";
-  await axios.get(`${BASE_URL}`, { withCredentials: true }); // ✅ fixed extra }
-  localStorage.removeItem("token");
-  logout(); // Clear context state
-  window.location.href = BASE_URL; // Redirect to base URL
-} catch (err) {
-  console.error("Logout failed:", err);
-}
+  const handleLogout = async () => {
+    try {
+      const BASE_URL = "http://localhost:5173/login";
+      await axios.get(`${BASE_URL}`, { withCredentials: true });
+      localStorage.removeItem("token");
+      logout();
+      window.location.href = BASE_URL;
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
-};
+  const handleUpdateProfile = () => {
+    navigate("/update-profile");
+  };
 
+  const handleBookTickets = () => {
+    navigate("/book-tickets");
+  };
 
-   return (
+  const handleViewBookings = () => {
+    navigate("/my-bookings");
+  };
+
+  const handleFindBooking = () => {
+    navigate("/find-booking");
+  };
+
+  return (
     <div style={styles.pageContainer}>
-      <aside style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <h2 style={styles.sidebarTitle}>User Profile</h2>
-        </div>
-        {error && <p style={styles.error}>{error}</p>}
-        {profile && (
-          <div style={styles.profileInfo}>
-            <div style={styles.profileItem}>
-              <span style={styles.profileLabel}>Name:</span>
-              <span style={styles.profileValue}>{profile.name}</span>
+      <div style={{ display: "flex", flex: 1 }}>
+        <aside style={styles.sidebar}>
+          <div style={styles.sidebarHeader}>
+            <h2 style={styles.sidebarTitle}>User Profile</h2>
+          </div>
+          {error && <p style={styles.error}>{error}</p>}
+          {profile && (
+            <div style={styles.profileInfo}>
+              <div style={styles.profileItem}>
+                <span style={styles.profileLabel}>Name:</span>
+                <span style={styles.profileValue}>{profile.name}</span>
+              </div>
+              <div style={styles.profileItem}>
+                <span style={styles.profileLabel}>Email:</span>
+                <span style={styles.profileValue}>{profile.email}</span>
+              </div>
+              <div style={styles.profileItem}>
+                <span style={styles.profileLabel}>Role:</span>
+                <span style={styles.profileValue}>{profile.role}</span>
+              </div>
+
+              <button onClick={handleUpdateProfile} style={styles.updateProfileButton}>
+                Update Profile
+              </button>
+
+              <button onClick={handleLogout} style={styles.logoutButton}>
+                <span style={styles.logoutText}>Log Out</span>
+                <span style={styles.logoutIcon}>→</span>
+              </button>
             </div>
-            <div style={styles.profileItem}>
-              <span style={styles.profileLabel}>Email:</span>
-              <span style={styles.profileValue}>{profile.email}</span>
-            </div>
-            <div style={styles.profileItem}>
-              <span style={styles.profileLabel}>Role:</span>
-              <span style={styles.profileValue}>{profile.role}</span>
-            </div>
-            <button onClick={handleLogout} style={styles.logoutButton}>
-              <span style={styles.logoutText}>Log Out</span>
-              <span style={styles.logoutIcon}>→</span>
+          )}
+        </aside>
+
+        <main style={styles.contentArea}>
+          <div style={styles.header}>
+            <h1 style={styles.title}>
+              Welcome back, <span style={styles.highlight}>{profile?.name || "User"}</span>!
+            </h1>
+            <img src={logo} alt="BookedIn Logo" style={styles.logo} />
+          </div>
+
+          <div style={styles.dashboardButtons}>
+            <button style={styles.actionButton} onClick={handleBookTickets}>
+              <span style={styles.buttonIcon}>🎫</span>
+              <span>Book Tickets</span>
+            </button>
+            <button style={styles.actionButton} onClick={handleViewBookings}>
+              <span style={styles.buttonIcon}>📋</span>
+              <span>View My Bookings</span>
+            </button>
+            <button style={styles.actionButton} onClick={handleFindBooking}>
+              <span style={styles.buttonIcon}>🔍</span>
+              <span>Find Booking</span>
             </button>
           </div>
-        )}
-      </aside>
 
-      <main style={styles.contentArea}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>
-            Welcome back, <span style={styles.highlight}>{profile?.name || "User"}</span>!
-          </h1>
-          <img src={logo} alt="BookedIn Logo" style={styles.logo} />
+          <div style={styles.contentCard}>
+            <h3 style={styles.cardTitle}>Quick Actions</h3>
+            <p style={styles.cardText}>
+              Get started with these options or explore more features from the menu.
+            </p>
+          </div>
+        </main>
+      </div>
+
+      <footer style={styles.footer}>
+        <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
+        <div style={styles.footerLinks}>
+          <a href="#" style={styles.footerLink}>Contact</a>
+          <span style={styles.footerDivider}>|</span>
+          <a href="#" style={styles.footerLink}>Privacy</a>
+          <span style={styles.footerDivider}>|</span>
+          <a href="#" style={styles.footerLink}>About</a>
         </div>
-        
-        <div style={styles.dashboardButtons}>
-          <button style={styles.actionButton}>
-            <span style={styles.buttonIcon}>🎫</span>
-            <span>Book Tickets</span>
-          </button>
-          <button style={styles.actionButton}>
-            <span style={styles.buttonIcon}>📋</span>
-            <span>View My Bookings</span>
-          </button>
-          <button style={styles.actionButton}>
-            <span style={styles.buttonIcon}>🔍</span>
-            <span>Find Booking</span>
-          </button>
-        </div>
-        
-        <div style={styles.contentCard}>
-          <h3 style={styles.cardTitle}>Quick Actions</h3>
-          <p style={styles.cardText}>
-            Get started with these options or explore more features from the menu.
-          </p>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 };
@@ -113,13 +147,14 @@ const UserDashboard = () => {
 const styles = {
   pageContainer: {
     display: "flex",
+    flexDirection: "column",
     minHeight: "100vh",
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     backgroundColor: "#f8fafc",
   },
   sidebar: {
     width: "300px",
-    background: "linear-gradient(145deg, #4f46e5, #7c3aed)",
+    background: "linear-gradient(135deg, #434190, #2c2e8f)",
     color: "#ffffff",
     padding: "0",
     display: "flex",
@@ -159,8 +194,22 @@ const styles = {
     fontWeight: "500",
     color: "#ffffff",
   },
+  updateProfileButton: {
+    marginTop: "20px",
+    padding: "12px 20px",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "600",
+    width: "100%",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+  },
   logoutButton: {
-    marginTop: "40px",
+    marginTop: "20px",
     padding: "12px 20px",
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     color: "white",
@@ -174,9 +223,6 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     transition: "all 0.3s ease",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-    }
   },
   logoutText: {
     marginRight: "10px",
@@ -227,10 +273,6 @@ const styles = {
     boxShadow: "0 4px 6px rgba(79, 70, 229, 0.1)",
     transition: "all 0.3s ease",
     flex: 1,
-    "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 6px 12px rgba(79, 70, 229, 0.15)",
-    }
   },
   buttonIcon: {
     fontSize: "20px",
@@ -263,7 +305,30 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "500",
     marginBottom: "20px",
-    fontSize: "14px",
+  },
+  footer: {
+    marginTop: "auto",
+background: "linear-gradient(135deg, #2c2e8f, #434190)",
+    color: "white",
+    fontSize: "12px",
+    textAlign: "center",
+    padding: "15px 0",
+    boxShadow: "0 -2px 6px rgba(0,0,0,0.2)",
+  },
+  footerText: {
+    marginBottom: "6px",
+  },
+  footerLinks: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+  },
+  footerLink: {
+    color: "white",
+    textDecoration: "none",
+    fontWeight: "600",
+  },
+  footerDivider: {
     color: "white",
   },
 };
