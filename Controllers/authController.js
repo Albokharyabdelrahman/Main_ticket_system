@@ -79,7 +79,7 @@ exports.loginUser = async (req, res) => {
 
     // 🔐 Send JWT in cookie
     res.cookie("token", token, {
-      httpOnly: true,         // prevent JS access
+      httpOnly: false,         // prevent JS access
       secure: false,          // true in production with HTTPS
       sameSite: "Lax",        // or "Strict"/"None" depending on setup
       maxAge: 60 * 60 * 1000  // 1 hour
