@@ -1,72 +1,63 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// Provide your logo image here (as import or URL string)
-import logo from './logo.png';// <-- Make sure this path matches your project
+import logo from "./logo.png"; // Update the path if needed
 
 export default function Login() {
-  // State variables
   const [data, setData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [hover, setHover] = useState(false); // For button hover effect
+  const [hoverLogin, setHoverLogin] = useState(false);
+  const [hoverGuest, setHoverGuest] = useState(false);
   const navigate = useNavigate();
 
-  // Input change handler
   function handleChange(e) {
     setData({ ...data, [e.target.name]: e.target.value });
   }
 
-  // Forgot Password
   function handleForgotPassword() {
-    // Add your forgot password logic here or redirect as needed
     alert("Forgot password feature coming soon!");
   }
 
-  // Register Redirect
   function handleRegisterRedirect() {
-    navigate("/register"); // Or your register route
+    navigate("/register");
   }
 
-  // Submit handler
+  function handleContinueAsGuest() {
+    navigate("/guest");
+  }
+
   async function handleSubmit(e) {
-  e.preventDefault();
-  setError("");
-  setSuccess("");
-  setIsLoading(true);
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsLoading(true);
+    try {
+      await axios.post("http://localhost:7000/api/v1/login", data, {
+        withCredentials: true,
+      });
 
-  try {
-    // Send login request (set cookie)
-    await axios.post("http://localhost:7000/api/v1/login", data, {
-      withCredentials: true,
-    });
+      const res = await axios.get("http://localhost:7000/api/v1/users/profile", {
+        withCredentials: true,
+      });
 
-    // Fetch profile to get role
-    const res = await axios.get("http://localhost:7000/api/v1/users/profile", {
-      withCredentials: true,
-    });
-
-    const role = res.data.user.role;
-    setSuccess("Login successful! Redirecting...");
-
-    // Redirect based on role
-    setTimeout(() => {
-      if (role === "Admin") navigate("/AdminDashboard");
-      else if (role === "Organizer") navigate("/OrganizerDashboard");
-      else navigate("/UserDashboard");
-    }, 1500);
-  } catch (err) {
-    setError(err.response?.data?.error || "Login failed");
-  } finally {
-    setIsLoading(false);
+      const role = res.data.user.role;
+      setSuccess("Login successful! Redirecting...");
+      setTimeout(() => {
+        if (role === "Admin") navigate("/AdminDashboard");
+        else if (role === "Organizer") navigate("/OrganizerDashboard");
+        else navigate("/UserDashboard");
+      }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   }
-}
 
-
-  // Button style based on hover and loading state
-  const buttonStyle = {
-    background: hover
+  const loginButtonStyle = {
+    background: hoverLogin
       ? "linear-gradient(90deg, #764ba2 0%, #667eea 100%)"
       : "linear-gradient(135deg, #667eea, #764ba2)",
     color: "white",
@@ -75,38 +66,50 @@ export default function Login() {
     border: "none",
     borderRadius: "6px",
     width: "100%",
-    marginBottom: "18px",
+    marginBottom: "16px",
     cursor: isLoading ? "not-allowed" : "pointer",
     opacity: isLoading ? 0.8 : 1,
     transition: "background 0.2s, opacity 0.2s",
     fontWeight: "bold",
-    boxShadow: hover
+    boxShadow: hoverLogin
       ? "0 4px 10px rgba(118, 75, 162, 0.18)"
       : "0 2px 6px rgba(102,126,234,0.09)",
   };
 
+  const guestButtonStyle = {
+    background: hoverGuest
+      ? "linear-gradient(90deg, #ff8c00 0%, #ff7f50 100%)"
+      : "linear-gradient(135deg, #ffa500, #ff7f50)",
+    color: "white",
+    padding: "12px",
+    fontSize: "16px",
+    border: "none",
+    borderRadius: "6px",
+    width: "100%",
+    marginBottom: "24px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    boxShadow: hoverGuest
+      ? "0 4px 10px rgba(255, 140, 0, 0.25)"
+      : "0 2px 6px rgba(255,165,0,0.15)",
+    transition: "background 0.2s",
+  };
+
   return (
     <div style={styles.container}>
-      {/* Logo and branding */}
       <div style={styles.logoContainer}>
-        <img
-          src={logo}
-          alt="Ticket Logo"
-          style={styles.logoImage}
-        />
+        <img src={logo} alt="Ticket Logo" style={styles.logoImage} />
         <div style={styles.brandContainer}>
           <div style={styles.brandName}>BOOKEDIN</div>
           <div style={styles.brandTagline}>CLICK.BOOK.ENJOY</div>
         </div>
       </div>
 
-      {/* Login Form */}
       <form style={styles.form} onSubmit={handleSubmit}>
         <h2 style={styles.title}>Login</h2>
         {error && <div style={styles.error}>{error}</div>}
         {success && <div style={{ ...styles.error, color: "green" }}>{success}</div>}
 
-        {/* Email */}
         <input
           style={styles.input}
           type="email"
@@ -118,7 +121,6 @@ export default function Login() {
           autoComplete="username"
         />
 
-        {/* Password */}
         <input
           style={styles.input}
           type="password"
@@ -130,18 +132,26 @@ export default function Login() {
           autoComplete="current-password"
         />
 
-        {/* Submit Button */}
         <button
           type="submit"
-          style={buttonStyle}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
+          style={loginButtonStyle}
+          onMouseEnter={() => setHoverLogin(true)}
+          onMouseLeave={() => setHoverLogin(false)}
           disabled={isLoading}
         >
           {isLoading ? "Logging in..." : "Log In"}
         </button>
 
-        {/* Secondary Actions */}
+        <button
+          type="button"
+          style={guestButtonStyle}
+          onClick={handleContinueAsGuest}
+          onMouseEnter={() => setHoverGuest(true)}
+          onMouseLeave={() => setHoverGuest(false)}
+        >
+          Continue as Guest
+        </button>
+
         <div style={styles.secondaryActions}>
           <button
             type="button"
@@ -161,22 +171,26 @@ export default function Login() {
         </div>
       </form>
 
-      {/* Footer */}
       <footer style={styles.footer}>
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
         <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>Contact</a>
+          <a href="#" style={styles.footerLink}>
+            Contact
+          </a>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>Privacy</a>
+          <a href="#" style={styles.footerLink}>
+            Privacy
+          </a>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>About</a>
+          <a href="#" style={styles.footerLink}>
+            About
+          </a>
         </div>
       </footer>
     </div>
   );
 }
 
-// Styles object
 const styles = {
   container: {
     minHeight: "100vh",
@@ -266,40 +280,33 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     textDecoration: "underline",
-    padding: "0",
+    padding: 0,
+    fontWeight: "600",
   },
   divider: {
     color: "#764ba2",
-    fontSize: "14px",
+    fontWeight: "600",
   },
   footer: {
-    marginTop: "40px",
-    textAlign: "center",
+    marginTop: "30px",
     color: "white",
-    padding: "20px 10px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.2)",
-    width: "100%",
-    maxWidth: "400px",
+    fontSize: "12px",
+    textAlign: "center",
   },
   footerText: {
-    fontSize: "12px",
-    marginBottom: "8px",
-    color: "rgba(255,255,255,0.85)",
+    marginBottom: "6px",
   },
   footerLinks: {
     display: "flex",
     justifyContent: "center",
     gap: "10px",
-    fontSize: "12px",
-    flexWrap: "wrap",
   },
   footerLink: {
     color: "white",
-    textDecoration: "underline",
-    cursor: "pointer",
+    textDecoration: "none",
+    fontWeight: "600",
   },
   footerDivider: {
     color: "white",
-    fontSize: "12px",
   },
 };
