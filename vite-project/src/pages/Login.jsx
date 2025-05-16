@@ -17,7 +17,7 @@ export default function Login() {
   }
 
   function handleForgotPassword() {
-    alert("Forgot password feature coming soon!");
+    navigate("/forgot-password");
   }
 
   function handleRegisterRedirect() {
