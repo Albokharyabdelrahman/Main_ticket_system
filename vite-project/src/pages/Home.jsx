@@ -1,7 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import communication from "../assets/communication.JPG";
+import React from "react";
+import './home.css';
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <>
       <nav>
@@ -15,19 +19,37 @@ export default function Home() {
       </nav>
 
       <div className="home-container">
-        <h1 className="home-title">Welcome to Main Ticket System 🎟️</h1>
+        {/* Keep title and description on top */}
+        <h1 className="glow-on-hover">WELCOME TO BOOKEDIN 🎟️</h1>
         <p className="home-description">
           Simplify your event ticketing experience. Whether you're an attendee,
-          organizer, or administrator – our system provides secure, streamlined, and reliable event access and management.
+          organizer, or administrator – our system provides secure, streamlined,
+          and reliable event access and management.
         </p>
 
-        <div className="home-buttons">
-          <Link to="/login">Login</Link>
-          <Link to="/register">Register</Link>
-          <Link to="/forgot-password">Forgot Password</Link>
-        </div>
+        <div className="home-content">
+          {/* Left side: login, register, forgot password */}
+          <div className="left-buttons">
+            <Link to="/login" className="home-button">Login</Link>
+            <Link to="/register" className="home-button">Register</Link>
+            <Link to="/forgot-password" className="home-button">Forgot Password</Link>
+          </div>
 
-        <img src={communication} alt="Communication Graphic" className="home-image" />
+          {/* Right side: explore button + image */}
+          <div className="right-side">
+            <button
+              onClick={() => navigate("/public-event")}
+              className="explore-btn"
+            >
+              Explore Event
+            </button>
+            <img
+              src={communication}
+              alt="Communication Graphic"
+              className="home-image"
+            />
+          </div>
+        </div>
       </div>
 
       <footer>
