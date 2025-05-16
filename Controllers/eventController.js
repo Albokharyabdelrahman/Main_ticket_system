@@ -23,7 +23,7 @@ exports.createEvent = async (req, res) => {
       organizerId,
       image,
       date: new Date(),
-      status: 'pending'
+      status: 'approved'
     });
 
     await event.save();

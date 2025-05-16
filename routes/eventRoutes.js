@@ -18,7 +18,7 @@ const {
 // PUBLIC ROUTES
 router.get("/", getApprovedEvents);               // Get list of all events
 router.get("/all", authenticationMiddleware, authorizeRoles("Admin"), getAllEvents);
-router.get("/:id", getEventById);                   // Get details of a single event
+router.get("/:id", getEventById);                   // Get details of a single eventg
 
 // PRIVATE ROUTES (Organizer)
 router.post("/", authenticationMiddleware, authorizeRoles("Organizer"), createEvent); // Create a new event

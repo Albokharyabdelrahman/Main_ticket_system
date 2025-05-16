@@ -32,7 +32,7 @@ exports.bookTickets = async (req, res) => {
       ticketsBooked: ticketsBooked,
       totalPrice: totalPrice,
       bookingDate: new Date(),
-      status: "pending", // Default status when booking
+      status: "confirmed", // Default status when booking
     });
 
     // Save the booking

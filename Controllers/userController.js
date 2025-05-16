@@ -5,10 +5,11 @@ const Event = require('../models/Event');
 
 
 exports.updateProfile = async (req, res) => {
-  const { name, email, password, profilePicture } = req.body;
+  const { name, email, password } = req.body;
+  // multer adds uploaded file info to req.file
+  const profilePictureFile = req.file;
 
   try {
-    // Extract and verify JWT from cookie
     const token = req.cookies.token;
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
@@ -17,15 +18,17 @@ exports.updateProfile = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Find the logged-in user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Update fields only if provided
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = await bcrypt.hash(password, 10);
-    if (profilePicture) user.profilePicture = profilePicture;
+
+    // Save uploaded file path or URL to profilePicture field
+    if (profilePictureFile) {
+      user.profilePicture = profilePictureFile.path; // or URL if you serve static files differently
+    }
 
     await user.save();
 
@@ -35,6 +38,7 @@ exports.updateProfile = async (req, res) => {
     res.status(400).json({ error: err.message || "Something went wrong" });
   }
 };
+
 
 
 exports.updateUserRole = async (req, res) => {

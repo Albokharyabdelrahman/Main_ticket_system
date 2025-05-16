@@ -11,6 +11,7 @@ import BookTickets from "../pages/BookTickets";
 import FindBooking from "../pages/FindBooking";
 import UpdateProfile from "../pages/UpdateProfile";
 import MyBookings from "../pages/MyBookings";  // relative path from src/router to src/pages
+import EventDetail from "../pages/EventDetails";
 
 export default function MyRoutes() {
   return (
@@ -22,6 +23,7 @@ export default function MyRoutes() {
       <Route path="/UserDashboard" element={<UserDashboard />} />        {/* User Dashboard */}
       <Route path="/AdminDashboard" element={<AdminDashboard />} />      {/* Admin Dashboard */}
       <Route path="/OrganizerDashboard" element={<OrganizerDashboard />} /> {/* Organizer Dashboard */}
+      <Route path="/event/:id" element={<EventDetail />} />
       <Route path="/guest" element={<GuestDashboard />} />
       <Route path="/book-tickets" element={<BookTickets />} />
       <Route path="/find-booking" element={<FindBooking />} />
