@@ -62,8 +62,8 @@ export default function UpdateProfile() {
       });
       setMessage("Profile updated successfully.");
       setProfile((p) => ({ ...p, password: "" }));
+      navigate(-1)
 
-      setTimeout(() => navigate("/UserDashboard"), 1200);
     } catch (err) {
       setError(err.response?.data?.message || "Update failed");
     }
@@ -75,7 +75,7 @@ export default function UpdateProfile() {
         src={logo}
         alt="Logo"
         style={styles.logo}
-        onClick={() => navigate("/UserDashboard")}
+        onClick={() => navigate(-1)}
       />
 
       <h1 style={styles.heading}>Update Profile</h1>

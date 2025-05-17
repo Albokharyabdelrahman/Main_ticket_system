@@ -12,6 +12,7 @@ import FindBooking from "../pages/FindBooking";
 import UpdateProfile from "../pages/UpdateProfile";
 import MyBookings from "../pages/MyBookings";  // relative path from src/router to src/pages
 
+
 export default function MyRoutes() {
   return (
     <Routes>
@@ -27,7 +28,7 @@ export default function MyRoutes() {
       <Route path="/find-booking" element={<FindBooking />} />
       <Route path="/update-profile" element={<UpdateProfile />} />
       <Route path="/my-bookings" element={<MyBookings />} />
-
+      <Route path="/UpdateProfile" element={<UpdateProfile />} />
 
     </Routes>
   );

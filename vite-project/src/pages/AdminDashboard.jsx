@@ -5,6 +5,25 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import UserRow from "../components/UserRow";
 
+function getCurrentUserIdFromCookie() {
+  const cookie = document.cookie
+    .split("; ")
+    .find(row => row.startsWith("token="));
+  if (!cookie) return null;
+
+  const token = cookie.split("=")[1];
+  if (!token || !token.includes(".")) return null;
+
+  try {
+    const payloadBase64 = token.split(".")[1];
+    const decodedPayload = JSON.parse(atob(payloadBase64));
+    return decodedPayload.userId; // <--- THIS is the correct field
+  } catch (e) {
+    console.error("Invalid token:", e);
+    return null;
+  }
+}
+
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const AdminDashboard = () => {
@@ -128,6 +147,9 @@ const updateEvent = () =>
       )
     );
 
+
+    
+
   return (
     <div style={styles.pageContainer}>
       <aside style={styles.sidebar}>
@@ -185,6 +207,9 @@ const updateEvent = () =>
           <div style={{display: "flex", flexDirection: "column", gap: "12px"}}>
 
             {/* Events */}
+            <button style={styles.actionButton} onClick={() => navigate('/UpdateProfile')}>
+             Edit My Profile
+            </button>
             <button style={styles.actionButton} onClick={getAllEvents}>
               Get All Events
             </button>
@@ -319,20 +344,36 @@ const updateEvent = () =>
     ) : editingType === "user" ? (
       <UserRow
         user={editingObj}
+
         onSave={async (updatedUser) => {
-          try {
-            await axios.put(
-              `http://localhost:7000/api/v1/users/${updatedUser._id}`,
-              updatedUser,
-              { withCredentials: true }
-            );
-            setEditingObj(null);
-            setEditingType(null);
-            setQuickActionMsg("User updated successfully!");
-          } catch (err) {
-            setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
-          }
-        }}
+  try {
+    await axios.put(
+      `http://localhost:7000/api/v1/users/${updatedUser._id}`,
+      updatedUser,
+      { withCredentials: true }
+    );
+    setEditingObj(null);
+    setEditingType(null);
+    setQuickActionMsg("User updated successfully!");
+
+    // Check if the updated user is the current user
+    const currentUserId = getCurrentUserIdFromCookie();
+    if (updatedUser._id === currentUserId) {
+      // Redirect based on new role
+      if (updatedUser.role === "User") {
+        navigate("/UserDashboard");
+      } else if (updatedUser.role === "Organizer") {
+        navigate("OrganizerDashboard");
+      } else if (updatedUser.role === "admin") {
+        // Optionally: navigate("/admin-dashboard");
+        // Or do nothing since you're already here
+      }
+    }
+  } catch (err) {
+    setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
+  }
+}}
+
         onCancel={() => {
           setEditingObj(null);
           setEditingType(null);
