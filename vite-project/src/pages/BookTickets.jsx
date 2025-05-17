@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import logo from "./logo.png";
+import { useNavigate } from "react-router-dom";
 
 const EventsTable = () => {
   const [events, setEvents] = useState([]);
   const [ticketsInput, setTicketsInput] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [message, setMessage] = useState({ text: "", type: "" });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -19,6 +23,7 @@ const EventsTable = () => {
         setEvents(response.data);
       } catch (err) {
         console.error("Error fetching events:", err);
+        setMessage({ text: "Failed to load events.", type: "error" });
       }
     };
 
@@ -46,7 +51,10 @@ const EventsTable = () => {
       ticketsBooked <= 0 ||
       ticketsBooked > event.availableTickets
     ) {
-      alert("Please enter a valid number of tickets within available range.");
+      setMessage({
+        text: "Please enter a valid number of tickets within available range.",
+        type: "error",
+      });
       return;
     }
 
@@ -71,7 +79,10 @@ const EventsTable = () => {
         }
       );
 
-      alert(`Successfully booked ${ticketsBooked} tickets!`);
+      setMessage({
+        text: `Successfully booked ${ticketsBooked} ticket(s)!`,
+        type: "success",
+      });
 
       setEvents((prevEvents) =>
         prevEvents.map((e) =>
@@ -85,15 +96,13 @@ const EventsTable = () => {
     } catch (err) {
       const errorMsg =
         err.response?.data?.error || err.response?.data?.message || "Booking failed.";
-      alert(errorMsg);
+      setMessage({ text: errorMsg, type: "error" });
       console.error("Booking error:", err);
     }
   };
 
-  // Extract unique categories for filter dropdown
   const categories = ["All", ...new Set(events.map((e) => e.category))];
 
-  // Filter events based on search term and selected category
   const filteredEvents = events.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -101,6 +110,11 @@ const EventsTable = () => {
     const matchesCategory = categoryFilter === "All" || event.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  // Redirect to event detail page
+  const handleRowClick = (eventId) => {
+    navigate(`/event/${eventId}`);
+  };
 
   return (
     <>
@@ -164,11 +178,13 @@ const EventsTable = () => {
           overflow: hidden;
         }
         .events-table th, .events-table td {
+          color: black;
           border-bottom: 1px solid rgba(102,126,234,0.15);
           border-right: 1px solid rgba(102,126,234,0.15);
           padding: 14px 18px;
           text-align: left;
           vertical-align: middle;
+          user-select: none;
         }
         .events-table th:last-child,
         .events-table td:last-child {
@@ -179,13 +195,13 @@ const EventsTable = () => {
         }
         .events-table th {
           background: linear-gradient(135deg, #6b46c1, #553c9a);
-          color: white;
           font-weight: 600;
           font-size: 1.05rem;
           user-select: none;
         }
         .events-table tbody tr:hover {
           background-color: #f0ebff;
+          cursor: pointer;
         }
         .book-btn {
           background: linear-gradient(135deg, #5a67d8, #434190);
@@ -197,6 +213,7 @@ const EventsTable = () => {
           font-weight: 600;
           transition: background 0.3s ease;
           white-space: nowrap;
+          user-select: none;
         }
         .book-btn:hover {
           background: linear-gradient(135deg, #434190, #2c2e8f);
@@ -210,6 +227,26 @@ const EventsTable = () => {
           margin-right: 8px;
           text-align: center;
         }
+        .message {
+          margin-bottom: 20px;
+          padding: 10px 15px;
+          max-width: 1100px;
+          width: 100%;
+          border-radius: 6px;
+          font-weight: 500;
+          font-size: 1rem;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .message.success {
+          background-color: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
+        }
+        .message.error {
+          background-color: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
+        }
       `}</style>
 
       <div className="container">
@@ -221,6 +258,12 @@ const EventsTable = () => {
           title="Go to Dashboard"
         />
         <h1>Available Events</h1>
+
+        {message.text && (
+          <div className={`message ${message.type}`}>
+            {message.text}
+          </div>
+        )}
 
         <div className="filters">
           <input
@@ -272,7 +315,20 @@ const EventsTable = () => {
               filteredEvents.map((event) => {
                 const eventDate = new Date(event.date);
                 return (
-                  <tr key={event._id}>
+                  <tr
+                    key={event._id}
+                    onClick={(e) => {
+                      // Prevent row click if clicking inside input or button
+                      if (
+                        e.target.tagName !== "INPUT" &&
+                        e.target.tagName !== "BUTTON"
+                      ) {
+                        handleRowClick(event._id);
+                      }
+                    }}
+                    style={{ cursor: "pointer" }}
+                    title="Click to view event details"
+                  >
                     <td>{event.title}</td>
                     <td>{event.description}</td>
                     <td>{event.location}</td>
@@ -288,7 +344,9 @@ const EventsTable = () => {
                     <td>{event.availableTickets}</td>
                     <td>{event.totalTickets}</td>
                     <td>{event.price}</td>
-                    <td>
+                    <td
+                      onClick={(e) => e.stopPropagation()} // stop row click when interacting with action buttons/inputs
+                    >
                       <input
                         type="number"
                         min="1"

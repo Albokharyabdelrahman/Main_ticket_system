@@ -5,10 +5,11 @@ const Event = require('../models/Event');
 
 
 exports.updateProfile = async (req, res) => {
-  const { name, email, password, profilePicture } = req.body;
+  const { name, email, password } = req.body;
+  // multer adds uploaded file info to req.file
+  const profilePictureFile = req.file;
 
   try {
-    // Extract and verify JWT from cookie
     const token = req.cookies.token;
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
@@ -17,15 +18,17 @@ exports.updateProfile = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Find the logged-in user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Update fields only if provided
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = await bcrypt.hash(password, 10);
-    if (profilePicture) user.profilePicture = profilePicture;
+
+    // Save uploaded file path or URL to profilePicture field
+    if (profilePictureFile) {
+      user.profilePicture = profilePictureFile.path; // or URL if you serve static files differently
+    }
 
     await user.save();
 
@@ -35,6 +38,7 @@ exports.updateProfile = async (req, res) => {
     res.status(400).json({ error: err.message || "Something went wrong" });
   }
 };
+
 
 
 exports.updateUserRole = async (req, res) => {
@@ -136,42 +140,119 @@ try {
 
 
 exports.getAnalytics = async (req, res) => {
-try {
-  // 🔐 Check if user is authenticated and is an Organizer
-  if (!req.user || !req.user.userId || req.user.role !== "Organizer") {
-    console.log("Unauthorized access attempt by user:", req.user);
-    return res.status(403).json({ error: "Only organizers can access analytics" });
-  }
-
-  // 🔍 Find events for this organizer (with ID verification)
-  const events = await Event.find({ 
-    organizerId: req.user.userId 
-  });
-
-  if (!events.length) {
-    console.log("No events found for organizer:", req.user.userId);
-    return res.status(404).json({ error: "No events found for this organizer" });
-  }
-
-  // 📊 Calculate analytics
-  const analytics = events.map(event => {
-    // Verify organizer owns this event (additional security check)
-    if (event.organizerId.toString() !== req.user.userId.toString()) {
-      console.log("Organizer ID mismatch for event:", event._id);
-      return null;
+  try {
+    // 🔐 Check if user is authenticated
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ error: "Unauthorized - Please log in" });
     }
 
-    const percentageBooked = ((event.totalTickets - event.availableTickets) / event.totalTickets) * 100;
-    return {
-      eventId: event._id,
-      title: event.title,
-      percentageBooked: percentageBooked.toFixed(2)
-    };
-  }).filter(analytic => analytic !== null);
+    // Determine which field to filter by based on user role
+    let filterField;
+    if (req.user.role === "Organizer") {
+      filterField = { organizerId: req.user.userId };
+    } else if (req.user.role === "User") {
+      filterField = { attendees: req.user.userId }; // Assuming events have an attendees array
+    } else {
+      return res.status(403).json({ error: "Access denied for your role" });
+    }
 
-  res.status(200).json(analytics);
-} catch (err) {
-  console.error("Analytics error:", err);
-  res.status(500).json({ error: "Server error while fetching analytics" });
-  }
+    // 🔍 Find events for this user
+    const events = await Event.find(filterField);
+
+    if (!events.length) {
+      return res.status(404).json({ 
+        message: "No events found",
+        suggestion: req.user.role === "Organizer" 
+          ? "Create your first event" 
+          : "Browse and book events"
+      });
+    }
+
+    // 📊 Calculate analytics
+    const analytics = events.map(event => {
+      // Additional security check for organizers
+      if (req.user.role === "Organizer" && 
+          event.organizerId.toString() !== req.user.userId.toString()) {
+        return null; // Skip events that don't belong to this organizer
+      }
+
+      // Different analytics for different roles
+      if (req.user.role === "Organizer") {
+        const percentageBooked = ((event.totalTickets - event.availableTickets) / event.totalTickets) * 100;
+        return {
+          eventId: event._id,
+          title: event.title,
+          percentageBooked: percentageBooked.toFixed(2),
+          revenue: event.price * (event.totalTickets - event.availableTickets)
+        };
+      } else { // For regular users
+        return {
+          eventId: event._id,
+          title: event.title,
+          date: event.date,
+          location: event.location,
+          status: event.status
+        };
+      }
+    }).filter(analytic => analytic !== null);
+
+    res.status(200).json({
+      role: req.user.role,
+      totalEvents: analytics.length,
+      analytics
+    });
+  } catch (err) {
+    console.error("Analytics error:", err);
+    res.status(500).json({ error: "Server error while fetching analytics" });
+  }
+  
+};
+
+exports.getMyEvents = async (req, res) => {
+  try {
+    // 1️⃣ Verify the user is an organizer
+    if (req.user.role !== "Organizer") {
+      return res.status(403).json({ 
+        error: "Access denied. Organizer privileges required." 
+      });
+    }
+
+    // 2️⃣ Find all events for this organizer
+    const events = await Event.find({ 
+      organizerId: req.user.userId 
+    }).select('-__v'); // Exclude the version key
+
+    if (!events.length) {
+      return res.status(200).json({
+        message: "You haven't created any events yet",
+        suggestion: "Create your first event using the POST /events endpoint"
+      });
+    }
+
+    // 3️⃣ Format the response
+    const formattedEvents = events.map(event => ({
+      id: event._id,
+      title: event.title,
+      date: event.date,
+      location: event.location,
+      status: event.status,
+      tickets: {
+        total: event.totalTickets,
+        available: event.availableTickets
+      },
+      createdAt: event.createdAt
+    }));
+
+    res.status(200).json({
+      count: formattedEvents.length,
+      events: formattedEvents
+    });
+
+  } catch (err) {
+    console.error("GetMyEvents error:", err);
+    res.status(500).json({ 
+      error: "Failed to retrieve your events",
+      details: err.message 
+    });
+  }
 };

@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import logo from "./logo.png"; // Adjust path as needed
+import logo from "./logo.png";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +40,6 @@ const MyBookings = () => {
   }, []);
 
   const handleDelete = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
@@ -47,14 +49,18 @@ const MyBookings = () => {
           withCredentials: true,
         }
       );
-      alert(response.data.message || "Booking cancelled successfully");
+      setSuccessMessage(response.data.message || "Booking cancelled successfully");
+      setError(null);
       setBookings((prev) => prev.filter((b) => b._id !== bookingId));
+      setConfirmDeleteId(null);
     } catch (err) {
-      alert(
+      setError(
         err.response?.data?.error ||
-          err.response?.data?.message ||
-          "Failed to cancel booking."
+        err.response?.data?.message ||
+        "Failed to cancel booking."
       );
+      setSuccessMessage(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -63,8 +69,10 @@ const MyBookings = () => {
     const matchesSearch = event.title
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
+
     const matchesStatus =
-      statusFilter === "All" || booking.status === statusFilter;
+      statusFilter === "All" || booking.status?.toLowerCase() === statusFilter.toLowerCase();
+
     return matchesSearch && matchesStatus;
   });
 
@@ -87,7 +95,7 @@ const MyBookings = () => {
           color: white;
           font-weight: 700;
           font-size: 2rem;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
           user-select: none;
         }
         .logo {
@@ -171,6 +179,11 @@ const MyBookings = () => {
           font-weight: 600;
           margin-bottom: 20px;
         }
+        .success-message {
+          color: #38ef7d;
+          font-weight: 600;
+          margin-bottom: 20px;
+        }
         .loading-message {
           color: white;
           font-weight: 600;
@@ -190,6 +203,57 @@ const MyBookings = () => {
         .delete-btn:hover {
           background: linear-gradient(135deg, #434190, #2c2e8f);
         }
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        .modal {
+          background: white;
+          padding: 25px 30px;
+          border-radius: 10px;
+          max-width: 400px;
+          width: 90%;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+          font-family: 'Poppins', sans-serif;
+          font-weight: 600;
+          color: #333;
+          text-align: center;
+        }
+        .modal-buttons {
+          margin-top: 20px;
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+        }
+        .modal-btn {
+          cursor: pointer;
+          font-weight: 700;
+          padding: 8px 22px;
+          border-radius: 6px;
+          border: none;
+          font-size: 1rem;
+          transition: background-color 0.3s ease;
+          user-select: none;
+        }
+        .modal-btn.cancel {
+          background: #ccc;
+          color: #333;
+        }
+        .modal-btn.cancel:hover {
+          background: #b3b3b3;
+        }
+        .modal-btn.confirm {
+          background: #e53e3e;
+          color: white;
+        }
+        .modal-btn.confirm:hover {
+          background: #c53030;
+        }
       `}</style>
 
       <div className="container">
@@ -200,6 +264,10 @@ const MyBookings = () => {
           onClick={() => navigate("/UserDashboard")}
         />
         <h1>My Bookings</h1>
+
+        {successMessage && <div className="success-message">{successMessage}</div>}
+        {error && <div className="error-message">{error}</div>}
+        {loading && <div className="loading-message">Loading bookings...</div>}
 
         <div className="filter-container">
           <input
@@ -220,9 +288,6 @@ const MyBookings = () => {
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
-
-        {loading && <div className="loading-message">Loading bookings...</div>}
-        {error && <div className="error-message">{error}</div>}
 
         {!loading && !error && (
           <>
@@ -266,7 +331,7 @@ const MyBookings = () => {
                           {booking.status !== "Cancelled" && (
                             <button
                               className="delete-btn"
-                              onClick={() => handleDelete(booking._id)}
+                              onClick={() => setConfirmDeleteId(booking._id)}
                             >
                               Cancel
                             </button>
@@ -279,6 +344,28 @@ const MyBookings = () => {
               </table>
             )}
           </>
+        )}
+
+        {confirmDeleteId && (
+          <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <p>Are you sure you want to cancel this booking?</p>
+              <div className="modal-buttons">
+                <button
+                  className="modal-btn cancel"
+                  onClick={() => setConfirmDeleteId(null)}
+                >
+                  No
+                </button>
+                <button
+                  className="modal-btn confirm"
+                  onClick={() => handleDelete(confirmDeleteId)}
+                >
+                  Yes, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </>
