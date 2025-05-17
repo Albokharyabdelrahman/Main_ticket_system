@@ -1,133 +1,511 @@
-body, html, #root {
+/* CSS with all improvements */
+:root {
+  /* Color variables */
+  --primary-color: #6b46c1;
+  --secondary-color: #667eea;
+  --accent-color: #ff6b6b;
+  --dark-color: #2d3748;
+  --light-color: #ffffff;
+  --text-light: var(--light-color);
+  --text-dark: var(--dark-color);
+  
+  /* Gradient */
+  --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  
+  /* Glass effect */
+
+  
+  /* Shadows */
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.2);
+  
+  /* Header */
+  --header-height: 80px;
+  
+  /* Image Carousel - ADJUST THESE TO CONTROL SIZE */
+  --carousel-width: 600px;  /* Change this value to control width */
+  --carousel-height: 350px; /* Change this value to control height */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html, #root, .home-wrapper {
   height: 100%;
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--gray-light);
 }
 
+/* Replace your existing header CSS with this */
+.main-header {
+  background: white !important;
+  box-shadow: 0 2px 10px rgba(238, 237, 237, 0.08);
+  /* Remove these if present */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: white !important;
+}
+.header-container {
+  display: flex;
+  justify-content: space-between; /* Pushes items to left and right edges */
+  align-items: center;            /* Vertically center items */
+  padding: 0 1.5rem;              /* Optional: some horizontal padding */
+}
+
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+  transform: rotate(15deg);
+}
+.home-header {
+  padding-top: 30px; /* Adjust this value to move it down more or less */
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+/* Alternative approach if you need more control */
 .home-container {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  padding: 20px;
-  box-sizing: border-box;
-  color: white;
-  flex-direction: column;
+  padding-top: 50px; /* This moves everything down together */
 }
 
-.home-content {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  max-width: 900px;
+.home-title {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem; /* Increased from previous value */
+  line-height: 1.2;
+}
+
+.home-tagline {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 0; /* Remove default margin */
+  margin-bottom: 0; /* Remove default margin */
+}
+
+/* If you want even more space, you can add padding to the container */
+.home-container {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+.brand-name {
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Improved Navigation */
+.main-nav .nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--dark-color);
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nav-text {
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.nav-underline {
+  height: 2px;
+  width: 0;
+  background: var(--primary-color);
+  transition: width 0.3s ease, background 0.3s ease;
+  margin-top: 4px;
+}
+
+.nav-link:hover .nav-text,
+.nav-link.active .nav-text {
+  color: var(--primary-color);
+}
+
+.nav-link:hover .nav-underline,
+.nav-link.active .nav-underline {
   width: 100%;
-  display: flex;
-  gap: 50px; /* space between left and right */
-  justify-content: center;
-  align-items: flex-start;
-  flex-wrap: wrap; /* for responsiveness */
 }
 
-/* Left side: 3 buttons stacked */
-.left-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  flex: 1 1 200px;
-  max-width: 250px;
+/* Image Carousel - Now controlled by CSS variables */
+.image-carousel {
+  width: var(--carousel-width);
+  height: var(--carousel-height);
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
 }
 
-/* Right side: Explore button + image */
-.right-side {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1 1 250px;
-  max-width: 350px;
-}
-
-/* Shared button styles */
-.home-button, .explore-btn {
-  padding: 14px 24px;
-  border-radius: 10px;
+/* Improved Explore Button */
+.explore-btn {
+  padding: 1rem 2rem;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 1.1rem;
   cursor: pointer;
-  user-select: none;
-  text-align: center;
   border: none;
   outline: none;
-  transition: 
-    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   width: 100%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Normal buttons: translucent with border */
-.home-button {
-  background-color: rgba(255, 255, 255, 0.2);
+  max-width: var(--carousel-width);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   color: white;
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
-}
-
-.home-button:hover {
-  background-color: rgba(255, 255, 255, 0.35);
-  transform: scale(1.05);
-  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.4);
-}
-
-/* Explore button: strong gradient with shadow */
-.explore-btn {
-  background: linear-gradient(90deg, #6b46c1 0%, #667eea 100%);
-  color: white;
-  box-shadow: 0 6px 20px rgba(107, 70, 193, 0.6);
-  max-width: 280px;
+  box-shadow: 0 8px 24px rgba(107, 70, 193, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 .explore-btn:hover {
-  background: linear-gradient(90deg, #5a3ea8 0%, #5568d6 100%);
-  transform: scale(1.07);
-  box-shadow: 0 10px 28px rgba(85, 104, 214, 0.75);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(107, 70, 193, 0.6);
 }
 
-/* Image below explore button */
-.home-image {
-  margin-top: 30px;
-  max-width: 100%;
-  height: auto;
+.explore-text {
+  position: relative;
+  z-index: 1;
+}
+
+.explore-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.explore-btn:hover .explore-icon {
+  transform: translateX(5px);
+}
+
+.header-container {
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+  transform: rotate(15deg);
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.main-nav .nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--dark-color);
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--primary-color);
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.header-button {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.header-button {
+  color: var(--dark-color);
+  border: 1px solid var(--gray-medium);
+}
+
+.header-button:hover {
+  background: var(--gray-medium);
+}
+
+.header-button.primary {
+  background: var(--gradient);
+  color: var(--light-color);
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-button.primary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Home Container (adjust for header) */
+.home-container {
+  min-height: 100vh;
+  padding-top: var(--header-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--gradient);
+  padding: 2rem;
+  color: var(--text-light);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ... (keep all your existing home-container styles) ... */
+
+/* Image Carousel Styles */
+.image-carousel {
+  width: 100%;
+  max-width: 500px;
+  height: 300px;
+  position: relative;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
+}
+
+.carousel-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
   opacity: 0;
-  animation: fadeIn 1.2s forwards ease-in-out;
+  transition: opacity 1s ease-in-out;
+  display: flex;
+  align-items: flex-end;
 }
 
-/* Fade-in animation */
-@keyframes fadeIn {
-  to {
-    opacity: 1;
+.carousel-image.active {
+  opacity: 1;
+}
+
+.carousel-caption {
+  width: 100%;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  color: white;
+  font-weight: 500;
+  transform: translateY(100%);
+  transition: transform 0.5s ease;
+}
+
+.carousel-image.active .carousel-caption {
+  transform: translateY(0);
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background: var(--light-color);
+  transform: scale(1.2);
+}
+
+/* Footer adjustments */
+.home-footer {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.footer-logo-img {
+  width: 30px;
+  height: 30px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: var(--accent-color);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .header-container {
+    padding: 0 1.5rem;
+  }
+  
+  .main-nav .nav-links {
+    gap: 1.5rem;
   }
 }
 
-/* Responsive for smaller screens */
-@media (max-width: 700px) {
-  .home-content {
+@media (max-width: 768px) {
+  .header-container {
     flex-direction: column;
-    align-items: center;
+    padding: 1rem;
+    height: auto;
   }
-
-  .left-buttons, .right-side {
-    max-width: 100%;
-    flex: none;
+  
+  .main-header {
+    height: auto;
+    position: relative;
   }
+  
+  .home-container {
+    padding-top: 2rem;
+  }
+  
+  .main-nav {
+    margin: 1rem 0;
+  }
+  
+  .header-actions {
+    margin-top: 1rem;
+  }
+  
+  .image-carousel {
+    height: 250px;
+  }
+}
 
-  .right-side {
-    margin-top: 40px;
+@media (max-width: 576px) {
+  .home-title {
+    font-size: 2rem;
+  }
+  
+  .home-tagline {
+    font-size: 1rem;
+  }
+  
+  .image-carousel {
+    height: 200px;
+  }
+  
+  .carousel-caption {
+    padding: 1rem;
+    font-size: 0.9rem;
   }
 }

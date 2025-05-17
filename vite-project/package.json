@@ -13,9 +13,10 @@
     "axios": "^1.9.0",
     "express": "^5.1.0",
 
+    "jwt-decode": "^4.0.0",
+
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-
     "react-router-dom": "^7.6.0",
     "react-tsparticles": "^2.12.2",
     "tsparticles": "^3.8.1"

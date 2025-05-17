@@ -18,17 +18,8 @@ const UserDashboard = () => {
         const res = await axios.get(`${API_BASE_URL}/users/profile`, {
           withCredentials: true,
         });
-        console.log("DEBUG: Profile fetch successful:", res.data);
         setProfile(res.data.user);
       } catch (err) {
-        console.error("DEBUG: Profile fetch error:", err);
-        if (err.response) {
-          console.error(
-            "DEBUG: Server responded with:",
-            err.response.status,
-            err.response.data
-          );
-        }
         setError("Failed to load profile. Please try again.");
       }
     };
@@ -47,26 +38,27 @@ const UserDashboard = () => {
     }
   };
 
-  const handleUpdateProfile = () => {
-    navigate("/update-profile");
-  };
-
-  const handleBookTickets = () => {
-    navigate("/book-tickets");
-  };
-
-  const handleViewBookings = () => {
-    navigate("/my-bookings");
-  };
-
-  const handleFindBooking = () => {
-    navigate("/find-booking");
-  };
+  const handleUpdateProfile = () => navigate("/update-profile");
+  const handleBookTickets = () => navigate("/book-tickets");
+  const handleViewBookings = () => navigate("/my-bookings");
+  const handleFindBooking = () => navigate("/find-booking");
 
   return (
     <div style={styles.pageContainer}>
       <div style={{ display: "flex", flex: 1 }}>
         <aside style={styles.sidebar}>
+          <div style={styles.profilePictureContainer}>
+            {profile && profile.picture ? (
+              <img
+                src={profile.picture}
+                alt="Profile"
+                style={styles.profilePicture}
+              />
+            ) : (
+              <div style={styles.defaultProfileIcon}>👤</div>
+            )}
+          </div>
+
           <div style={styles.sidebarHeader}>
             <h2 style={styles.sidebarTitle}>User Profile</h2>
           </div>
@@ -85,8 +77,15 @@ const UserDashboard = () => {
                 <span style={styles.profileLabel}>Role:</span>
                 <span style={styles.profileValue}>{profile.role}</span>
               </div>
+              <div style={styles.profileItem}>
+                <span style={styles.profileLabel}>Id:</span>
+                <span style={styles.profileValue}>{profile._id}</span>
+              </div>
 
-              <button onClick={handleUpdateProfile} style={styles.updateProfileButton}>
+              <button
+                onClick={handleUpdateProfile}
+                style={styles.updateProfileButton}
+              >
                 Update Profile
               </button>
 
@@ -101,7 +100,8 @@ const UserDashboard = () => {
         <main style={styles.contentArea}>
           <div style={styles.header}>
             <h1 style={styles.title}>
-              Welcome back, <span style={styles.highlight}>{profile?.name || "User"}</span>!
+              Welcome back,{" "}
+              <span style={styles.highlight}>{profile?.name || "User"}</span>!
             </h1>
             <img src={logo} alt="BookedIn Logo" style={styles.logo} />
           </div>
@@ -124,7 +124,8 @@ const UserDashboard = () => {
           <div style={styles.contentCard}>
             <h3 style={styles.cardTitle}>Quick Actions</h3>
             <p style={styles.cardText}>
-              Get started with these options or explore more features from the menu.
+              Get started with these options or explore more features from the
+              menu.
             </p>
           </div>
         </main>
@@ -133,11 +134,17 @@ const UserDashboard = () => {
       <footer style={styles.footer}>
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
         <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>Contact</a>
+          <a href="#" style={styles.footerLink}>
+            Contact
+          </a>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>Privacy</a>
+          <a href="#" style={styles.footerLink}>
+            Privacy
+          </a>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>About</a>
+          <a href="#" style={styles.footerLink}>
+            About
+          </a>
         </div>
       </footer>
     </div>
@@ -160,6 +167,34 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     boxShadow: "4px 0 15px rgba(0, 0, 0, 0.1)",
+  },
+  profilePictureContainer: {
+    display: "flex",
+    justifyContent: "center",
+    padding: "20px 0",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+  },
+  profilePicture: {
+    width: "90px",
+    height: "90px",
+    borderRadius: "50%",
+    objectFit: "cover",
+    border: "3px solid white",
+    boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
+  },
+  defaultProfileIcon: {
+    width: "90px",
+    height: "90px",
+    borderRadius: "50%",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    color: "white",
+    fontSize: "48px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    border: "3px solid white",
+    boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
+    userSelect: "none",
   },
   sidebarHeader: {
     padding: "30px 25px",
@@ -259,77 +294,74 @@ const styles = {
     marginBottom: "40px",
   },
   actionButton: {
-    padding: "18px 25px",
-    backgroundColor: "#ffffff",
-    color: "#4f46e5",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "15px",
+    flex: 1,
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    boxShadow: "0 4px 6px rgba(79, 70, 229, 0.1)",
+    gap: "12px",
+    padding: "18px 24px",
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#4f46e5",
+    backgroundColor: "white",
+    border: "2px solid #4f46e5",
+    borderRadius: "12px",
+    cursor: "pointer",
     transition: "all 0.3s ease",
-    flex: 1,
+    boxShadow: "0 6px 12px rgba(79, 70, 229, 0.2)",
   },
   buttonIcon: {
-    fontSize: "20px",
+    fontSize: "24px",
   },
   contentCard: {
-    backgroundColor: "#ffffff",
+    padding: "25px 30px",
+    background: "white",
     borderRadius: "12px",
-    padding: "30px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
   },
   cardTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
+    margin: "0 0 12px",
+    fontSize: "20px",
+    fontWeight: "700",
     color: "#1e293b",
-    margin: "0 0 15px 0",
   },
   cardText: {
-    fontSize: "15px",
-    color: "#64748b",
-    lineHeight: "1.6",
-    margin: "0",
-  },
-  logo: {
-    width: "120px",
-    height: "auto",
-  },
-  error: {
-    backgroundColor: "rgba(239, 68, 68, 0.9)",
-    padding: "12px 16px",
-    borderRadius: "8px",
-    fontWeight: "500",
-    marginBottom: "20px",
+    margin: 0,
+    fontSize: "16px",
+    color: "#475569",
+    lineHeight: "1.5",
   },
   footer: {
-    marginTop: "auto",
-background: "linear-gradient(135deg, #2c2e8f, #434190)",
+    padding: "25px 40px",
+    backgroundColor: "#3f51b5",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
     color: "white",
-    fontSize: "12px",
-    textAlign: "center",
-    padding: "15px 0",
-    boxShadow: "0 -2px 6px rgba(0,0,0,0.2)",
+    fontSize: "14px",
   },
   footerText: {
-    marginBottom: "6px",
+    margin: 0,
   },
-  footerLinks: {
+    footerLinks: {
     display: "flex",
-    justifyContent: "center",
-    gap: "10px",
+    gap: "15px",
+    alignItems: "center",
   },
   footerLink: {
     color: "white",
     textDecoration: "none",
-    fontWeight: "600",
   },
   footerDivider: {
     color: "white",
+  },
+  error: {
+    color: "#f87171",
+    padding: "10px 25px",
+    fontWeight: "600",
+  },
+  logo: {
+    height: "50px",
+    objectFit: "contain",
   },
 };
 
