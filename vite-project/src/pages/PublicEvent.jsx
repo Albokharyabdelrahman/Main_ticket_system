@@ -25,9 +25,10 @@ const EventsTable = () => {
     fetchEvents();
   }, []);
 
-  const handleLogoClick = () => {
-    window.location.href = "/";
-  };
+ const handleLogoClick = () => {
+  window.history.back();
+};
+
 
   // Extract unique categories for dropdown
   const categories = ["All", ...new Set(events.map((e) => e.category))];

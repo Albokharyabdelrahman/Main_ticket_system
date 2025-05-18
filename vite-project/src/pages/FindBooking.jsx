@@ -59,17 +59,19 @@ const FindBooking = () => {
 
       {error && <p style={styles.error}>{error}</p>}
 
-      {bookingData && (
-        <div style={styles.card}>
-          <h2 style={styles.eventTitle}>{bookingData.eventId.title}</h2>
-          <p><strong>Location:</strong> {bookingData.eventId.location}</p>
-          <p><strong>Date:</strong> {new Date(bookingData.eventId.date).toLocaleString()}</p>
-          <p><strong>Tickets Booked:</strong> {bookingData.ticketsBooked}</p>
-          <p><strong>Total Price:</strong> ${bookingData.totalPrice}</p>
-          <p><strong>Status:</strong> {bookingData.status}</p>
-          <p><strong>Booking Date:</strong> {new Date(bookingData.bookingDate).toLocaleString()}</p>
-        </div>
-      )}
+    {bookingData && (
+  <div style={styles.card}>
+    <h2 style={styles.eventTitle}>?? {bookingData.eventId.title}</h2>
+    <p><strong>?? Location:</strong> {bookingData.eventId.location}</p>
+    <p><strong>?? Date:</strong> {new Date(bookingData.eventId.date).toLocaleString()}</p>
+    <p><strong>?? Tickets Booked:</strong> {bookingData.ticketsBooked}</p>
+    <p><strong>?? Total Price:</strong> ${bookingData.totalPrice}</p>
+    <p><strong>?? Status:</strong> {bookingData.status}</p>
+    <p><strong>?? Booking Date:</strong> {new Date(bookingData.bookingDate).toLocaleString()}</p>
+    <p><strong>?? Booking ID:</strong> {bookingData._id}</p>
+  </div>
+)}
+
     </div>
   );
 };
@@ -79,7 +81,7 @@ const styles = {
     position: "relative",
     padding: "40px 20px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    background: "linear-gradient(135deg, #667eea, #764ba2)",
+    background: "linear-gradient(135deg, #434190, #2c2e8f)",
     minHeight: "100vh",
     textAlign: "center",
     color: "#fff",
@@ -129,7 +131,7 @@ const styles = {
     fontSize: "16px",
     borderRadius: "12px",
     border: "none",
-    background: "linear-gradient(135deg, #5a63d8, #5d4fcf)",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
     color: "white",
     fontWeight: "700",
     cursor: "pointer",

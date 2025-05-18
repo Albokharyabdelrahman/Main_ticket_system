@@ -4,9 +4,46 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
+function getCurrentUserIdFromCookie() {
+  const cookie = document.cookie
+    .split("; ")
+    .find(row => row.startsWith("token="));
+  if (!cookie) return null;
+
+  const token = cookie.split("=")[1];
+  if (!token || !token.includes(".")) return null;
+
+  try {
+    const payloadBase64 = token.split(".")[1];
+    const decodedPayload = JSON.parse(atob(payloadBase64));
+    const UserArr=[decodedPayload.userId,decodedPayload.role||"RandomValue"];
+    return UserArr; // <--- THIS is the correct field
+  } catch (e) {
+    console.error("Invalid token:", e);
+    return null;
+  }
+}
+
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const OrganizerDashboard = () => {
+const currentUserArr = getCurrentUserIdFromCookie();
+  const currentRole = currentUserArr[1];
+  if (currentRole !== "Organizer") {
+    return (
+      <div style={{
+        color: "#dc2626",
+        fontWeight: "bold",
+        padding: 40,
+        textAlign: "center",
+        fontSize: 22
+      }}>
+        You are not allowed to view this. Get out.
+      </div>
+    );
+  }
+
+
   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
@@ -26,6 +63,81 @@ const OrganizerDashboard = () => {
     fetchProfile();
   }, []);
 
+  const RandomAnalyticsCard = () => {
+    const [randomEvent, setRandomEvent] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [analyticsError, setAnalyticsError] = useState("");
+
+    useEffect(() => {
+      const fetchRandomEvent = async () => {
+        try {
+          const res = await axios.get(`${API_BASE_URL}/users/events/analytics`, {
+            withCredentials: true,
+          });
+          
+          if (res.data.analytics && res.data.analytics.length > 0) {
+            const randomIndex = Math.floor(Math.random() * res.data.analytics.length);
+            setRandomEvent(res.data.analytics[randomIndex]);
+          } else {
+            setAnalyticsError("No events found to analyze");
+          }
+        } catch (err) {
+          console.error("Analytics fetch error:", err);
+          if (err.response) {
+            if (err.response.status === 500) {
+              setAnalyticsError("Server error loading analytics");
+            } else {
+              setAnalyticsError(`Error: ${err.response.status}`);
+            }
+          } else {
+            setAnalyticsError("Failed to load analytics");
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchRandomEvent();
+    }, []);
+
+    if (loading) return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingSpinner}></div>
+        <span>Loading insights...</span>
+      </div>
+    );
+
+    if (analyticsError) return (
+      <div style={styles.errorContainer}>
+        <div style={styles.errorIcon}>⚠️</div>
+        <p>{analyticsError}</p>
+      </div>
+    );
+
+    if (!randomEvent) return (
+      <div style={styles.noDataContainer}>
+        <div style={styles.noDataIcon}>📊</div>
+        <p>No event data available</p>
+      </div>
+    );
+
+    return (
+      <div style={styles.analyticsCard}>
+        <h4 style={styles.analyticsCardTitle}>Event Insight: {randomEvent.title}</h4>
+        <div style={styles.analyticsMetrics}>
+          <div style={styles.metric}>
+            <span style={styles.metricLabel}>Revenue</span>
+            <span style={styles.metricValue}>EGP {randomEvent.revenue}</span>
+          </div>
+          <div style={styles.metric}>
+            <span style={styles.metricLabel}>% Booked</span>
+            <span style={styles.metricValue}>{randomEvent.percentageBooked}%</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const handleLogout = async () => {
     try {
       const BASE_URL = "http://localhost:5173/login";
@@ -41,6 +153,7 @@ const OrganizerDashboard = () => {
   const handleUpdateProfile = () => navigate("/update-profile");
   const handleCreateEvent = () => navigate("/create-event");
   const handleViewEvents = () => navigate("/my-events");
+  const handleViewAllEvents = () => navigate("/public-event");
   const handleEventAnalytics = () => navigate("/my-events/analytics");
 
   return (
@@ -119,14 +232,34 @@ const OrganizerDashboard = () => {
               <span style={styles.buttonIcon}>📊</span>
               <span>Events Analytics</span>
             </button>
+            <button style={styles.actionButton} onClick={handleViewAllEvents}>
+              <span style={styles.buttonIcon}>📋</span>
+              <span>View All Events</span>
+            </button>
           </div>
 
           <div style={styles.contentCard}>
             <h3 style={styles.cardTitle}>Quick Actions</h3>
             <p style={styles.cardText}>
-              Get started with these options or explore more features from the
-              menu.
+              Get started with these options or explore more features from the menu.
             </p>
+            
+            <div style={{ 
+              height: '1px', 
+              backgroundColor: '#e2e8f0', 
+              margin: '20px 0' 
+            }} />
+            
+            <h4 style={{ 
+              fontSize: '16px', 
+              fontWeight: '600', 
+              color: '#1e293b',
+              marginBottom: '15px'
+            }}>
+              Event Performance Insight
+            </h4>
+            
+            <RandomAnalyticsCard />
           </div>
         </main>
       </div>
@@ -151,7 +284,6 @@ const OrganizerDashboard = () => {
   );
 };
 
-// Reusing the same styles from UserDashboard
 const styles = {
   pageContainer: {
     display: "flex",
@@ -363,6 +495,75 @@ const styles = {
   logo: {
     height: "50px",
     objectFit: "contain",
+  },
+  loadingContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '20px',
+    color: '#64748b',
+  },
+  loadingSpinner: {
+    width: '20px',
+    height: '20px',
+    border: '3px solid rgba(79, 70, 229, 0.2)',
+    borderTop: '3px solid #4f46e5',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  errorContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '20px',
+    backgroundColor: '#fef2f2',
+    borderRadius: '8px',
+    color: '#b91c1c',
+  },
+  errorIcon: {
+    fontSize: '20px',
+  },
+  noDataContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '20px',
+    color: '#64748b',
+  },
+  noDataIcon: {
+    fontSize: '20px',
+  },
+  analyticsCard: {
+    backgroundColor: 'white',
+    padding: '20px',
+    borderRadius: '12px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    borderLeft: '4px solid #4f46e5',
+  },
+  analyticsCardTitle: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: '15px',
+  },
+  analyticsMetrics: {
+    display: 'flex',
+    gap: '20px',
+    marginBottom: '15px',
+  },
+  metric: {
+    flex: 1,
+  },
+  metricLabel: {
+    fontSize: '14px',
+    color: '#64748b',
+    display: 'block',
+    marginBottom: '5px',
+  },
+  metricValue: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#1e293b',
   },
 };
 

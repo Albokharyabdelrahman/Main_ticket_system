@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   function handleContinueAsGuest() {
-    navigate("/guest");
+    navigate("/");
   }
 
   async function handleSubmit(e) {

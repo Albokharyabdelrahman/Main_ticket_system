@@ -4,12 +4,52 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
+function getCurrentUserIdFromCookie() {
+  const cookie = document.cookie
+    .split("; ")
+    .find(row => row.startsWith("token="));
+  if (!cookie) return null;
+
+  const token = cookie.split("=")[1];
+  if (!token || !token.includes(".")) return null;
+
+  try {
+    const payloadBase64 = token.split(".")[1];
+    const decodedPayload = JSON.parse(atob(payloadBase64));
+    const UserArr=[decodedPayload.userId,decodedPayload.role||"RandomValue"];
+    return UserArr; 
+  } catch (e) {
+    console.error("Invalid token:", e);
+    return null;
+  }
+}
+
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const UserDashboard = () => {
+
+const currentUserArr = getCurrentUserIdFromCookie();
+  const currentRole = currentUserArr[1];
+  if (currentRole !== "User") {
+    return (
+      <div style={{
+        color: "#dc2626",
+        fontWeight: "bold",
+        padding: 40,
+        textAlign: "center",
+        fontSize: 22
+      }}>
+        You are not allowed to view this. Get out.
+      </div>
+    );
+  }
+
+
+
   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
+  const [randomEvents, setRandomEvents] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +64,32 @@ const UserDashboard = () => {
       }
     };
     fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const fetchRandomEvents = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${API_BASE_URL}/events`, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
+        
+        if (res.data.length > 0) {
+          const upcomingEvents = res.data.filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate > new Date();
+          });
+
+          const shuffled = [...upcomingEvents].sort(() => 0.5 - Math.random());
+          const selected = shuffled.slice(0, 2);
+          setRandomEvents(selected);
+        }
+      } catch (err) {
+        console.log("Could not fetch events", err);
+      }
+    };
+    fetchRandomEvents();
   }, []);
 
   const handleLogout = async () => {
@@ -43,6 +109,22 @@ const UserDashboard = () => {
   const handleViewBookings = () => navigate("/my-bookings");
   const handleFindBooking = () => navigate("/find-booking");
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "📅 Date to be announced";
+    try {
+      const options = { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return `📅 ${new Date(dateString).toLocaleDateString(undefined, options)}`;
+    } catch (e) {
+      return "📅 Date to be announced";
+    }
+  };
+
   return (
     <div style={styles.pageContainer}>
       <div style={{ display: "flex", flex: 1 }}>
@@ -55,7 +137,7 @@ const UserDashboard = () => {
                 style={styles.profilePicture}
               />
             ) : (
-              <div style={styles.defaultProfileIcon}>👤</div>
+              <div style={styles.defaultProfileIcon}></div>
             )}
           </div>
 
@@ -70,15 +152,15 @@ const UserDashboard = () => {
                 <span style={styles.profileValue}>{profile.name}</span>
               </div>
               <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Email:</span>
+                <span style={styles.profileLabel}> Email:</span>
                 <span style={styles.profileValue}>{profile.email}</span>
               </div>
               <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Role:</span>
+                <span style={styles.profileLabel}> Role:</span>
                 <span style={styles.profileValue}>{profile.role}</span>
               </div>
               <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Id:</span>
+                <span style={styles.profileLabel}> Id:</span>
                 <span style={styles.profileValue}>{profile._id}</span>
               </div>
 
@@ -90,7 +172,7 @@ const UserDashboard = () => {
               </button>
 
               <button onClick={handleLogout} style={styles.logoutButton}>
-                <span style={styles.logoutText}>Log Out</span>
+                <span style={styles.logoutText}> Log Out</span>
                 <span style={styles.logoutIcon}>→</span>
               </button>
             </div>
@@ -100,7 +182,7 @@ const UserDashboard = () => {
         <main style={styles.contentArea}>
           <div style={styles.header}>
             <h1 style={styles.title}>
-              Welcome back,{" "}
+              👋 Welcome back,{" "}
               <span style={styles.highlight}>{profile?.name || "User"}</span>!
             </h1>
             <img src={logo} alt="BookedIn Logo" style={styles.logo} />
@@ -121,12 +203,61 @@ const UserDashboard = () => {
             </button>
           </div>
 
-          <div style={styles.contentCard}>
-            <h3 style={styles.cardTitle}>Quick Actions</h3>
-            <p style={styles.cardText}>
-              Get started with these options or explore more features from the
-              menu.
-            </p>
+          <div style={styles.contentGrid}>
+            {randomEvents.length > 0 ? (
+              randomEvents.map((event) => (
+                <div key={event._id} style={styles.bookingCard}>
+                  <h3 style={styles.cardTitle}>🎪 {event.title}</h3>
+                  <div style={styles.bookingDetails}>
+                    <div style={styles.bookingImageContainer}>
+                      {event.image ? (
+                        <img 
+                          src={event.image} 
+                          alt={event.title} 
+                          style={styles.bookingImage}
+                        />
+                      ) : (
+                        <div style={styles.bookingImagePlaceholder}>
+                          <span style={styles.placeholderIcon}>🎭</span>
+                        </div>
+                      )}
+                    </div>
+                    <div style={styles.bookingInfo}>
+                      <h4 style={styles.eventTitle}>✨ {event.title}</h4>
+                      <p style={styles.bookingText}>
+                        {formatDate(event.date)}
+                      </p>
+                      <p style={styles.bookingText}>
+                        📍 {event.location || "Venue to be confirmed"}
+                      </p>
+                      <p style={styles.bookingText}>
+                        🎟️ {event.availableTickets} tickets available
+                      </p>
+                      <p style={styles.bookingText}>
+                        💰 ${event.price} per ticket
+                      </p>
+                      <button 
+                        style={styles.viewBookingButton}
+                        onClick={() => navigate(`/book-tickets?eventId=${event._id}`)}
+                      >
+                        ⚡ Book Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div style={styles.bookingCard}>
+                  <h3 style={styles.cardTitle}>😔 No Upcoming Events</h3>
+                  <p style={styles.cardText}>🔍 Check back later for new events</p>
+                </div>
+                <div style={styles.bookingCard}>
+                  <h3 style={styles.cardTitle}>🌟 Discover Events</h3>
+                  <p style={styles.cardText}>🎉 Browse our collection of exciting events</p>
+                </div>
+              </>
+            )}
           </div>
         </main>
       </div>
@@ -135,15 +266,15 @@ const UserDashboard = () => {
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
         <div style={styles.footerLinks}>
           <a href="#" style={styles.footerLink}>
-            Contact
+             Contact
           </a>
           <span style={styles.footerDivider}>|</span>
           <a href="#" style={styles.footerLink}>
-            Privacy
+             Privacy
           </a>
           <span style={styles.footerDivider}>|</span>
           <a href="#" style={styles.footerLink}>
-            About
+            ℹAbout
           </a>
         </div>
       </footer>
@@ -156,7 +287,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minHeight: "100vh",
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
     backgroundColor: "#f8fafc",
   },
   sidebar: {
@@ -223,6 +354,9 @@ const styles = {
     marginBottom: "5px",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
   },
   profileValue: {
     fontSize: "16px",
@@ -242,6 +376,10 @@ const styles = {
     width: "100%",
     transition: "all 0.3s ease",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
   },
   logoutButton: {
     marginTop: "20px",
@@ -261,6 +399,9 @@ const styles = {
   },
   logoutText: {
     marginRight: "10px",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
   },
   logoutIcon: {
     fontSize: "18px",
@@ -284,6 +425,8 @@ const styles = {
     margin: "0",
     color: "#1e293b",
     lineHeight: "1.3",
+    display: "flex",
+    alignItems: "center",
   },
   highlight: {
     color: "#4f46e5",
@@ -312,23 +455,113 @@ const styles = {
   buttonIcon: {
     fontSize: "24px",
   },
-  contentCard: {
+  contentGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "20px",
+    marginBottom: "40px",
+  },
+  bookingCard: {
     padding: "25px 30px",
     background: "white",
     borderRadius: "12px",
-    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
+    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    ":hover": {
+      transform: "translateY(-5px)",
+      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+    }
+  },
+  bookingDetails: {
+    display: "flex",
+    gap: "20px",
+    marginTop: "15px",
+  },
+  bookingImageContainer: {
+    width: "120px",
+    height: "120px",
+    flexShrink: 0,
+  },
+  bookingImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    borderRadius: "8px",
+  },
+  bookingImagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#f1f5f9",
+    borderRadius: "8px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  placeholderIcon: {
+    fontSize: "40px",
+  },
+  bookingInfo: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  eventTitle: {
+    margin: "0 0 12px 0",
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#1e293b",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  bookingText: {
+    margin: "0 0 10px 0",
+    fontSize: "15px",
+    color: "#475569",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
   cardTitle: {
     margin: "0 0 12px",
     fontSize: "20px",
     fontWeight: "700",
     color: "#1e293b",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
   cardText: {
     margin: 0,
     fontSize: "16px",
     color: "#475569",
     lineHeight: "1.5",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  viewBookingButton: {
+    marginTop: "15px",
+    padding: "12px 20px",
+    backgroundColor: "#4f46e5",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "15px",
+    fontWeight: "600",
+    fontFamily: "'Poppins', sans-serif",
+    alignSelf: "flex-start",
+    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    ":hover": {
+      backgroundColor: "#4338ca",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    },
   },
   footer: {
     padding: "25px 40px",
@@ -342,7 +575,7 @@ const styles = {
   footerText: {
     margin: 0,
   },
-    footerLinks: {
+  footerLinks: {
     display: "flex",
     gap: "15px",
     alignItems: "center",
@@ -350,6 +583,9 @@ const styles = {
   footerLink: {
     color: "white",
     textDecoration: "none",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
   },
   footerDivider: {
     color: "white",

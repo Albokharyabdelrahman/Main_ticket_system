@@ -17,16 +17,32 @@ function getCurrentUserIdFromCookie() {
   try {
     const payloadBase64 = token.split(".")[1];
     const decodedPayload = JSON.parse(atob(payloadBase64));
-    return decodedPayload.userId; // <--- THIS is the correct field
+    const UserArr=[decodedPayload.userId,decodedPayload.role||"RandomValue"];
+    return UserArr; // <--- THIS is the correct field
   } catch (e) {
     console.error("Invalid token:", e);
     return null;
   }
 }
-
+  
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const AdminDashboard = () => {
+  const currentUserArr = getCurrentUserIdFromCookie();
+  const currentRole = currentUserArr[1];
+  if (currentRole !== "Admin") {
+    return (
+      <div style={{
+        color: "#dc2626",
+        fontWeight: "bold",
+        padding: 40,
+        textAlign: "center",
+        fontSize: 22
+      }}>
+        You are not allowed to view this. Get out.
+      </div>
+    );
+  }
   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
@@ -357,7 +373,8 @@ const updateEvent = () =>
     setQuickActionMsg("User updated successfully!");
 
     // Check if the updated user is the current user
-    const currentUserId = getCurrentUserIdFromCookie();
+    const currentUserToken = getCurrentUserIdFromCookie();
+    const currentUserId=currentUserToken[0];
     if (updatedUser._id === currentUserId) {
       // Redirect based on new role
       if (updatedUser.role === "User") {
