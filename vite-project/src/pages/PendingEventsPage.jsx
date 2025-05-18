@@ -5,115 +5,61 @@ import logo from "./logo.png";
 
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
-const EventsTable = () => {
-  const [events, setEvents] = useState([]);
-  const [ticketsInput, setTicketsInput] = useState({});
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
+const PendingEventsPage = () => {
+  const [pendingEvents, setPendingEvents] = useState([]);
   const [message, setMessage] = useState({ text: "", type: "" });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchPendingEvents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${API_BASE_URL}/events`, {
+        const res = await axios.get(`${API_BASE_URL}/events/all`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
-        setEvents(response.data);
+        const pending = res.data.filter(event => event.status === "pending");
+        setPendingEvents(pending);
       } catch (err) {
-        console.error("Error fetching events:", err);
-        setMessage({ text: "Failed to load events.", type: "error" });
+        setMessage({ 
+          text: "ERROR: " + (err.response?.data?.message || err.message),
+          type: "error"
+        });
       } finally {
         setLoading(false);
       }
     };
-
-    fetchEvents();
+    fetchPendingEvents();
   }, []);
+
+  const handleStatusChange = async (eventId, newStatus) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${API_BASE_URL}/events/${eventId}`,
+        { status: newStatus },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true 
+        }
+      );
+      setPendingEvents(prev => prev.filter(e => e._id !== eventId));
+      setMessage({ 
+        text: `Event ${newStatus} successfully!`,
+        type: "success"
+      });
+    } catch (err) {
+      setMessage({ 
+        text: "ERROR: " + (err.response?.data?.message || err.message),
+        type: "error"
+      });
+    }
+  };
 
   const handleLogoClick = () => {
     navigate("/UserDashboard");
   };
-
-  const handleInputChange = (eventId, value) => {
-    setTicketsInput((prev) => ({
-      ...prev,
-      [eventId]: value,
-    }));
-  };
-
-  const handleBook = async (event) => {
-    const inputVal = ticketsInput[event._id];
-    const ticketsBooked = Number(inputVal);
-
-    if (
-      !inputVal ||
-      isNaN(ticketsBooked) ||
-      ticketsBooked <= 0 ||
-      ticketsBooked > event.availableTickets
-    ) {
-      setMessage({
-        text: "Please enter a valid number of tickets within available range.",
-        type: "error",
-      });
-      return;
-    }
-
-    const bookingData = {
-      eventId: event._id,
-      ticketsBooked,
-      totalPrice: event.price * ticketsBooked,
-    };
-
-    try {
-      const token = localStorage.getItem("token");
-
-      await axios.post(
-        `${API_BASE_URL}/bookings`,
-        bookingData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      setMessage({
-        text: `Successfully booked ${ticketsBooked} ticket(s)!`,
-        type: "success",
-      });
-
-      setEvents((prevEvents) =>
-        prevEvents.map((e) =>
-          e._id === event._id
-            ? { ...e, availableTickets: e.availableTickets - ticketsBooked }
-            : e
-        )
-      );
-
-      setTicketsInput((prev) => ({ ...prev, [event._id]: "" }));
-    } catch (err) {
-      const errorMsg =
-        err.response?.data?.error || err.response?.data?.message || "Booking failed.";
-      setMessage({ text: errorMsg, type: "error" });
-      console.error("Booking error:", err);
-    }
-  };
-
-  const categories = ["All", ...new Set(events.map((e) => e.category))];
-
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch =
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "All" || event.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
 
   return (
     <div style={styles.pageContainer}>
@@ -125,8 +71,8 @@ const EventsTable = () => {
           onClick={handleLogoClick}
         />
         <div style={styles.header}>
-          <h1 style={styles.title}>Available Events</h1>
-          <p style={styles.subtitle}>Discover and book your next experience</p>
+          <h1 style={styles.title}>Pending Events</h1>
+          <p style={styles.subtitle}>Review and approve or decline events</p>
         </div>
 
         {message.text && (
@@ -139,42 +85,19 @@ const EventsTable = () => {
           </div>
         )}
 
-        <div style={styles.filters}>
-          <input
-            type="text"
-            placeholder="Search events..."
-            style={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            aria-label="Search events"
-          />
-          <select
-            style={styles.categorySelect}
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            aria-label="Filter by category"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {loading ? (
           <div style={styles.loadingContainer}>
             <div style={styles.loadingSpinner}></div>
-            <p style={styles.loadingText}>Loading events...</p>
+            <p style={styles.loadingText}>Loading pending events...</p>
           </div>
         ) : (
           <div style={styles.grid}>
-            {filteredEvents.length === 0 ? (
+            {pendingEvents.length === 0 ? (
               <div style={styles.noEvents}>
-                {events.length === 0 ? "No events available." : "No matching events found."}
+                {loading ? "Loading..." : "No pending events available."}
               </div>
             ) : (
-              filteredEvents.map((event) => {
+              pendingEvents.map((event) => {
                 const eventDate = new Date(event.date);
                 return (
                   <div
@@ -185,7 +108,9 @@ const EventsTable = () => {
                   >
                     <div style={styles.cardHeader}>
                       <h2 style={styles.cardTitle}>{event.title}</h2>
-                      <span style={styles.priceBadge}>${event.price}</span>
+                      <span style={styles.statusBadge(event.status)}>
+                        {event.status}
+                      </span>
                     </div>
                     
                     <div style={styles.cardBody}>
@@ -215,22 +140,18 @@ const EventsTable = () => {
                     </div>
 
                     <div style={styles.cardFooter}>
-                      <div style={styles.ticketInputContainer}>
-                        <input
-                          type="number"
-                          min="1"
-                          max={event.availableTickets}
-                          style={styles.ticketsInput}
-                          value={ticketsInput[event._id] || ""}
-                          onChange={(e) => handleInputChange(event._id, e.target.value)}
-                          placeholder="Tickets"
-                        />
+                      <div style={styles.buttonGroup}>
                         <button
-                          style={styles.bookButton}
-                          onClick={() => handleBook(event)}
-                          disabled={event.availableTickets === 0}
+                          style={styles.approveButton}
+                          onClick={() => handleStatusChange(event._id, "approved")}
                         >
-                          Book Now
+                          Approve
+                        </button>
+                        <button
+                          style={styles.declineButton}
+                          onClick={() => handleStatusChange(event._id, "declined")}
+                        >
+                          Decline
                         </button>
                       </div>
                     </div>
@@ -299,33 +220,6 @@ const styles = {
     marginLeft: "auto",
     marginRight: "auto",
   },
-  filters: {
-    marginBottom: "2rem",
-    display: "flex",
-    gap: "1rem",
-    width: "100%",
-    maxWidth: "800px",
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
-  searchInput: {
-    padding: "0.75rem 1rem",
-    fontSize: "1rem",
-    borderRadius: "0.5rem",
-    border: "none",
-    outline: "none",
-    flex: "1",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-  },
-  categorySelect: {
-    padding: "0.75rem 1rem",
-    fontSize: "1rem",
-    borderRadius: "0.5rem",
-    border: "none",
-    outline: "none",
-    minWidth: "200px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-  },
   loadingContainer: {
     display: "flex",
     flexDirection: "column",
@@ -382,14 +276,14 @@ const styles = {
     margin: "0",
     color: "#1e293b",
   },
-  priceBadge: {
-    backgroundColor: "#f0f4ff",
-    color: "#4338ca",
+  statusBadge: (status) => ({
+    backgroundColor: status === "pending" ? "#fff3cd" : status === "approved" ? "#d4edda" : "#f8d7da",
+    color: status === "pending" ? "#856404" : status === "approved" ? "#155724" : "#721c24",
     padding: "0.25rem 0.75rem",
     borderRadius: "9999px",
     fontSize: "0.875rem",
     fontWeight: "600",
-  },
+  }),
   cardBody: {
     flex: "1",
     display: "flex",
@@ -416,23 +310,13 @@ const styles = {
   cardFooter: {
     marginTop: "auto",
   },
-  ticketInputContainer: {
+  buttonGroup: {
     display: "flex",
     gap: "0.75rem",
-    alignItems: "center",
   },
-  ticketsInput: {
-    padding: "0.5rem 0.75rem",
-    fontSize: "1rem",
-    borderRadius: "0.5rem",
-    border: "1px solid #e2e8f0",
-    outline: "none",
-    width: "80px",
-    textAlign: "center",
-  },
-  bookButton: {
+  approveButton: {
     padding: "0.5rem 1rem",
-    background: "linear-gradient(135deg, #ff9800, #ff7043)",
+    background: "linear-gradient(135deg, #4CAF50, #2E7D32)",
     color: "white",
     border: "none",
     borderRadius: "0.5rem",
@@ -442,17 +326,28 @@ const styles = {
     transition: "all 0.3s ease",
     boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
     ":hover": {
-      background: "linear-gradient(135deg, #ff7043, #ff5722)",
+      background: "linear-gradient(135deg, #2E7D32, #1B5E20)",
       transform: "translateY(-2px)",
       boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
     },
-    ":disabled": {
-      background: "#cbd5e1",
-      cursor: "not-allowed",
-      transform: "none",
-      boxShadow: "none",
-    }
+  },
+  declineButton: {
+    padding: "0.5rem 1rem",
+    background: "linear-gradient(135deg, #f44336, #c62828)",
+    color: "white",
+    border: "none",
+    borderRadius: "0.5rem",
+    cursor: "pointer",
+    fontWeight: "600",
+    flex: "1",
+    transition: "all 0.3s ease",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    ":hover": {
+      background: "linear-gradient(135deg, #c62828, #b71c1c)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+    },
   },
 };
 
-export default EventsTable;
+export default PendingEventsPage;
