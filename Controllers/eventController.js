@@ -71,39 +71,36 @@ exports.getEventById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-// controllers/eventController.js
 exports.updateEvent = async (req, res) => {
-  const { location, date, availableTickets } = req.body;
+  const { title, date, location, totalTickets, price,status} = req.body;
 
   try {
-    // 🔐 Confirm user is authenticated and has a valid role
     if (!req.user || !req.user.userId || !["Organizer", "Admin"].includes(req.user.role)) {
-      console.log("User not authorized or not logged in:", req.user);
       return res.status(403).json({ error: "You are not authorized to update events." });
     }
 
-    // 🔍 Find event by ID
     const event = await Event.findById(req.params.id);
     if (!event) {
-      console.log("Event not found with ID:", req.params.id);
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // 👮 Check Organizer access (only if not Admin)
     const isOrganizer = event.organizerId.toString() === req.user.userId.toString();
     if (req.user.role === "Organizer" && !isOrganizer) {
-      console.log("Access denied: Organizer ID mismatch. Event:", event.organizerId.toString(), "User:", req.user.userId.toString());
       return res.status(403).json({ error: "You are not authorized to update this event" });
     }
 
-    // ✏ Update event fields
-    event.location = location || event.location;
-    event.date = date || event.date;
-    event.availableTickets = availableTickets || event.availableTickets;
+    if (title !== undefined) event.title = title;
+    if (date !== undefined) event.date = date;
+    if (location !== undefined) event.location = location;
+    if (totalTickets !== undefined) {
+      // Update according to your schema
+      event.totalTickets = totalTickets; // or event.tickets.total = totalTickets;
+    }
+    if (price !== undefined) event.price = price;
 
-    // 💾 Save and return
     await event.save();
+    console.log("Updated event:", event); // Debug
+
     res.status(200).json(event);
   } catch (err) {
     console.error("Error updating event:", err);
