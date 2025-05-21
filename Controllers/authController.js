@@ -5,11 +5,17 @@ const crypto = require('crypto');
 const postmark = require("postmark");
 const otpStore = new Map();
 const client = new postmark.ServerClient("ad6fc1db-6e07-461f-a127-de40809fddd7");
+const multer = require("multer");
+const storage = multer.memoryStorage(); // Store file in memory
+const upload = multer({ storage }); // Use in your route
+
+const fs = require("fs");
+const path = require("path");
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password, role, profilePicture } = req.body;
+  const { name, email, password, role } = req.body;
+  let profilePicture = undefined;
 
-  // Validate required fields
   if (!name || !email || !password || !role) {
     return res.status(400).json({
       error: "All fields (name, email, password, role) are required.",
@@ -17,27 +23,28 @@ exports.registerUser = async (req, res) => {
   }
 
   try {
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
+    if (req.file) {
+      const buffer = req.file.buffer;
+      profilePicture = buffer.toString("base64");
+    }
+
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
       role,
-      profilePicture, // Optional field, can be undefined
+      profilePicture,
     });
 
     await newUser.save();
 
-    // Generate JWT
     const token = jwt.sign(
       { userId: newUser._id, role: newUser.role },
       process.env.JWT_SECRET,
@@ -50,6 +57,7 @@ exports.registerUser = async (req, res) => {
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
+
 
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
