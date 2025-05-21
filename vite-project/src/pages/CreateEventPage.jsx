@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 
 const API_BASE_URL = "http://localhost:7000/api/v1/events";
@@ -18,7 +18,7 @@ const CreateEventPage = () => {
     description: "",
     availableTickets: "",
     totalTickets: "",
-    image: ""
+    image: null // Changed from string to null for file upload
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,22 +39,48 @@ const CreateEventPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFormData({ ...formData, image: file });
+  };
+const handleSubmit = async (e) => {
   e.preventDefault();
   setError("");
+  
+  // Client-side validation
+  if (!formData.image) {
+    setError("Please select an event image");
+    return;
+  }
+
   setIsSubmitting(true);
 
   try {
-    const response = await axios.post(API_BASE_URL, formData, {
+    const token = localStorage.getItem("token");
+    const formDataToSend = new FormData();
+
+    // Append all fields with proper type conversion
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('location', formData.location);
+    formDataToSend.append('price', formData.price);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('availableTickets', formData.availableTickets);
+    formDataToSend.append('totalTickets', formData.totalTickets);
+    formDataToSend.append('image', formData.image);
+
+    const response = await axios.post(API_BASE_URL, formDataToSend, {
       withCredentials: true,
       headers: {
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
       }
     });
 
     if (response.status === 201) {
       setSuccessMessage("Event created successfully!");
-      // Clear form
+      // Reset form
       setFormData({
         title: "",
         location: "",
@@ -63,16 +89,22 @@ const CreateEventPage = () => {
         description: "",
         availableTickets: "",
         totalTickets: "",
-        image: ""
+        image: null
       });
-      // Redirect after 2 seconds
-      setTimeout(() => {
-        navigate(-1); // Or navigate('/') to go home
-      }, 2000);
+      // Redirect after delay
+      setTimeout(() => navigate(-1), 2000);
     }
   } catch (err) {
     console.error("Event creation error:", err);
-    setError(err.response?.data?.error || "Failed to create event. Please try again.");
+    if (err.response?.data?.errors) {
+      // Handle Mongoose validation errors
+      const errorMessages = Object.values(err.response.data.errors)
+        .map(error => error.message)
+        .join(', ');
+      setError(errorMessages);
+    } else {
+      setError(err.response?.data?.message || "Failed to create event. Please try again.");
+    }
   } finally {
     setIsSubmitting(false);
   }
@@ -111,14 +143,14 @@ const CreateEventPage = () => {
       <div style={styles.formCard}>
         {error && (
           <div style={styles.errorAlert}>
-            <span style={styles.errorIcon}>??</span>
+            <span style={styles.errorIcon}>❌</span>
             {error}
           </div>
         )}
         
         {successMessage && (
           <div style={styles.successAlert}>
-            <span style={styles.successIcon}>?</span>
+            <span style={styles.successIcon}>✅</span>
             {successMessage}
           </div>
         )}
@@ -214,18 +246,30 @@ const CreateEventPage = () => {
                     </div>
                   </div>
                 </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Image URL</label>
-                  <input
-                    type="url"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    style={styles.input}
-                    placeholder="https://example.com/event-image.jpg"
-                  />
-                </div>
+<div style={styles.formGroup}>
+  <label style={styles.label}>Event Image*</label>
+  <div style={styles.fileInputContainer}>
+    <label style={{
+      ...styles.fileInputLabel,
+      color: '#000',
+      border: error && !formData.image ? '1px solid #e53e3e' : '1px solid #e2e8f0'
+    }}>
+      {formData.image ? formData.image.name : "Choose an image"}
+      <input
+        type="file"
+        name="image"
+        onChange={handleImageChange}
+        style={styles.fileInput}
+        accept="image/*"
+      />
+    </label>
+    {error && !formData.image && (
+      <div style={{ color: '#e53e3e', fontSize: '0.75rem' }}>
+        Please select an image
+      </div>
+    )}
+  </div>
+</div>
               </div>
 
               <div style={styles.formSection}>
@@ -272,7 +316,7 @@ const CreateEventPage = () => {
               onClick={() => navigate(-1)}
               style={styles.cancelButton}
             >
-              ? Back
+              ← Back
             </button>
             <button
               type="submit"
@@ -286,7 +330,7 @@ const CreateEventPage = () => {
                 </span>
               ) : (
                 <span style={styles.buttonContent}>
-                  ?? Launch Event
+                  🎉 Launch Event
                 </span>
               )}
             </button>
@@ -296,7 +340,6 @@ const CreateEventPage = () => {
     </div>
   );
 };
-
 const styles = {
   pageContainer: {
     padding: "2rem",
@@ -580,6 +623,33 @@ const styles = {
     fontSize: '1.2rem',
     fontWeight: 'bold',
   },
+  fileInputContainer: {
+    width: '100%',
+    marginBottom: '16px',
+  },
+
+  fileInputLabel: {
+    display: 'block',
+    padding: '0.875rem 1rem',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '0.9375rem',
+    backgroundColor: '#f8fafc',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    color: '#000000', // Black text color
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    ':hover': {
+      backgroundColor: '#edf2f7',
+    }
+  },
+  
+  fileInput: {
+    display: 'none',
+  },
+  
 };
 
 export default CreateEventPage;

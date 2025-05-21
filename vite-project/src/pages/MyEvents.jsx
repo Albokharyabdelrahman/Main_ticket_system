@@ -13,6 +13,130 @@ const MyEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+const [eventToDelete, setEventToDelete] = useState(null); // You also use eventToDelete, make sure this is defined
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div style={modalStyles.overlay}>
+      <div style={modalStyles.modal}>
+        <h3 style={modalStyles.title}>{title}</h3>
+        <p style={modalStyles.message}>{message}</p>
+        <div style={modalStyles.buttons}>
+          <button 
+            style={modalStyles.cancelButton} 
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button 
+            style={modalStyles.confirmButton}
+            onClick={onConfirm}
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const modalStyles = {
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    backgroundColor: 'white',
+    padding: '2rem',
+    borderRadius: '8px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+    maxWidth: '400px',
+    width: '90%',
+  },
+  title: {
+    marginTop: 0,
+    color: '#1e293b',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+  },
+  message: {
+    margin: '1rem 0',
+    color: '#475569',
+    lineHeight: '1.5',
+  },
+  buttons: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '1rem',
+    marginTop: '1.5rem',
+  },
+  cancelButton: {
+    padding: '0.5rem 1rem',
+    backgroundColor: '#f1f5f9',
+    color: '#475569',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+    ':hover': {
+      backgroundColor: '#e2e8f0',
+    },
+  },
+  confirmButton: {
+    padding: '0.5rem 1rem',
+    backgroundColor: '#ef4444',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+    ':hover': {
+      backgroundColor: '#dc2626',
+    },
+  },
+};
+   const handleDeleteClick = (eventId) => {
+    setEventToDelete(eventId);
+    setShowModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
+    
+    const updatedEvents = events.filter((event) => event._id !== eventToDelete);
+    setEvents(updatedEvents);
+    setFilteredEvents(updatedEvents);
+    setShowModal(false);
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:7000/api/v1/events/${eventToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+    } catch (err) {
+      alert(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Failed to delete the event."
+      );
+      setEvents(events);
+      setFilteredEvents(events);
+    }
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -48,7 +172,15 @@ const MyEvents = () => {
 
   return (
     <div style={styles.pageContainer}>
+      <ConfirmationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+      />
       <div style={styles.mainContent}>
+        
         <img
           src={logo}
           alt="Logo"
@@ -60,11 +192,10 @@ const MyEvents = () => {
           <p style={styles.subtitle}>Manage your upcoming events</p>
         </div>
 
-        {/* Search and Filter Section */}
         <div style={styles.filterContainer}>
           <input
             type="text"
-            placeholder="?? Search events..."
+            placeholder="🔍 Search events..."
             style={styles.searchInput}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -92,12 +223,7 @@ const MyEvents = () => {
         <div style={styles.grid}>
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
-              <div
-                key={event.id}
-                style={styles.card}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
-              >
+              <div key={event.id} style={styles.card}>
                 <div style={styles.cardHeader}>
                   <h2 style={styles.cardTitle}>{event.title}</h2>
                   <span style={{
@@ -108,30 +234,30 @@ const MyEvents = () => {
                     {event.status}
                   </span>
                 </div>
-                
                 <div style={styles.cardBody}>
                   <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>??</span>
+                    <span style={styles.infoIcon}>📅</span>
                     <span>{new Date(event.date).toLocaleDateString()}</span>
                   </div>
                   <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>??</span>
+                    <span style={styles.infoIcon}>📍</span>
                     <span>{event.location}</span>
                   </div>
                   <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>???</span>
+                    <span style={styles.infoIcon}>🎟️</span>
                     <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
                   </div>
                 </div>
-
                 <div style={styles.cardFooter}>
                   <p style={styles.timestamp}>Created: {new Date(event.createdAt).toLocaleDateString()}</p>
-                  <button
-                    style={styles.editButton}
-                    onClick={() => navigate(`/events/${event.id}/edit`)}
-                  >
+                  <button style={styles.editButton} onClick={() => navigate(`/events/${event.id}/edit`)}>
                      Edit Event
                   </button>
+                   <button style={styles.deleteButton} 
+               onClick={() => handleDeleteClick(event.id)}
+        >
+          Delete Event
+        </button>
                 </div>
               </div>
             ))
@@ -145,6 +271,7 @@ const MyEvents = () => {
     </div>
   );
 };
+
 
 const styles = {
   pageContainer: {
@@ -340,7 +467,27 @@ const styles = {
       transform: "translateY(-2px)",
       boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
     },
+    
   },
+ deleteButton: {
+  padding: "0.5rem 1.25rem",
+  backgroundColor: "#ef4444",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
+  transition: "all 0.3s ease",
+  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  ":hover": {
+    backgroundColor: "#dc2626",
+    transform: "translateY(-2px)",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+  },
+}
 };
 
 export default MyEvents;

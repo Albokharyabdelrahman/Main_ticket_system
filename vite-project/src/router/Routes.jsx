@@ -20,19 +20,14 @@ import UserProfiles from "../pages/UserProfiles";
 import EditUser from "../pages/EditUser";
 import AdminEventsPage from "../pages/AdminEventsPage";
 import CreateEventPage from "../pages/CreateEventPage";
+import EditEvent from "../pages/EditEvent"; 
 import MyEvents from "../pages/MyEvents"; // Assuming you have a MyEvents page
 import EventAnalytics from "../pages/EventAnalytics"; // Assuming you have a MyEvents page
-
-
-
-
-// in your <Routes>
-
-// Inside <Routes>
 
 export default function MyRoutes() {
   return (
     <Routes>
+      <Route path="/events/:id/edit" element={<EditEvent />} />
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -53,9 +48,6 @@ export default function MyRoutes() {
       <Route path="/create-event" element={<CreateEventPage />} />
       <Route path="/my-events" element={<MyEvents />} />
       <Route path="/my-events/analytics" element={<EventAnalytics />} />
-
-
-
     </Routes>
   );
 }

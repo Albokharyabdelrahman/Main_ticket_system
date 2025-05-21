@@ -151,31 +151,31 @@ const MyBookings = () => {
 
 <div style={styles.cardBody}>
   <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>??</span>
+    <span style={styles.infoIcon}>📍</span>
     <span>{event.location || "Location not specified"}</span>
   </div>
   
   {eventDate && (
     <div style={styles.infoRow}>
-      <span style={styles.infoIcon}>??</span>
+      <span style={styles.infoIcon}>📅</span>
       <span>{eventDate.toLocaleDateString()}</span>
-      <span style={{ margin: "0 8px" }}>�</span>
+      <span style={{ margin: "0 8px" }}>•</span>
       <span>{eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
     </div>
   )}
   
   <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>???</span>
+    <span style={styles.infoIcon}>🎟️</span>
     <span>{booking.ticketsBooked} ticket{booking.ticketsBooked !== 1 ? 's' : ''} booked</span>
   </div>
   
   <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>??</span>
+    <span style={styles.infoIcon}>💰</span>
     <span>Total: ${booking.totalPrice ? booking.totalPrice.toFixed(2) : "0.00"}</span>
   </div>
 
   <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>??</span>
+    <span style={styles.infoIcon}>🆔</span>
     <span>Booking ID: {booking._id}</span>
   </div>
 </div>

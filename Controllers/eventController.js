@@ -1,34 +1,31 @@
 const Event = require("../models/Event");
 const User = require("../models/User");
 
-// Create Event
 exports.createEvent = async (req, res) => {
-    try {
-    // 🛡️ Ensure user is logged in and is an Organizer
+  try {
     if (!req.user || req.user.role !== "Organizer") {
       return res.status(403).json({ message: "Only organizers can create events" });
     }
-    const { title, location, price, category, description, availableTickets, totalTickets, image } = req.body;
-    // 🎯 Use organizer ID from authenticated user
-    const organizerId = req.user.userId;
 
+    // Get file path from multer
+    const imagePath = req.file ? req.file.path : null;
+    
     const event = new Event({
-      title,
-      location,
-      price,
-      category,
-      description,
-      availableTickets,
-      totalTickets,
-      organizerId,
-      image,
+      title: req.body.title,
+      location: req.body.location,
+      price: req.body.price,
+      category: req.body.category,
+      description: req.body.description,
+      availableTickets: req.body.availableTickets,
+      totalTickets: req.body.totalTickets,
+      organizerId: req.user.userId,
+      image: imagePath, // Store file path
       date: new Date(),
       status: 'pending'
     });
 
     await event.save();
     res.status(201).json(event);
-
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

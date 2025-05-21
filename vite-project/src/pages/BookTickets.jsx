@@ -194,7 +194,7 @@ const EventsTable = () => {
                       <div style={styles.infoRow}>
                         <span style={styles.infoIcon}>??</span>
                         <span>{eventDate.toLocaleDateString()}</span>
-                        <span style={{ margin: "0 8px" }}>•</span>
+                        <span style={{ margin: "0 8px" }}>ï¿½</span>
                         <span>{eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                       </div>
                       
