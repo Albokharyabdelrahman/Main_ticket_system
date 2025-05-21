@@ -75,7 +75,16 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: "Profile fetched", user: user.toObject() });
+    const userObj = user.toObject();
+
+    if (userObj.profilePicture) {
+    userObj.profilePic = `data:image/jpeg;base64,${userObj.profilePicture}`;
+    } else {
+    userObj.profilePic = null;
+    }
+
+  res.json({ message: "Profile fetched", user: userObj });
+
   } catch (err) {
     console.error("Error fetching profile:", err);
     res.status(500).json({ error: err.message || "Internal server error" });
