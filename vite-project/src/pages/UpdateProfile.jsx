@@ -24,12 +24,13 @@ export default function UpdateProfile() {
           withCredentials: true,
         });
         const u = res.data.user;
-        setProfile({
-          name: u.name || "",
-          email: u.email || "",
-          password: "",
-          profilePicture: u.profilePicture || "",
-        });
+       setProfile({
+  name: u.name || "",
+  email: u.email || "",
+  password: "",
+  profilePicture: u.profilePicture || "", // Base64 string
+});
+
       } catch (err) {
         setError("Failed to load profile.");
       }
@@ -124,16 +125,28 @@ export default function UpdateProfile() {
           </label>
 
           <label htmlFor="profilePicture" style={styles.label}>
-            Profile Picture URL:
-            <input
-              id="profilePicture"
-              name="profilePicture"
-              value={profile.profilePicture}
-              onChange={handleChange}
-              style={styles.input}
-              autoComplete="off"
-            />
-          </label>
+  Upload Profile Picture:
+  <input
+    id="profilePicture"
+    name="profilePicture"
+    type="file"
+    accept="image/*"
+    onChange={async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfile((p) => ({
+          ...p,
+          profilePicture: reader.result.split(",")[1], // base64 string only
+        }));
+      };
+      reader.readAsDataURL(file);
+    }}
+    style={styles.input}
+  />
+</label>
+
 
           <button type="submit" style={styles.button}>
             Save Changes

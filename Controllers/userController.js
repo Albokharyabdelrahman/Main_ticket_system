@@ -5,9 +5,7 @@ const Event = require('../models/Event');
 
 
 exports.updateProfile = async (req, res) => {
-  const { name, email, password } = req.body;
-  // multer adds uploaded file info to req.file
-  const profilePictureFile = req.file;
+  const { name, email, password, profilePicture } = req.body;
 
   try {
     const token = req.cookies.token;
@@ -24,15 +22,22 @@ exports.updateProfile = async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = await bcrypt.hash(password, 10);
-
-    // Save uploaded file path or URL to profilePicture field
-    if (profilePictureFile) {
-      user.profilePicture = profilePictureFile.path; // or URL if you serve static files differently
+    
+    // Save base64 profile picture directly
+    if (profilePicture) {
+      user.profilePicture = profilePicture; // this is a base64 string
     }
 
     await user.save();
 
-    res.json({ message: "Profile updated", user });
+    // Send response with full image URI
+    const userObj = user.toObject();
+    if (userObj.profilePicture) {
+      userObj.profilePic = `data:image/jpeg;base64,${userObj.profilePicture}`;
+      delete userObj.profilePicture;
+    }
+
+    res.json({ message: "Profile updated", user: userObj });
   } catch (err) {
     console.error("Profile update error:", err);
     res.status(400).json({ error: err.message || "Something went wrong" });
