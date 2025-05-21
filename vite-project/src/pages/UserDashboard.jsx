@@ -130,15 +130,15 @@ const currentUserArr = getCurrentUserIdFromCookie();
       <div style={{ display: "flex", flex: 1 }}>
         <aside style={styles.sidebar}>
           <div style={styles.profilePictureContainer}>
-            {profile && profile.picture ? (
-              <img
-                src={profile.picture}
-                alt="Profile"
-                style={styles.profilePicture}
-              />
-            ) : (
-              <div style={styles.defaultProfileIcon}></div>
-            )}
+          {profile && profile.profilePic ? (
+           <img
+             src={profile.profilePic}
+             alt="Profile"
+            style={styles.profilePicture}
+             />
+              ) : (
+                <div style={styles.defaultProfileIcon}>👤</div> // Optional icon emoji
+              )     }
           </div>
 
           <div style={styles.sidebarHeader}>
