@@ -87,7 +87,6 @@ const AdminEventsPage = () => {
     setShowModal(false);
   };
 
-  // Temporary edit handler
   const handleEditEvent = (eventId) => {
     navigate(`/events/${eventId}/edit`);
   };

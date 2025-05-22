@@ -35,10 +35,11 @@ import ViewUserProfile from "../pages/ViewUserProfile";
 export default function MyRoutes() {
   return (
     <Routes>
-      <Route path="/update-event/events/:id/edit" element={<EditEvent />} />
+      <Route path="/update-event/:id/" element={<EditEvent />} />
+      <Route path="/events/:id/edit" element={<EditEvent />} />
       <Route path="/user-profile" element={<SearchUserProfile />} />
       <Route path="/user-getProfile" element={<GetUserProfile />} />
-      <Route path="/user-getProfile/user-View-Profile" element={<ViewUserProfile />} />
+      <Route path="/user-getProfile/:id" element={<ViewUserProfile />} />
       <Route path="/delete-event" element={<DeleteEventById />} />
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />

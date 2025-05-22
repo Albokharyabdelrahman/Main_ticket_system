@@ -25,7 +25,7 @@ const UpdateEventById = () => {
       );
       
       // Redirect to edit page if found
-      navigate(`events/${eventId}/edit`);
+      navigate(`${eventId}`);
     } catch (err) {
       setError(err.response?.data?.message || "Event not found or unauthorized.");
     }

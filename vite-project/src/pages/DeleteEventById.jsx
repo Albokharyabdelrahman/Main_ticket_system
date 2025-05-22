@@ -67,14 +67,28 @@ const DeleteEventById = () => {
       ) : !isConfirming ? (
         <div style={styles.card}>
           <h2 style={styles.eventTitle}>{eventData.title}</h2>
-          <p><strong>Location:</strong> {eventData.location}</p>
-          <p><strong>Date:</strong> {new Date(eventData.date).toLocaleString()}</p>
-          <p><strong>Status:</strong> {eventData.status}</p>
+          
+          <div style={styles.eventDetail}>
+            <span style={styles.detailLabel}>Location:</span>
+            <span style={styles.detailValue}>{eventData.location}</span>
+          </div>
+          
+          <div style={styles.eventDetail}>
+            <span style={styles.detailLabel}>Date:</span>
+            <span style={styles.detailValue}>
+              {new Date(eventData.date).toLocaleString()}
+            </span>
+          </div>
+          
+          <div style={styles.eventDetail}>
+            <span style={styles.detailLabel}>Status:</span>
+            <span style={styles.detailValue}>{eventData.status}</span>
+          </div>
           
           <div style={styles.buttonGroup}>
             <button 
               onClick={() => setIsConfirming(true)} 
-              style={{ ...styles.button, backgroundColor: '#e53e3e' }}
+              style={styles.deleteButton}
             >
               Delete Event
             </button>
@@ -83,7 +97,7 @@ const DeleteEventById = () => {
                 setEventData(null);
                 setEventId("");
               }} 
-              style={{ ...styles.button, backgroundColor: '#718096' }}
+              style={styles.cancelButton}
             >
               Cancel
             </button>
@@ -91,20 +105,23 @@ const DeleteEventById = () => {
         </div>
       ) : (
         <div style={styles.card}>
+          <div style={styles.warningIcon}>⚠️</div>
           <h2 style={styles.eventTitle}>Confirm Deletion</h2>
-          <p>Are you sure you want to delete this event?</p>
-          <p><strong>{eventData.title}</strong></p>
+          <p style={styles.confirmationText}>
+            Are you sure you want to permanently delete<br />
+            <strong>"{eventData.title}"</strong>?
+          </p>
           
           <div style={styles.buttonGroup}>
             <button 
               onClick={handleDelete} 
-              style={{ ...styles.button, backgroundColor: '#e53e3e' }}
+              style={styles.deleteButton}
             >
               Confirm Delete
             </button>
             <button 
               onClick={() => setIsConfirming(false)} 
-              style={{ ...styles.button, backgroundColor: '#718096' }}
+              style={styles.cancelButton}
             >
               Cancel
             </button>
@@ -177,7 +194,7 @@ const styles = {
     fontWeight: "700",
     cursor: "pointer",
     boxShadow: "0 4px 12px rgba(92, 79, 207, 0.7)",
-    transition: "background 0.3s ease",
+    transition: "all 0.3s ease",
   },
   card: {
     marginTop: "20px",
@@ -186,22 +203,111 @@ const styles = {
     marginRight: "auto",
     padding: "30px 28px",
     borderRadius: "20px",
-    background: "rgba(255, 255, 255, 0.95)",
+    background: "linear-gradient(145deg, #ffffff, #f9f9f9)",
     boxShadow: "0 15px 30px rgba(0,0,0,0.15)",
-    textAlign: "left",
+    textAlign: "center",
     color: "#333",
+    border: "1px solid rgba(255, 255, 255, 0.3)",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
   },
   eventTitle: {
     fontSize: "28px",
     fontWeight: "700",
-    marginBottom: "16px",
+    marginBottom: "24px",
     color: "#4a3b9d",
+    textAlign: "center",
+    paddingBottom: "16px",
+    borderBottom: "2px solid #e2e8f0",
+  },
+  eventDetail: {
+    margin: "12px 0",
+    fontSize: "16px",
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "12px 20px",
+    backgroundColor: "rgba(74, 59, 157, 0.05)",
+    borderRadius: "10px",
+    alignItems: "center",
+  },
+  detailLabel: {
+    fontWeight: "600",
+    color: "#4a3b9d",
+    fontSize: "15px",
+  },
+  detailValue: {
+    color: "#4a5568",
+    fontWeight: "500",
+    textAlign: "right",
+    maxWidth: "60%",
+  },
+  buttonGroup: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "20px",
+    marginTop: "32px",
+    flexWrap: "wrap",
+  },
+  deleteButton: {
+    padding: "14px 28px",
+    fontSize: "16px",
+    borderRadius: "12px",
+    border: "none",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
+    color: "white",
+    fontWeight: "700",
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(229, 62, 62, 0.3)",
+    transition: "all 0.3s ease",
+    minWidth: "180px",
+    ":hover": {
+      background: "linear-gradient(135deg, #c53030, #9b2c2c)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(229, 62, 62, 0.4)",
+    },
+  },
+  cancelButton: {
+    padding: "14px 28px",
+    fontSize: "16px",
+    borderRadius: "12px",
+    border: "none",
+    background: "linear-gradient(135deg, #718096, #4a5568)",
+    color: "white",
+    fontWeight: "700",
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(113, 128, 150, 0.3)",
+    transition: "all 0.3s ease",
+    minWidth: "180px",
+    ":hover": {
+      background: "linear-gradient(135deg, #4a5568, #2d3748)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(113, 128, 150, 0.4)",
+    },
+  },
+  confirmationText: {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#4a5568",
+    margin: "24px 0",
+    lineHeight: "1.6",
+  },
+  warningIcon: {
+    fontSize: "48px",
+    color: "#e53e3e",
+    marginBottom: "16px",
+    filter: "drop-shadow(0 2px 4px rgba(229, 62, 62, 0.3))",
   },
   error: {
     color: "#ff6b6b",
     fontWeight: "700",
     marginTop: "20px",
     textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+    fontSize: "16px",
+    maxWidth: "600px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    padding: "12px 20px",
+    backgroundColor: "rgba(0,0,0,0.2)",
+    borderRadius: "8px",
   },
 };
 

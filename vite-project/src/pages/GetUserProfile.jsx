@@ -26,7 +26,7 @@ const GetUserProfile = () => {
       );
       
       // Redirect to edit page if found
-      navigate(`user-View-Profile`);
+      navigate(`${userId.trim()}`);
     } catch (err) {
       setError(err.response?.data?.message || "User not found or you don't have permission");
       console.error("Error fetching user:", err);
@@ -39,7 +39,7 @@ const GetUserProfile = () => {
         <img src={logo} alt="Logo" style={styles.logo} />
       </div>
 
-      <h1 style={styles.heading}>Update Profile</h1>
+      <h1 style={styles.heading}>View Profile</h1>
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="text"
