@@ -94,6 +94,7 @@ exports.updateEvent = async (req, res) => {
       event.totalTickets = totalTickets; // or event.tickets.total = totalTickets;
     }
     if (price !== undefined) event.price = price;
+    if (status !== undefined) event.status = status;
 
     await event.save();
     console.log("Updated event:", event); // Debug

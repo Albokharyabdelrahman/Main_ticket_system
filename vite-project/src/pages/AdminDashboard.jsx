@@ -91,77 +91,31 @@ const currentUserArr = getCurrentUserIdFromCookie();
 
   // EVENTS
   const getAllEvents = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:7000/api/v1/events/all",
-        { withCredentials: true }
-      );
-      setQuickActionMsg(JSON.stringify(res.data));
-    } catch (err) {
-      setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
-    }
+  navigate("/admin/events");
   };
 
-  const updateEvent = () =>
-    promptAndCall("Enter event ID to update:", async (id) => {
-      const res = await axios.get(
-        `http://localhost:7000/api/v1/events/${id}`,
-        { withCredentials: true }
-      );
-      setEditingType("event");
-      setEditingObj(res.data);
-      setQuickActionMsg("");
-      return res;
-    });
+ const updateEvent = () => {
+  navigate('/update-event'); 
+};
 
-  const deleteEvent = () =>
-    promptAndCall("Enter event ID to delete:", async (id) =>
-      axios.delete(
-        `http://localhost:7000/api/v1/events/${id}`,
-        { withCredentials: true }
-      )
-    );
+    const deleteEvent = () => {
+  navigate('/delete-event'); 
+};
+  
 
   // USERS
   const viewProfile = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:7000/api/v1/users/",
-        { withCredentials: true }
-      );
-      setQuickActionMsg(JSON.stringify(res.data));
-    } catch (err) {
-      setQuickActionMsg("ERROR: " + (err.response?.data?.message || err.message));
-    }
+   navigate('/user-profiles');
   };
 
+ 
   const updateUserProfile = () =>
-    promptAndCall("Enter user ID to update profile:", async (id) => {
-      const res = await axios.get(
-        `http://localhost:7000/api/v1/users/${id}`,
-        { withCredentials: true }
-      );
-      setEditingType("user");
-      setEditingObj(res.data);
-      setQuickActionMsg("");
-      return res;
-    });
+  navigate("/user-profile");
+    
 
-  const getUserProfile = () =>
-    promptAndCall("Enter user ID to get profile:", async (id) =>
-      axios.get(
-        `http://localhost:7000/api/v1/users/${id}`,
-        { withCredentials: true }
-      )
-    );
-
-  const deleteUser = () =>
-    promptAndCall("Enter user ID to delete:", async (id) =>
-      axios.delete(
-        `http://localhost:7000/api/v1/users/${id}`,
-        { withCredentials: true }
-      )
-    );
+ const getUserProfile = () =>
+    navigate("/user-getProfile");
+ 
 
   return (
     <div style={styles.pageContainer}>
@@ -252,10 +206,7 @@ const currentUserArr = getCurrentUserIdFromCookie();
               <span style={styles.buttonIcon}>🔄</span>
               <span>Update User Profile</span>
             </button>
-            <button style={styles.actionButton} onClick={deleteUser}>
-              <span style={styles.buttonIcon}>❌</span>
-              <span>Delete User</span>
-            </button>
+           
           </div>
 
           <div style={styles.contentCard}>

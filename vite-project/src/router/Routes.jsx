@@ -21,13 +21,25 @@ import EditUser from "../pages/EditUser";
 import AdminEventsPage from "../pages/AdminEventsPage";
 import CreateEventPage from "../pages/CreateEventPage";
 import EditEvent from "../pages/EditEvent"; 
-import MyEvents from "../pages/MyEvents"; // Assuming you have a MyEvents page
-import EventAnalytics from "../pages/EventAnalytics"; // Assuming you have a MyEvents page
+import MyEvents from "../pages/MyEvents"; 
+import EventAnalytics from "../pages/EventAnalytics"; 
+import UpdateEventById from "../pages/UpdateEventById"; 
+import DeleteEventById from "../pages/DeleteEventById"; 
+import SearchUserProfile from "../pages/SearchUserProfile"; 
+import GetUserProfile from "../pages/GetUserProfile"; 
+import ViewUserProfile from "../pages/ViewUserProfile"; 
+
+
+
 
 export default function MyRoutes() {
   return (
     <Routes>
-      <Route path="/events/:id/edit" element={<EditEvent />} />
+      <Route path="/update-event/events/:id/edit" element={<EditEvent />} />
+      <Route path="/user-profile" element={<SearchUserProfile />} />
+      <Route path="/user-getProfile" element={<GetUserProfile />} />
+      <Route path="/user-getProfile/user-View-Profile" element={<ViewUserProfile />} />
+      <Route path="/delete-event" element={<DeleteEventById />} />
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -48,6 +60,8 @@ export default function MyRoutes() {
       <Route path="/create-event" element={<CreateEventPage />} />
       <Route path="/my-events" element={<MyEvents />} />
       <Route path="/my-events/analytics" element={<EventAnalytics />} />
+      <Route path="/update-event" element={<UpdateEventById />} />
+      
     </Routes>
   );
 }

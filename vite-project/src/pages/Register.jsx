@@ -7,7 +7,6 @@ import logo from "./logo.png"; // <-- Make sure this path matches your project
 const ROLE_OPTIONS = [
   { label: "Standard User", value: "User" },
   { label: "Organizer", value: "Organizer" },
-  { label: "Admin", value: "Admin" }
 ];
 
 export default function Register() {

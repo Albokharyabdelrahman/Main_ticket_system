@@ -192,24 +192,24 @@ const EventsTable = () => {
                       <p style={styles.cardDescription}>{event.description}</p>
                       
                       <div style={styles.infoRow}>
-                        <span style={styles.infoIcon}>??</span>
+                        <span style={styles.infoIcon}>📅</span>
                         <span>{eventDate.toLocaleDateString()}</span>
-                        <span style={{ margin: "0 8px" }}>�</span>
+                        <span style={{ margin: "0 8px" }}>•</span>
                         <span>{eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                       </div>
                       
                       <div style={styles.infoRow}>
-                        <span style={styles.infoIcon}>??</span>
+                        <span style={styles.infoIcon}>📍</span>
                         <span>{event.location}</span>
                       </div>
                       
                       <div style={styles.infoRow}>
-                        <span style={styles.infoIcon}>???</span>
+                        <span style={styles.infoIcon}>🎟️</span>
                         <span>{event.availableTickets} / {event.totalTickets} available</span>
                       </div>
                       
                       <div style={styles.infoRow}>
-                        <span style={styles.infoIcon}>??</span>
+                        <span style={styles.infoIcon}>📁</span>
                         <span>{event.category}</span>
                       </div>
                     </div>

@@ -243,4 +243,22 @@ const styles = {
     textAlign: "center",
     marginBottom: "15px",
   },
+  backButton: {
+    padding: "0.5rem 1rem",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
+    color: "white",
+    border: "none",
+    borderRadius: "0.375rem",
+    cursor: "pointer",
+    fontWeight: "600",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    transition: "all 0.2s ease",
+    boxShadow: "0 4px 6px rgba(255, 152, 0, 0.3)",
+    ":hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 8px rgba(255, 152, 0, 0.4)",
+    },
+  },
 };

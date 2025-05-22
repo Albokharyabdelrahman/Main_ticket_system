@@ -44,7 +44,7 @@ const UserProfiles = () => {
             <svg style={styles.emptyIcon} viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
             </svg>
-            <p>No user profiles found</p>
+            <p style={styles.emptyText}>No user profiles found</p>
           </div>
         ) : (
           users.map((user) => (
@@ -96,8 +96,9 @@ const styles = {
   pageContainer: {
     padding: "2rem",
     fontFamily: "'Inter', sans-serif",
-    backgroundColor: "#f8fafc",
+    background: "linear-gradient(135deg, #434190, #2c2e8f)",
     minHeight: "100vh",
+    color: "white",
   },
   header: {
     display: "flex",
@@ -106,14 +107,15 @@ const styles = {
     marginBottom: "2rem",
   },
   title: {
-    color: "#1e293b",
+    color: "white",
     fontSize: "2rem",
     fontWeight: "700",
     margin: 0,
+    textShadow: "0 2px 4px rgba(0,0,0,0.2)",
   },
   backButton: {
     padding: "0.5rem 1rem",
-    backgroundColor: "#4f46e5",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
     color: "white",
     border: "none",
     borderRadius: "0.375rem",
@@ -123,6 +125,11 @@ const styles = {
     alignItems: "center",
     gap: "0.5rem",
     transition: "all 0.2s ease",
+    boxShadow: "0 4px 6px rgba(255, 152, 0, 0.3)",
+    ":hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 8px rgba(255, 152, 0, 0.4)",
+    },
   },
   errorAlert: {
     padding: "1rem",
@@ -151,7 +158,7 @@ const styles = {
     width: "3rem",
     height: "3rem",
     borderRadius: "9999px",
-    backgroundColor: "#4f46e5",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
     color: "white",
     display: "flex",
     alignItems: "center",
@@ -200,7 +207,7 @@ const styles = {
   },
   editButton: {
     padding: "0.5rem 1rem",
-    backgroundColor: "#4f46e5",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
     color: "white",
     border: "none",
     borderRadius: "0.375rem",
@@ -210,6 +217,11 @@ const styles = {
     transition: "all 0.2s ease",
     marginTop: "0.5rem",
     alignSelf: "flex-start",
+    boxShadow: "0 4px 6px rgba(255, 152, 0, 0.3)",
+    ":hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 8px rgba(255, 152, 0, 0.4)",
+    },
   },
   emptyState: {
     display: "flex",
@@ -227,6 +239,10 @@ const styles = {
     width: "3rem",
     height: "3rem",
     color: "#94a3b8",
+  },
+  emptyText: {
+    color: "#64748b",
+    margin: 0,
   },
 };
 
