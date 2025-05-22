@@ -15,6 +15,8 @@ const MyEvents = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 const [eventToDelete, setEventToDelete] = useState(null); // You also use eventToDelete, make sure this is defined
+const [imageLoadStates, setImageLoadStates] = useState({});
+
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
   if (!isOpen) return null;
@@ -169,16 +171,47 @@ const modalStyles = {
     });
     setFilteredEvents(filtered);
   }, [searchTerm, statusFilter, events]);
+  useEffect(() => {
+  if (events.length > 0) {
+    const initialLoadStates = {};
+    events.forEach(event => {
+      initialLoadStates[event.id] = { isLoading: true, hasError: false };
+    });
+    setImageLoadStates(initialLoadStates);
+  }
+}, [events]);
+ 
+const handleImageLoad = (eventId) => {
+  setImageLoadStates(prev => ({
+    ...prev,
+    [eventId]: { isLoading: false, hasError: false }
+  }));
+};
 
+const handleImageError = (eventId) => {
+  setImageLoadStates(prev => ({
+    ...prev,
+    [eventId]: { isLoading: false, hasError: true }
+  }));
+};
+
+const getImageSrc = (image) => {
+  return image?.startsWith('data:image') 
+    ? image 
+    : `data:image/png;base64,${image}`;
+};
   return (
     <div style={styles.pageContainer}>
       <ConfirmationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={confirmDelete}
-        title="Delete Event"
-        message="Are you sure you want to delete this event? This action cannot be undone."
-      />
+          isOpen={showModal}
+    onClose={() => setShowModal(false)}
+    onConfirm={async () => {
+      await confirmDelete(); // Wait for deletion to complete
+      window.location.reload(); // Then force refresh
+    }}
+    title="Delete Event"
+    message="Are you sure you want to delete this event? This action cannot be undone."
+  />
       <div style={styles.mainContent}>
         
         <img
@@ -224,30 +257,112 @@ const modalStyles = {
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
               <div key={event.id} style={styles.card}>
-                <div style={styles.cardHeader}>
-                  <h2 style={styles.cardTitle}>{event.title}</h2>
-                  <span style={{
-                    ...styles.statusBadge,
-                    backgroundColor: event.status === 'active' ? '#38a169' : 
-                                   event.status === 'upcoming' ? '#3182ce' : '#e53e3e'
-                  }}>
-                    {event.status}
-                  </span>
-                </div>
-                <div style={styles.cardBody}>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>📅</span>
-                    <span>{new Date(event.date).toLocaleDateString()}</span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>📍</span>
-                    <span>{event.location}</span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>🎟️</span>
-                    <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
-                  </div>
-                </div>
+
+<div style={{ 
+  ...styles.cardHeader, 
+  display: 'flex', 
+  alignItems: 'center', 
+  justifyContent: 'space-between', 
+  gap: '1rem' 
+}}>
+  <div style={{ padding: '1rem' }}>
+    {event.image ? (
+      <div style={{ position: 'relative' }}>
+        {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
+          <div
+            style={{
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              backgroundColor: '#f0f0f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'absolute',
+            }}
+          >
+            {imageLoadStates[event.id]?.hasError ? 'Error' : 'Loading...'}
+          </div>
+        )}
+        <img
+          src={event.image}
+          alt="Event"
+          onLoad={() => handleImageLoad(event.id)}
+          onError={() => handleImageError(event.id)}
+          style={{
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            border: '2px solid #fff',
+            opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
+      </div>
+    ) : (
+      <div
+        style={{
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          backgroundColor: '#f0f0f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        No Image
+      </div>
+    )}
+  </div>
+</div>
+
+<div style={styles.cardBody}>
+  {event.image && (
+    <div style={{ position: 'relative' }}>
+      {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
+        <div
+          style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '6px',
+            backgroundColor: '#f0f0f0',
+            position: 'absolute',
+          }}
+        />
+      )}
+      <img
+        src={event.image}
+        alt="Event"
+        onLoad={() => handleImageLoad(event.id)}
+        onError={() => handleImageError(event.id)}
+        style={{ 
+          width: '60px', 
+          height: '60px', 
+          objectFit: 'cover', 
+          borderRadius: '6px',
+          opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
+          transition: 'opacity 0.3s ease',
+        }}
+      />
+    </div>
+  )}
+  <div style={styles.infoRow}>
+    <span style={styles.infoIcon}>📅</span>
+    <span>{new Date(event.date).toLocaleDateString()}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.infoIcon}>📍</span>
+    <span>{event.location}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.infoIcon}>🎟️</span>
+    <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
+  </div>
+</div>
+
+
                 <div style={styles.cardFooter}>
                   <p style={styles.timestamp}>Created: {new Date(event.createdAt).toLocaleDateString()}</p>
                   <button style={styles.editButton} onClick={() => navigate(`/events/${event.id}/edit`)}>

@@ -58,7 +58,6 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -101,6 +100,16 @@ exports.loginUser = async (req, res) => {
 };
 
 
+exports.logOut = async (req, res) => {
+  console.log("work");
+  res.clearCookie("token", {
+    httpOnly: false,
+    secure: false,
+    sameSite: "Lax",
+  });
+
+  res.status(200).json({ message: "Successfully logged out." });
+};
 
 // Password Reset functionality (Placeholder for now)
 // Password Reset functionality

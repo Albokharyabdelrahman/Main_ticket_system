@@ -45,29 +45,42 @@ const EventsTable = () => {
     }));
   };
 
-  const handleBook = async (event) => {
-    const inputVal = ticketsInput[event._id];
-    const ticketsBooked = Number(inputVal);
+ const handleBook = async (event) => {
+  const inputVal = ticketsInput[event._id];
+  const ticketsBooked = Number(inputVal);
 
-    if (
-      !inputVal ||
-      isNaN(ticketsBooked) ||
-      ticketsBooked <= 0 ||
-      ticketsBooked > event.availableTickets
-    ) {
-      setMessage({
-        text: "Please enter a valid number of tickets within available range.",
-        type: "error",
-      });
-      return;
-    }
+  if (
+    !inputVal ||
+    isNaN(ticketsBooked) ||
+    ticketsBooked <= 0 ||
+    ticketsBooked > event.availableTickets
+  ) {
+    setMessage({
+      text: "Please enter a valid number of tickets within available range.",
+      type: "error",
+    });
+    return;
+  }
 
-    const bookingData = {
-      eventId: event._id,
-      ticketsBooked,
-      totalPrice: event.price * ticketsBooked,
-    };
+  const totalPrice = event.price * ticketsBooked;
+  const confirmPurchase = window.confirm(
+    `Total for ${ticketsBooked} ticket(s): EGP:${totalPrice}\n\nDo you want to proceed with the purchase?`
+  );
 
+  if (!confirmPurchase) {
+    setMessage({
+      text: "Booking cancelled.",
+      type: "info",
+    });
+    return;
+  }
+
+  const bookingData = {
+    eventId: event._id,
+    ticketsBooked,
+    totalPrice,
+  };
+  // ... rest of the function
     try {
       const token = localStorage.getItem("token");
 

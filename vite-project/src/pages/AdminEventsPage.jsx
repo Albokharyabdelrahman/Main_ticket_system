@@ -501,6 +501,10 @@ const AdminEventsPage = () => {
                     <span>{event.totalTickets || 0} tickets available</span>
                   </div>
                 </div>
+                <div style={styles.infoRow}>
+                  <span style={styles.infoIcon}>🆔</span>
+                  <span>Event ID: {event._id}</span>
+                  </div>
                 <div style={styles.cardFooter}>
                   <button 
                     style={styles.editButton}

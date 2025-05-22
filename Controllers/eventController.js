@@ -8,21 +8,28 @@ exports.createEvent = async (req, res) => {
     }
 
     // Get file path from multer
-    const imagePath = req.file ? req.file.path : null;
-    
-    const event = new Event({
-      title: req.body.title,
-      location: req.body.location,
-      price: req.body.price,
-      category: req.body.category,
-      description: req.body.description,
-      availableTickets: req.body.availableTickets,
-      totalTickets: req.body.totalTickets,
-      organizerId: req.user.userId,
-      image: imagePath, // Store file path
-      date: new Date(),
-      status: 'pending'
-    });
+    let imageBase64 = null;
+
+if (req.file) {
+  const fs = require('fs');
+  const imageBuffer = fs.readFileSync(req.file.path);
+  imageBase64 = imageBuffer.toString('base64');
+}
+
+const event = new Event({
+  title: req.body.title,
+  location: req.body.location,
+  price: req.body.price,
+  category: req.body.category,
+  description: req.body.description,
+  availableTickets: req.body.availableTickets,
+  totalTickets: req.body.totalTickets,
+  organizerId: req.user.userId,
+  image: imageBase64 || null,
+  date: new Date(),
+  status: 'pending'
+});
+
 
     await event.save();
     res.status(201).json(event);

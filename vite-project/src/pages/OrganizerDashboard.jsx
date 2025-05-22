@@ -138,17 +138,20 @@ const currentUserArr = getCurrentUserIdFromCookie();
     );
   };
 
-  const handleLogout = async () => {
-    try {
-      const BASE_URL = "http://localhost:5173/login";
-      await axios.get(`${BASE_URL}`, { withCredentials: true });
-      localStorage.removeItem("token");
-      logout();
-      window.location.href = BASE_URL;
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-  };
+ const handleLogout = async () => {
+  try {
+    const BASE_URL = "http://localhost:5173/login";
+    await axios.post("http://localhost:7000/api/v1/logout", null, {
+      withCredentials: true,
+    })
+    localStorage.removeItem("token");
+    logout(); 
+    window.location.href = BASE_URL;
+  } catch (err) {
+    console.error("Logout failed:", err);
+  }
+};
+
 
   const handleUpdateProfile = () => navigate("/update-profile");
   const handleCreateEvent = () => navigate("/create-event");

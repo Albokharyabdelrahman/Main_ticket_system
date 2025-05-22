@@ -44,6 +44,14 @@ const CreateEventPage = () => {
     if (!file) return;
     setFormData({ ...formData, image: file });
   };
+
+  const validateTickets = () => {
+  if (parseInt(formData.availableTickets) > parseInt(formData.totalTickets)) {
+    alert("Available tickets cannot be more than total tickets!");
+    return false;
+  }
+  return true;
+};
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError("");
@@ -155,7 +163,14 @@ const handleSubmit = async (e) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (validateTickets()) {
+                     handleSubmit(e);
+                     } else {
+                     alert("Available tickets cannot be more than total tickets!");
+                           }
+                        } } style={styles.form}>
           <div style={styles.formColumns}>
             {/* Left Column */}
             <div style={styles.formColumn}>
