@@ -61,14 +61,14 @@ const FindBooking = () => {
 
     {bookingData && (
   <div style={styles.card}>
-    <h2 style={styles.eventTitle}>?? {bookingData.eventId.title}</h2>
-    <p><strong>?? Location:</strong> {bookingData.eventId.location}</p>
-    <p><strong>?? Date:</strong> {new Date(bookingData.eventId.date).toLocaleString()}</p>
-    <p><strong>?? Tickets Booked:</strong> {bookingData.ticketsBooked}</p>
-    <p><strong>?? Total Price:</strong> ${bookingData.totalPrice}</p>
-    <p><strong>?? Status:</strong> {bookingData.status}</p>
-    <p><strong>?? Booking Date:</strong> {new Date(bookingData.bookingDate).toLocaleString()}</p>
-    <p><strong>?? Booking ID:</strong> {bookingData._id}</p>
+    <h2 style={styles.eventTitle}>🎫 {bookingData.eventId.title}</h2>
+    <p><strong>📍 Location:</strong> {bookingData.eventId.location}</p>
+    <p><strong>📅 Date:</strong> {new Date(bookingData.eventId.date).toLocaleString()}</p>
+    <p><strong>🪑 Tickets Booked:</strong> {bookingData.ticketsBooked}</p>
+    <p><strong>💰 Total Price:</strong> ${bookingData.totalPrice}</p>
+    <p><strong>📌 Status:</strong> {bookingData.status}</p>
+    <p><strong>🕒 Booking Date:</strong> {new Date(bookingData.bookingDate).toLocaleString()}</p>
+    <p><strong>🆔 Booking ID:</strong> {bookingData._id}</p>
   </div>
 )}
 

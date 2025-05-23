@@ -4,24 +4,44 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
+// Create a style element for our keyframes
+const styleElement = document.createElement('style');
+styleElement.innerHTML = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(styleElement);
+
 const UserProfiles = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
         const res = await axios.get(`${API_BASE_URL}/users/`, {
           withCredentials: true,
         });
         setUsers(res.data);
+        setLoading(false);
       } catch (err) {
         setError("Failed to load user profiles.");
+        setLoading(false);
       }
     };
     fetchUsers();
   }, []);
+
+  const Spinner = () => (
+    <div style={styles.spinnerContainer}>
+      <div style={styles.spinner}></div>
+    </div>
+  );
 
   const handleEdit = (userId) => {
     navigate(`/edit-user/${userId}`);
@@ -39,7 +59,12 @@ const UserProfiles = () => {
       {error && <div style={styles.errorAlert}>{error}</div>}
 
       <div style={styles.usersContainer}>
-        {users.length === 0 ? (
+        {loading ? (
+          <div style={styles.loadingContainer}>
+            <Spinner />
+            <p>Loading user profiles...</p>
+          </div>
+        ) : users.length === 0 ? (
           <div style={styles.emptyState}>
             <svg style={styles.emptyIcon} viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
@@ -243,6 +268,31 @@ const styles = {
   emptyText: {
     color: "#64748b",
     margin: 0,
+  },
+  spinnerContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    margin: "2rem 0",
+  },
+  spinner: {
+    border: "4px solid rgba(255, 255, 255, 0.3)",
+    borderRadius: "50%",
+    borderTop: "4px solid white",
+    width: "40px",
+    height: "40px",
+    animation: "spin 1s linear infinite",
+    WebkitAnimation: "spin 1s linear infinite", // For Safari
+  },
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "1rem",
+    padding: "2rem",
+    color: "white",
+    gridColumn: "1 / -1",
   },
 };
 

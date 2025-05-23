@@ -10,29 +10,29 @@ const GetUserProfile = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (!userId.trim()) {
-      setError("Please enter a User ID.");
-      return;
-    }
+  const trimmedId = userId.trim();
+  if (!trimmedId) {
+    setError("Please enter a User ID.");
+    return;
+  }
 
-    try {
-      // Verify the user exists first
-      await axios.get(
-        `http://localhost:7000/api/v1/users/${userId.trim()}`,
-        { withCredentials: true }
-      );
-      
-      // Redirect to edit page if found
-      navigate(`${userId.trim()}`);
-    } catch (err) {
-      setError(err.response?.data?.message || "User not found or you don't have permission");
-      console.error("Error fetching user:", err);
-    }
-  };
-
+  try {
+    // Verify the user exists first
+    await axios.get(
+      `http://localhost:7000/api/v1/users/${trimmedId}`,
+      { withCredentials: true }
+    );
+    
+    // Navigate to view profile page with the ID
+    navigate(`/user-getProfile/${trimmedId}`);
+  } catch (err) {
+    setError(err.response?.data?.message || "User not found or you don't have permission");
+    console.error("Error fetching user:", err);
+  }
+};
   return (
     <div style={styles.container}>
       <div style={styles.logoContainer} onClick={() => navigate(-1)}>

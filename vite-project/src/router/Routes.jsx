@@ -39,7 +39,7 @@ export default function MyRoutes() {
       <Route path="/events/:id/edit" element={<EditEvent />} />
       <Route path="/user-profile" element={<SearchUserProfile />} />
       <Route path="/user-getProfile" element={<GetUserProfile />} />
-      <Route path="/user-getProfile/:id" element={<ViewUserProfile />} />
+<Route path="/user-getProfile/:userId" element={<ViewUserProfile />} />
       <Route path="/delete-event" element={<DeleteEventById />} />
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />

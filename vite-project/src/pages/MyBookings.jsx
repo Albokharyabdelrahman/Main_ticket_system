@@ -63,7 +63,11 @@ const MyBookings = () => {
       setConfirmDeleteId(null);
     }
   };
-
+const Spinner = () => (
+  <div style={styles.spinnerContainer}>
+    <div style={styles.spinner}></div>
+  </div>
+);
   const filteredBookings = bookings.filter((booking) => {
     const event = booking.eventId || {};
     const matchesSearch = event.title
@@ -85,6 +89,16 @@ const MyBookings = () => {
           style={styles.logo}
           onClick={() => navigate("/UserDashboard")}
         />
+          {successMessage && (
+          <div style={styles.successMessage}>{successMessage}</div>
+        )}
+        {error && <div style={styles.errorMessage}>{error}</div>}
+        {loading && (
+          <div style={styles.loadingMessage}>
+            <Spinner />
+            Loading bookings...
+          </div>
+        )}
         <div style={styles.header}>
           <h1 style={styles.title}>My Bookings</h1>
           <p style={styles.subtitle}>Manage your upcoming events</p>
@@ -94,8 +108,12 @@ const MyBookings = () => {
           <div style={styles.successMessage}>{successMessage}</div>
         )}
         {error && <div style={styles.errorMessage}>{error}</div>}
-        {loading && <div style={styles.loadingMessage}>Loading bookings...</div>}
-
+{loading && (
+  <div style={styles.loadingMessage}>
+    <Spinner />
+    Loading bookings...
+  </div>
+)}
             <div style={styles.filters}>
         <input
           type="text"
@@ -293,12 +311,7 @@ const styles = {
     marginLeft: "auto",
     marginRight: "auto",
   },
-  loadingMessage: {
-    color: "white",
-    textAlign: "center",
-    fontSize: "1.2rem",
-    marginBottom: "2rem",
-  },
+  
   filters: {
     marginBottom: "2rem",
     display: "flex",
@@ -462,6 +475,34 @@ const styles = {
     ":hover": {
       background: "linear-gradient(135deg, #ff7043, #ff5722)",
     },
+  },
+   spinnerContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: "1rem",
+  },
+  spinner: {
+    border: "4px solid rgba(255, 255, 255, 0.3)",
+    borderRadius: "50%",
+    borderTop: "4px solid white",
+    width: "40px",
+    height: "40px",
+    animation: "spin 1s linear infinite",
+  },
+  "@keyframes spin": {
+    "0%": { transform: "rotate(0deg)" },
+    "100%": { transform: "rotate(360deg)" },
+  },
+  loadingMessage: {
+    color: "white",
+    textAlign: "center",
+    fontSize: "1.2rem",
+    marginBottom: "2rem",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "1rem",
   },
 };
 

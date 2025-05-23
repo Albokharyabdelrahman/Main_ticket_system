@@ -1,59 +1,114 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ViewUserProfile = () => {
+  const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUserProfile = async () => {
       try {
-        const res = await axios.get("http://localhost:7000/api/v1/users/profile", {
-          withCredentials: true,
-        });
+        setLoading(true);
+        const res = await axios.get(
+          `http://localhost:7000/api/v1/users/${userId}`,
+          { withCredentials: true }
+        );
+        
+        // The API now returns profilePic as either base64 string or null
         setUser(res.data.user);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch profile");
+        setError(err.response?.data?.message || "Failed to fetch user profile");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
-  }, []);
+    if (userId) {
+      fetchUserProfile();
+    }
+  }, [userId]);
 
-  if (loading) return <div style={styles.loading}>Loading profile...</div>;
-  if (error) return <div style={styles.errorAlert}>{error}</div>;
+  if (loading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner}></div>
+        <p>Loading user profile...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.errorContainer}>
+        <p style={styles.errorText}>{error}</p>
+        <button 
+          style={styles.backButton}
+          onClick={() => navigate(-1)}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div style={styles.errorContainer}>
+        <p style={styles.errorText}>User not found</p>
+        <button 
+          style={styles.backButton}
+          onClick={() => navigate(-1)}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.pageContainer}>
       <header style={styles.header}>
-        <h1 style={styles.title}>View Profile</h1>
+        <h1 style={styles.title}>User Profile</h1>
         <button onClick={() => navigate(-1)} style={styles.backButton}>
-          ← Back to Dashboard
+          ← Back to Search
         </button>
       </header>
 
       <div style={styles.userCard}>
-        {user.profilePic && (
-          <img src={user.profilePic} alt="Profile" style={styles.profileImage} />
+        {/* Profile picture display - now properly handled */}
+        {user.profilePic ? (
+          <img 
+            src={user.profilePic} 
+            alt="Profile" 
+            style={styles.profileImage}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div style={styles.userAvatar}>
+            {user.name?.charAt(0).toUpperCase() || '?'}
+          </div>
         )}
+        
         <div style={styles.userInfo}>
-          <h3 style={styles.userName}>{user.name}</h3>
+          <h3 style={styles.userName}>{user.name || 'No name provided'}</h3>
           <p style={styles.userEmail}>
             <svg style={styles.infoIcon} viewBox="0 0 24 24">
               <path fill="currentColor" d="M22 6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6M20 6L12 11L4 6H20M20 18H4V8L12 13L20 8V18Z" />
             </svg>
-            {user.email}
+            {user.email || 'No email provided'}
           </p>
           <p style={styles.userRole}>
             <svg style={styles.infoIcon} viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,3L2,12H5V20H19V12H22L12,3M12,7.7C14.1,7.7 15.8,9.4 15.8,11.5C15.8,13.6 14.1,15.3 12,15.3C9.9,15.3 8.2,13.6 8.2,11.5C8.2,9.4 9.9,7.7 12,7.7M7,18V16H17V18H7Z" />
             </svg>
-            {user.role || "No role specified"}
+            {user.role || 'No role specified'}
           </p>
           <p style={styles.userId}>
             <svg style={styles.infoIcon} viewBox="0 0 24 24">
@@ -113,13 +168,26 @@ const styles = {
   profileImage: {
     width: "100px",
     height: "100px",
-    borderRadius: "9999px",
+    borderRadius: "50%",
     objectFit: "cover",
     marginBottom: "1rem",
     display: "block",
     marginLeft: "auto",
     marginRight: "auto",
     border: "3px solid #4ca1af",
+  },
+  userAvatar: {
+    width: "100px",
+    height: "100px",
+    borderRadius: "50%",
+    backgroundColor: "#4ca1af",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "48px",
+    fontWeight: "bold",
+    margin: "0 auto 1rem auto",
   },
   userInfo: {
     display: "flex",
@@ -157,20 +225,34 @@ const styles = {
     width: "1rem",
     height: "1rem",
   },
-  errorAlert: {
-    padding: "1rem",
-    backgroundColor: "#fee2e2",
-    color: "#b91c1c",
-    borderRadius: "0.375rem",
-    marginBottom: "1.5rem",
-    fontWeight: "500",
-    textAlign: "center",
+  errorContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100vh",
+    color: "white",
   },
-  loading: {
-    color: "#fff",
-    fontSize: "18px",
-    textAlign: "center",
-    marginTop: "40px",
+  errorText: {
+    marginBottom: "1rem",
+    color: "#ff6b6b",
+  },
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100vh",
+    color: "white",
+  },
+  spinner: {
+    border: "4px solid rgba(255, 255, 255, 0.3)",
+    borderRadius: "50%",
+    borderTop: "4px solid white",
+    width: "40px",
+    height: "40px",
+    animation: "spin 1s linear infinite",
+    marginBottom: "1rem",
   },
 };
 

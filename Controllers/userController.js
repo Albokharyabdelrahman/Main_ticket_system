@@ -106,13 +106,19 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-// Get User by ID (for admin)
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
+    
+    const userObj = user.toObject();
+    if (userObj.profilePicture) {
+      userObj.profilePic = `data:image/jpeg;base64,${userObj.profilePicture}`;
+    } else {
+      userObj.profilePic = null;
+    }
+    
+    res.json({ user: userObj });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
