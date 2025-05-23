@@ -7,43 +7,55 @@ exports.createEvent = async (req, res) => {
       return res.status(403).json({ message: "Only organizers can create events" });
     }
 
-    // Get file path from multer
     let imageBase64 = null;
+    if (req.file) {
+      const fs = require('fs');
+      const imageBuffer = fs.readFileSync(req.file.path);
+      imageBase64 = imageBuffer.toString('base64');
+      fs.unlinkSync(req.file.path); // Clean up the temp file
+    }
 
-if (req.file) {
-  const fs = require('fs');
-  const imageBuffer = fs.readFileSync(req.file.path);
-  imageBase64 = imageBuffer.toString('base64');
-}
-
-const event = new Event({
-  title: req.body.title,
-  location: req.body.location,
-  price: req.body.price,
-  category: req.body.category,
-  description: req.body.description,
-  availableTickets: req.body.availableTickets,
-  totalTickets: req.body.totalTickets,
-  organizerId: req.user.userId,
-  image: imageBase64 || null,
-  date: new Date(),
-  status: 'pending'
-});
-
+    const event = new Event({
+      title: req.body.title,
+      location: req.body.location,
+      price: req.body.price,
+      category: req.body.category,
+      description: req.body.description,
+      availableTickets: req.body.availableTickets,
+      totalTickets: req.body.totalTickets,
+      organizerId: req.user.userId,
+      image: imageBase64,
+      date: req.body.date || new Date(),
+      status: 'pending'
+    });
 
     await event.save();
-    res.status(201).json(event);
+    res.status(201).json({
+      ...event._doc,
+      tickets: {
+        available: event.availableTickets,
+        total: event.totalTickets
+      },
+      image: event.image ? `data:image/png;base64,${event.image}` : null
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-
-// Get all events
+// Modify getApprovedEvents and getAllEvents to transform the data structure
 exports.getApprovedEvents = async (req, res) => {
   try {
     const events = await Event.find({ status: 'approved' });
-    res.json(events);
+    const transformedEvents = events.map(event => ({
+      ...event._doc,
+      tickets: {
+        available: event.availableTickets,
+        total: event.totalTickets
+      },
+      image: event.image ? `data:image/png;base64,${event.image}` : null
+    }));
+    res.json(transformedEvents);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

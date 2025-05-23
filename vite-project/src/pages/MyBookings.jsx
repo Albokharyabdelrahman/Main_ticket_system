@@ -129,7 +129,6 @@ const Spinner = () => (
         >
           <option value="All">All Statuses</option> {/* Keep "All" option */}
           <option value="Confirmed">Confirmed</option>
-          <option value="Pending">Pending</option>
           <option value="Cancelled">Cancelled</option>
         </select>
       </div>

@@ -14,103 +14,103 @@ const MyEvents = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-const [eventToDelete, setEventToDelete] = useState(null); // You also use eventToDelete, make sure this is defined
-const [imageLoadStates, setImageLoadStates] = useState({});
+  const [eventToDelete, setEventToDelete] = useState(null);
+  const [imageLoadStates, setImageLoadStates] = useState({});
 
+  const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+    if (!isOpen) return null;
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div style={modalStyles.overlay}>
-      <div style={modalStyles.modal}>
-        <h3 style={modalStyles.title}>{title}</h3>
-        <p style={modalStyles.message}>{message}</p>
-        <div style={modalStyles.buttons}>
-          <button 
-            style={modalStyles.cancelButton} 
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button 
-            style={modalStyles.confirmButton}
-            onClick={onConfirm}
-          >
-            Confirm
-          </button>
+    return (
+      <div style={modalStyles.overlay}>
+        <div style={modalStyles.modal}>
+          <h3 style={modalStyles.title}>{title}</h3>
+          <p style={modalStyles.message}>{message}</p>
+          <div style={modalStyles.buttons}>
+            <button 
+              style={modalStyles.cancelButton} 
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button 
+              style={modalStyles.confirmButton}
+              onClick={onConfirm}
+            >
+              Confirm
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-const modalStyles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: 'white',
-    padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-    maxWidth: '400px',
-    width: '90%',
-  },
-  title: {
-    marginTop: 0,
-    color: '#1e293b',
-    fontSize: '1.25rem',
-    fontWeight: '600',
-  },
-  message: {
-    margin: '1rem 0',
-    color: '#475569',
-    lineHeight: '1.5',
-  },
-  buttons: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '1rem',
-    marginTop: '1.5rem',
-  },
-  cancelButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#f1f5f9',
-    color: '#475569',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '500',
-    transition: 'all 0.2s ease',
-    ':hover': {
-      backgroundColor: '#e2e8f0',
+  const modalStyles = {
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
     },
-  },
-  confirmButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#ef4444',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '500',
-    transition: 'all 0.2s ease',
-    ':hover': {
-      backgroundColor: '#dc2626',
+    modal: {
+      backgroundColor: 'white',
+      padding: '2rem',
+      borderRadius: '8px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+      maxWidth: '400px',
+      width: '90%',
     },
-  },
-};
-   const handleDeleteClick = (eventId) => {
+    title: {
+      marginTop: 0,
+      color: '#1e293b',
+      fontSize: '1.25rem',
+      fontWeight: '600',
+    },
+    message: {
+      margin: '1rem 0',
+      color: '#475569',
+      lineHeight: '1.5',
+    },
+    buttons: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '1rem',
+      marginTop: '1.5rem',
+    },
+    cancelButton: {
+      padding: '0.5rem 1rem',
+      backgroundColor: '#f1f5f9',
+      color: '#475569',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: '500',
+      transition: 'all 0.2s ease',
+      ':hover': {
+        backgroundColor: '#e2e8f0',
+      },
+    },
+    confirmButton: {
+      padding: '0.5rem 1rem',
+      backgroundColor: '#ef4444',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: '500',
+      transition: 'all 0.2s ease',
+      ':hover': {
+        backgroundColor: '#dc2626',
+      },
+    },
+  };
+
+  const handleDeleteClick = (eventId) => {
     setEventToDelete(eventId);
     setShowModal(true);
   };
@@ -171,49 +171,50 @@ const modalStyles = {
     });
     setFilteredEvents(filtered);
   }, [searchTerm, statusFilter, events]);
+
   useEffect(() => {
-  if (events.length > 0) {
-    const initialLoadStates = {};
-    events.forEach(event => {
-      initialLoadStates[event.id] = { isLoading: true, hasError: false };
-    });
-    setImageLoadStates(initialLoadStates);
-  }
-}, [events]);
+    if (events.length > 0) {
+      const initialLoadStates = {};
+      events.forEach(event => {
+        initialLoadStates[event.id] = { isLoading: true, hasError: false };
+      });
+      setImageLoadStates(initialLoadStates);
+    }
+  }, [events]);
  
-const handleImageLoad = (eventId) => {
-  setImageLoadStates(prev => ({
-    ...prev,
-    [eventId]: { isLoading: false, hasError: false }
-  }));
-};
+  const handleImageLoad = (eventId) => {
+    setImageLoadStates(prev => ({
+      ...prev,
+      [eventId]: { isLoading: false, hasError: false }
+    }));
+  };
 
-const handleImageError = (eventId) => {
-  setImageLoadStates(prev => ({
-    ...prev,
-    [eventId]: { isLoading: false, hasError: true }
-  }));
-};
+  const handleImageError = (eventId) => {
+    setImageLoadStates(prev => ({
+      ...prev,
+      [eventId]: { isLoading: false, hasError: true }
+    }));
+  };
 
-const getImageSrc = (image) => {
-  return image?.startsWith('data:image') 
-    ? image 
-    : `data:image/png;base64,${image}`;
-};
+  const getImageSrc = (image) => {
+    return image?.startsWith('data:image') 
+      ? image 
+      : `data:image/png;base64,${image}`;
+  };
+
   return (
     <div style={styles.pageContainer}>
       <ConfirmationModal
-          isOpen={showModal}
-    onClose={() => setShowModal(false)}
-    onConfirm={async () => {
-      await confirmDelete(); // Wait for deletion to complete
-      window.location.reload(); // Then force refresh
-    }}
-    title="Delete Event"
-    message="Are you sure you want to delete this event? This action cannot be undone."
-  />
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={async () => {
+          await confirmDelete();
+          window.location.reload();
+        }}
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+      />
       <div style={styles.mainContent}>
-        
         <img
           src={logo}
           alt="Logo"
@@ -257,122 +258,156 @@ const getImageSrc = (image) => {
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
               <div key={event.id} style={styles.card}>
+                {/* Status Badge */}
+                <div style={{ 
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  backgroundColor: event.status === 'Approved' ? '#38a169' : 
+                                 event.status === 'Declined' ? '#e53e3e' : '#3182ce',
+                  color: 'white',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  zIndex: 1
+                }}>
+                  {event.status}
+                </div>
 
-<div style={{ 
-  ...styles.cardHeader, 
-  display: 'flex', 
-  alignItems: 'center', 
-  justifyContent: 'space-between', 
-  gap: '1rem' 
-}}>
-  <div style={{ padding: '1rem' }}>
-    {event.image ? (
-      <div style={{ position: 'relative' }}>
-        {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
-          <div
-            style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              backgroundColor: '#f0f0f0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'absolute',
-            }}
-          >
-            {imageLoadStates[event.id]?.hasError ? 'Error' : 'Loading...'}
-          </div>
-        )}
-        <img
-          src={event.image}
-          alt="Event"
-          onLoad={() => handleImageLoad(event.id)}
-          onError={() => handleImageError(event.id)}
-          style={{
-            width: '100px',
-            height: '100px',
-            borderRadius: '50%',
-            objectFit: 'cover',
-            border: '2px solid #fff',
-            opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
-            transition: 'opacity 0.3s ease',
-          }}
-        />
-      </div>
-    ) : (
-      <div
-        style={{
-          width: '100px',
-          height: '100px',
-          borderRadius: '50%',
-          backgroundColor: '#f0f0f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        No Image
-      </div>
-    )}
-  </div>
+                <div style={{ 
+                  ...styles.cardHeader, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  gap: '1rem' 
+                }}>
+                  <div style={{ padding: '1rem' }}>
+                    {event.image ? (
+                      <div style={{ position: 'relative' }}>
+                        {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
+                          <div
+                            style={{
+                              width: '100px',
+                              height: '100px',
+                              borderRadius: '50%',
+                              backgroundColor: '#f0f0f0',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              position: 'absolute',
+                            }}
+                          >
+                            {imageLoadStates[event.id]?.hasError ? 'Error' : 'Loading...'}
+                          </div>
+                        )}
+                        <img
+                          src={event.image}
+                          alt="Event"
+                          onLoad={() => handleImageLoad(event.id)}
+                          onError={() => handleImageError(event.id)}
+                          style={{
+                            width: '100px',
+                            height: '100px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid #fff',
+                            opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
+                            transition: 'opacity 0.3s ease',
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          width: '100px',
+                          height: '100px',
+                          borderRadius: '50%',
+                          backgroundColor: '#f0f0f0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={styles.cardBody}>
+                  {event.image && (
+                    <div style={{ position: 'relative' }}>
+                      {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '6px',
+                            backgroundColor: '#f0f0f0',
+                            position: 'absolute',
+                          }}
+                        />
+                      )}
+                      <img
+                        src={event.image}
+                        alt="Event"
+                        onLoad={() => handleImageLoad(event.id)}
+                        onError={() => handleImageError(event.id)}
+                        style={{ 
+                          width: '60px', 
+                          height: '60px', 
+                          objectFit: 'cover', 
+                          borderRadius: '6px',
+                          opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
+                          transition: 'opacity 0.3s ease',
+                        }}
+                      />
+                    </div>
+                  )}
+                    <div style={styles.infoRow}>
+                    <div style={styles.infoRow}>
+  <span style={styles.infoIcon}>🎭</span> {/* Added event emoji */}
+  <span>{event.title}</span>
 </div>
+                  </div>
+                  <div style={styles.infoRow}>
+                    <span style={styles.infoIcon}>📅</span>
+                    <span>{new Date(event.date).toLocaleDateString()}</span>
+                  </div>
+                  <div style={styles.infoRow}>
+                    <span style={styles.infoIcon}>📍</span>
+                    <span>{event.location}</span>
+                  </div>
+                  <div style={styles.infoRow}>
+                    <span style={styles.infoIcon}>🎟️</span>
+                    <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
+                  </div>
+                </div>
 
-<div style={styles.cardBody}>
-  {event.image && (
-    <div style={{ position: 'relative' }}>
-      {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
-        <div
-          style={{
-            width: '60px',
-            height: '60px',
-            borderRadius: '6px',
-            backgroundColor: '#f0f0f0',
-            position: 'absolute',
-          }}
-        />
-      )}
-      <img
-        src={event.image}
-        alt="Event"
-        onLoad={() => handleImageLoad(event.id)}
-        onError={() => handleImageError(event.id)}
-        style={{ 
-          width: '60px', 
-          height: '60px', 
-          objectFit: 'cover', 
-          borderRadius: '6px',
-          opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
-          transition: 'opacity 0.3s ease',
-        }}
-      />
-    </div>
-  )}
-  <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>📅</span>
-    <span>{new Date(event.date).toLocaleDateString()}</span>
-  </div>
-  <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>📍</span>
-    <span>{event.location}</span>
-  </div>
-  <div style={styles.infoRow}>
-    <span style={styles.infoIcon}>🎟️</span>
-    <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
-  </div>
-</div>
-
-
+                {/* BUTTONS - SIDE BY SIDE */}
                 <div style={styles.cardFooter}>
                   <p style={styles.timestamp}>Created: {new Date(event.createdAt).toLocaleDateString()}</p>
-                  <button style={styles.editButton} onClick={() => navigate(`/events/${event.id}/edit`)}>
-                     Edit Event
-                  </button>
-                   <button style={styles.deleteButton} 
-               onClick={() => handleDeleteClick(event.id)}
-        >
-          Delete Event
-        </button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                      style={{
+                        ...styles.editButton, 
+                        background: 'linear-gradient(135deg, #434190, #2c2e8f)'
+                      }} 
+                      onClick={() => navigate(`/events/${event.id}/edit`)}
+                    >
+                      Edit Event
+                    </button>
+                    <button 
+                      style={{
+                        ...styles.deleteButton, 
+                        background: 'linear-gradient(135deg, #ff9800, #ff7043)'
+                      }} 
+                      onClick={() => handleDeleteClick(event.id)}
+                    >
+                      Delete Event
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -386,7 +421,6 @@ const getImageSrc = (image) => {
     </div>
   );
 };
-
 
 const styles = {
   pageContainer: {
@@ -518,25 +552,13 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minHeight: "280px",
+    position: "relative",
   },
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: "1rem",
-  },
-  cardTitle: {
-    fontSize: "1.5rem",
-    fontWeight: "700",
-    margin: "0",
-    color: "#1e293b",
-  },
-  statusBadge: {
-    color: "white",
-    padding: "0.25rem 0.75rem",
-    borderRadius: "9999px",
-    fontSize: "0.875rem",
-    fontWeight: "600",
   },
   cardBody: {
     flex: "1",
@@ -567,7 +589,6 @@ const styles = {
   },
   editButton: {
     padding: "0.5rem 1.25rem",
-    background: "linear-gradient(135deg, #ff9800, #ff7043)",
     color: "white",
     border: "none",
     borderRadius: "8px",
@@ -575,34 +596,31 @@ const styles = {
     fontWeight: "600",
     transition: "all 0.3s ease",
     boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     gap: "8px",
     ":hover": {
       transform: "translateY(-2px)",
       boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
     },
-    
   },
- deleteButton: {
-  padding: "0.5rem 1.25rem",
-  backgroundColor: "#ef4444",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: "600",
-  transition: "all 0.3s ease",
-  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  ":hover": {
-    backgroundColor: "#dc2626",
-    transform: "translateY(-2px)",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-  },
-}
+  deleteButton: {
+    padding: "0.5rem 1.25rem",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    ":hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+    },
+  }
 };
 
 export default MyEvents;

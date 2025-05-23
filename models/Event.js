@@ -47,6 +47,6 @@ const eventSchema = new mongoose.Schema({
     enum: ['approved', 'pending', 'declined'],
     default: 'pending',
   }
-}, { timestamps: true }); // Adds createdAt and updatedAt
+}, { timestamps: true }); 
 
 module.exports = mongoose.model("Event", eventSchema);
