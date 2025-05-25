@@ -15,7 +15,6 @@ const MyEvents = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
-  const [imageLoadStates, setImageLoadStates] = useState({});
 
   const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
     if (!isOpen) return null;
@@ -172,36 +171,6 @@ const MyEvents = () => {
     setFilteredEvents(filtered);
   }, [searchTerm, statusFilter, events]);
 
-  useEffect(() => {
-    if (events.length > 0) {
-      const initialLoadStates = {};
-      events.forEach(event => {
-        initialLoadStates[event.id] = { isLoading: true, hasError: false };
-      });
-      setImageLoadStates(initialLoadStates);
-    }
-  }, [events]);
- 
-  const handleImageLoad = (eventId) => {
-    setImageLoadStates(prev => ({
-      ...prev,
-      [eventId]: { isLoading: false, hasError: false }
-    }));
-  };
-
-  const handleImageError = (eventId) => {
-    setImageLoadStates(prev => ({
-      ...prev,
-      [eventId]: { isLoading: false, hasError: true }
-    }));
-  };
-
-  const getImageSrc = (image) => {
-    return image?.startsWith('data:image') 
-      ? image 
-      : `data:image/png;base64,${image}`;
-  };
-
   return (
     <div style={styles.pageContainer}>
       <ConfirmationModal
@@ -257,6 +226,7 @@ const MyEvents = () => {
         <div style={styles.grid}>
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
+              
               <div key={event.id} style={styles.card}>
                 {/* Status Badge */}
                 <div style={{ 
@@ -283,41 +253,20 @@ const MyEvents = () => {
                   gap: '1rem' 
                 }}>
                   <div style={{ padding: '1rem' }}>
-                    {event.image ? (
-                      <div style={{ position: 'relative' }}>
-                        {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
-                          <div
-                            style={{
-                              width: '100px',
-                              height: '100px',
-                              borderRadius: '50%',
-                              backgroundColor: '#f0f0f0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'absolute',
-                            }}
-                          >
-                            {imageLoadStates[event.id]?.hasError ? 'Error' : 'Loading...'}
-                          </div>
-                        )}
-                        <img
-                          src={event.image}
-                          alt="Event"
-                          onLoad={() => handleImageLoad(event.id)}
-                          onError={() => handleImageError(event.id)}
-                          style={{
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            border: '2px solid #fff',
-                            opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
-                            transition: 'opacity 0.3s ease',
-                          }}
-                        />
-                      </div>
-                    ) : (
+                  jsx
+{event.image ? (
+  <img
+    src={event.image} // Use DIRECTLY without processing
+    alt="Event"
+    style={{
+      width: '100px',
+      height: '100px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '2px solid #fff'
+    }}
+  />
+) : (
                       <div
                         style={{
                           width: '100px',
@@ -337,39 +286,22 @@ const MyEvents = () => {
 
                 <div style={styles.cardBody}>
                   {event.image && (
-                    <div style={{ position: 'relative' }}>
-                      {(imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError) && (
-                        <div
-                          style={{
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '6px',
-                            backgroundColor: '#f0f0f0',
-                            position: 'absolute',
-                          }}
-                        />
-                      )}
-                      <img
-                        src={event.image}
-                        alt="Event"
-                        onLoad={() => handleImageLoad(event.id)}
-                        onError={() => handleImageError(event.id)}
-                        style={{ 
-                          width: '60px', 
-                          height: '60px', 
-                          objectFit: 'cover', 
-                          borderRadius: '6px',
-                          opacity: imageLoadStates[event.id]?.isLoading || imageLoadStates[event.id]?.hasError ? 0 : 1,
-                          transition: 'opacity 0.3s ease',
-                        }}
-                      />
-                    </div>
+                    <img
+                      src={event.image}
+                      alt="Event"
+                      style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        objectFit: 'cover', 
+                        borderRadius: '6px'
+                      }}
+                    />
                   )}
+                  <div style={styles.infoRow}>
                     <div style={styles.infoRow}>
-                    <div style={styles.infoRow}>
-  <span style={styles.infoIcon}>🎭</span> {/* Added event emoji */}
-  <span>{event.title}</span>
-</div>
+                      <span style={styles.infoIcon}>🎭</span>
+                      <span>{event.title}</span>
+                    </div>
                   </div>
                   <div style={styles.infoRow}>
                     <span style={styles.infoIcon}>📅</span>
@@ -620,7 +552,12 @@ const styles = {
       transform: "translateY(-2px)",
       boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
     },
-  }
+  },
+   bookingImageContainer: {
+    width: "120px",
+    height: "120px",
+    flexShrink: 0,
+  },
 };
 
 export default MyEvents;

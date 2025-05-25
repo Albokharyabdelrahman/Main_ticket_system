@@ -18,7 +18,9 @@ const CreateEventPage = () => {
     description: "",
     availableTickets: "",
     totalTickets: "",
-    image: null // Changed from string to null for file upload
+    date: "",
+    time: "",
+    image: null
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,77 +48,95 @@ const CreateEventPage = () => {
   };
 
   const validateTickets = () => {
-  if (parseInt(formData.availableTickets) > parseInt(formData.totalTickets)) {
-    alert("Available tickets cannot be more than total tickets!");
-    return false;
-  }
-  return true;
-};
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  
-  // Client-side validation
-  if (!formData.image) {
-    setError("Please select an event image");
-    return;
-  }
+    if (parseInt(formData.availableTickets) > parseInt(formData.totalTickets)) {
+      setError("Available tickets cannot be more than total tickets!");
+      return false;
+    }
+    return true;
+  };
 
-  setIsSubmitting(true);
+  const validateDate = () => {
+    if (!formData.date) {
+      setError("Please select an event date");
+      return false;
+    }
 
-  try {
-    const token = localStorage.getItem("token");
-    const formDataToSend = new FormData();
+    const eventDateTime = new Date(`${formData.date}T${formData.time || "00:00"}`);
+    if (eventDateTime < new Date()) {
+      setError("Event date must be in the future");
+      return false;
+    }
+    return true;
+  };
 
-    // Append all fields with proper type conversion
-    formDataToSend.append('title', formData.title);
-    formDataToSend.append('location', formData.location);
-    formDataToSend.append('price', formData.price);
-    formDataToSend.append('category', formData.category);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('availableTickets', formData.availableTickets);
-    formDataToSend.append('totalTickets', formData.totalTickets);
-    formDataToSend.append('image', formData.image);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    
+    if (!formData.image) {
+      setError("Please select an event image");
+      return;
+    }
 
-    const response = await axios.post(API_BASE_URL, formDataToSend, {
-      withCredentials: true,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    if (!validateDate() || !validateTickets()) {
+      return;
+    }
 
-    if (response.status === 201) {
-      setSuccessMessage("Event created successfully!");
-      // Reset form
-      setFormData({
-        title: "",
-        location: "",
-        price: "",
-        category: "",
-        description: "",
-        availableTickets: "",
-        totalTickets: "",
-        image: null
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const formDataToSend = new FormData();
+
+      // Append all fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('location', formData.location);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('availableTickets', formData.availableTickets);
+      formDataToSend.append('totalTickets', formData.totalTickets);
+      formDataToSend.append('date', new Date(`${formData.date}T${formData.time}`).toISOString());
+      formDataToSend.append('image', formData.image);
+
+      const response = await axios.post(API_BASE_URL, formDataToSend, {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      // Redirect after delay
-      setTimeout(() => navigate(-1), 2000);
+
+      if (response.status === 201) {
+        setSuccessMessage("Event created successfully!");
+        setFormData({
+          title: "",
+          location: "",
+          price: "",
+          category: "",
+          description: "",
+          availableTickets: "",
+          totalTickets: "",
+          date: "",
+          time: "",
+          image: null
+        });
+        setTimeout(() => navigate(-1), 2000);
+      }
+    } catch (err) {
+      console.error("Event creation error:", err);
+      if (err.response?.data?.errors) {
+        const errorMessages = Object.values(err.response.data.errors)
+          .map(error => error.message)
+          .join(', ');
+        setError(errorMessages);
+      } else {
+        setError(err.response?.data?.message || "Failed to create event. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (err) {
-    console.error("Event creation error:", err);
-    if (err.response?.data?.errors) {
-      // Handle Mongoose validation errors
-      const errorMessages = Object.values(err.response.data.errors)
-        .map(error => error.message)
-        .join(', ');
-      setError(errorMessages);
-    } else {
-      setError(err.response?.data?.message || "Failed to create event. Please try again.");
-    }
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const categories = [
     "Music",
@@ -163,14 +183,7 @@ const handleSubmit = async (e) => {
           </div>
         )}
 
-        <form onSubmit={(e) => {
-                  e.preventDefault();
-                  if (validateTickets()) {
-                     handleSubmit(e);
-                     } else {
-                     alert("Available tickets cannot be more than total tickets!");
-                           }
-                        } } style={styles.form}>
+        <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formColumns}>
             {/* Left Column */}
             <div style={styles.formColumn}>
@@ -261,30 +274,58 @@ const handleSubmit = async (e) => {
                     </div>
                   </div>
                 </div>
-<div style={styles.formGroup}>
-  <label style={styles.label}>Event Image*</label>
-  <div style={styles.fileInputContainer}>
-    <label style={{
-      ...styles.fileInputLabel,
-      color: '#000',
-      border: error && !formData.image ? '1px solid #e53e3e' : '1px solid #e2e8f0'
-    }}>
-      {formData.image ? formData.image.name : "Choose an image"}
-      <input
-        type="file"
-        name="image"
-        onChange={handleImageChange}
-        style={styles.fileInput}
-        accept="image/*"
-      />
-    </label>
-    {error && !formData.image && (
-      <div style={{ color: '#e53e3e', fontSize: '0.75rem' }}>
-        Please select an image
-      </div>
-    )}
-  </div>
-</div>
+
+                <div style={styles.formRow}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Date*</label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={formData.date}
+                      onChange={handleChange}
+                      style={styles.input}
+                      required
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Time*</label>
+                    <input
+                      type="time"
+                      name="time"
+                      value={formData.time}
+                      onChange={handleChange}
+                      style={styles.input}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Event Image*</label>
+                  <div style={styles.fileInputContainer}>
+                    <label style={{
+                      ...styles.fileInputLabel,
+                      color: '#000',
+                      border: error && !formData.image ? '1px solid #e53e3e' : '1px solid #e2e8f0'
+                    }}>
+                      {formData.image ? formData.image.name : "Choose an image"}
+                      <input
+                        type="file"
+                        name="image"
+                        onChange={handleImageChange}
+                        style={styles.fileInput}
+                        accept="image/*"
+                      />
+                    </label>
+                    {error && !formData.image && (
+                      <div style={{ color: '#e53e3e', fontSize: '0.75rem' }}>
+                        Please select an image
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div style={styles.formSection}>
