@@ -14,55 +14,73 @@ import BookTickets from "../pages/BookTickets";
 import FindBooking from "../pages/FindBooking";
 import UpdateProfile from "../pages/UpdateProfile";
 import MyBookings from "../pages/MyBookings";
-import EventDetail from "../pages/EventDetails";   // dynamic route
-import PublicEvent from "../pages/PublicEvent";    // additional public event route
+import EventDetail from "../pages/EventDetails";
+import PublicEvent from "../pages/PublicEvent";
 import UserProfiles from "../pages/UserProfiles";
 import EditUser from "../pages/EditUser";
 import AdminEventsPage from "../pages/AdminEventsPage";
 import CreateEventPage from "../pages/CreateEventPage";
-import EditEvent from "../pages/EditEvent"; 
-import MyEvents from "../pages/MyEvents"; 
-import EventAnalytics from "../pages/EventAnalytics"; 
-import UpdateEventById from "../pages/UpdateEventById"; 
-import DeleteEventById from "../pages/DeleteEventById"; 
-import SearchUserProfile from "../pages/SearchUserProfile"; 
-import GetUserProfile from "../pages/GetUserProfile"; 
-import ViewUserProfile from "../pages/ViewUserProfile"; 
+import EditEvent from "../pages/EditEvent";
+import MyEvents from "../pages/MyEvents";
+import EventAnalytics from "../pages/EventAnalytics";
+import UpdateEventById from "../pages/UpdateEventById";
+import DeleteEventById from "../pages/DeleteEventById";
+import SearchUserProfile from "../pages/SearchUserProfile";
+import GetUserProfile from "../pages/GetUserProfile";
+import ViewUserProfile from "../pages/ViewUserProfile";
+import UnauthorizedPage from "../pages/UnauthorizedPage";
 
-
-
+// Wrapper
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function MyRoutes() {
   return (
     <Routes>
-      <Route path="/update-event/:id/" element={<EditEvent />} />
-      <Route path="/events/:id/edit" element={<EditEvent />} />
-      <Route path="/user-profile" element={<SearchUserProfile />} />
-      <Route path="/user-getProfile" element={<GetUserProfile />} />
-<Route path="/user-getProfile/:userId" element={<ViewUserProfile />} />
-      <Route path="/delete-event" element={<DeleteEventById />} />
+      {/* Public Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/user-profiles" element={<UserProfiles />} />
-      <Route path="/edit-user/:userId" element={<EditUser />} />
-      <Route path="/admin/events" element={<AdminEventsPage />} />
-      <Route path="/UserDashboard" element={<UserDashboard />} />
-      <Route path="/AdminDashboard" element={<AdminDashboard />} />
-      <Route path="/OrganizerDashboard" element={<OrganizerDashboard />} />
       <Route path="/guest" element={<GuestDashboard />} />
       <Route path="/book-tickets" element={<BookTickets />} />
       <Route path="/find-booking" element={<FindBooking />} />
-      <Route path="/update-profile" element={<UpdateProfile />} />
-      <Route path="/my-bookings" element={<MyBookings />} />
       <Route path="/event/:id" element={<EventDetail />} />
       <Route path="/public-event" element={<PublicEvent />} />
-      <Route path="/create-event" element={<CreateEventPage />} />
-      <Route path="/my-events" element={<MyEvents />} />
-      <Route path="/my-events/analytics" element={<EventAnalytics />} />
-      <Route path="/update-event" element={<UpdateEventById />} />
-      
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+      {/* Admin Protected Routes */}
+      <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
+        <Route path="/AdminDashboard" element={<AdminDashboard />} />
+        <Route path="/admin/events" element={<AdminEventsPage />} />
+      </Route>
+
+      {/* Organizer Protected Routes */}
+      <Route element={<ProtectedRoute allowedRoles={["Organizer"]} />}>
+        <Route path="/OrganizerDashboard" element={<OrganizerDashboard />} />
+        <Route path="/create-event" element={<CreateEventPage />} />
+        <Route path="/my-events" element={<MyEvents />} />
+        <Route path="/my-events/analytics" element={<EventAnalytics />} />
+        <Route path="/update-event" element={<UpdateEventById />} />
+        <Route path="/delete-event" element={<DeleteEventById />} />
+        <Route path="/events/:id/edit" element={<EditEvent />} />
+        <Route path="/update-event/:id" element={<EditEvent />} />
+      </Route>
+
+      {/* User Protected Routes */}
+      <Route element={<ProtectedRoute allowedRoles={["User"]} />}>
+        <Route path="/UserDashboard" element={<UserDashboard />} />
+        <Route path="/update-profile" element={<UpdateProfile />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
+      </Route>
+
+      {/* All Auth Roles (Admin, Organizer, User) */}
+      <Route element={<ProtectedRoute allowedRoles={["Admin", "Organizer", "User"]} />}>
+        <Route path="/user-profiles" element={<UserProfiles />} />
+        <Route path="/edit-user/:userId" element={<EditUser />} />
+        <Route path="/user-profile" element={<SearchUserProfile />} />
+        <Route path="/user-getProfile" element={<GetUserProfile />} />
+        <Route path="/user-getProfile/:userId" element={<ViewUserProfile />} />
+      </Route>
     </Routes>
   );
 }
