@@ -89,9 +89,7 @@ const Spinner = () => (
           style={styles.logo}
           onClick={() => navigate("/UserDashboard")}
         />
-          {successMessage && (
-          <div style={styles.successMessage}>{successMessage}</div>
-        )}
+         
         {error && <div style={styles.errorMessage}>{error}</div>}
         {loading && (
           <div style={styles.loadingMessage}>

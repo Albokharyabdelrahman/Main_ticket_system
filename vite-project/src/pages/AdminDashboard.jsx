@@ -42,7 +42,8 @@ const AdminDashboard = () => {
 //         You are not allowed to view this. Get out.
 //       </div>
 //     );
-//   }  const { logout } = useContext(AuthContext);
+  
+   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
   const [quickActionMsg, setQuickActionMsg] = useState("");

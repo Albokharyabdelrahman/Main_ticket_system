@@ -41,10 +41,6 @@ export default function MyRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/guest" element={<GuestDashboard />} />
-      <Route path="/book-tickets" element={<BookTickets />} />
-      <Route path="/find-booking" element={<FindBooking />} />
-      <Route path="/event/:id" element={<EventDetail />} />
       <Route path="/public-event" element={<PublicEvent />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
@@ -52,6 +48,10 @@ export default function MyRoutes() {
       <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
         <Route path="/AdminDashboard" element={<AdminDashboard />} />
         <Route path="/admin/events" element={<AdminEventsPage />} />
+        <Route path="/user-profiles" element={<UserProfiles />} />
+         <Route path="/user-getProfile/:userId" element={<ViewUserProfile />} />
+        <Route path="/edit-user/:userId" element={<EditUser />} />
+
       </Route>
 
       {/* Organizer Protected Routes */}
@@ -60,27 +60,36 @@ export default function MyRoutes() {
         <Route path="/create-event" element={<CreateEventPage />} />
         <Route path="/my-events" element={<MyEvents />} />
         <Route path="/my-events/analytics" element={<EventAnalytics />} />
-        <Route path="/update-event" element={<UpdateEventById />} />
+        
+      </Route>
+
+    <Route element={<ProtectedRoute allowedRoles={["Organizer","Admin"]} />}>
         <Route path="/delete-event" element={<DeleteEventById />} />
         <Route path="/events/:id/edit" element={<EditEvent />} />
         <Route path="/update-event/:id" element={<EditEvent />} />
+        <Route path="/update-event" element={<UpdateEventById />} />
+        <Route path="/event/:id" element={<EventDetail />} />
+
       </Route>
+
 
       {/* User Protected Routes */}
       <Route element={<ProtectedRoute allowedRoles={["User"]} />}>
         <Route path="/UserDashboard" element={<UserDashboard />} />
-        <Route path="/update-profile" element={<UpdateProfile />} />
         <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/find-booking" element={<FindBooking />} />
+        <Route path="/book-tickets" element={<BookTickets />} />
+
       </Route>
 
       {/* All Auth Roles (Admin, Organizer, User) */}
       <Route element={<ProtectedRoute allowedRoles={["Admin", "Organizer", "User"]} />}>
-        <Route path="/user-profiles" element={<UserProfiles />} />
-        <Route path="/edit-user/:userId" element={<EditUser />} />
         <Route path="/user-profile" element={<SearchUserProfile />} />
         <Route path="/user-getProfile" element={<GetUserProfile />} />
-        <Route path="/user-getProfile/:userId" element={<ViewUserProfile />} />
+        <Route path="/update-profile" element={<UpdateProfile />} />
+
       </Route>
+      
     </Routes>
   );
 }
