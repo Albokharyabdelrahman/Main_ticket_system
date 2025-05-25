@@ -28,21 +28,21 @@ function getCurrentUserIdFromCookie() {
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const AdminDashboard = () => {
-const currentUserArr = getCurrentUserIdFromCookie();
-  const currentRole = currentUserArr[1];
-  if (currentRole !== "Admin") {
-    return (
-      <div style={{
-        color: "#dc2626",
-        fontWeight: "bold",
-        padding: 40,
-        textAlign: "center",
-        fontSize: 22
-      }}>
-        You are not allowed to view this. Get out.
-      </div>
-    );
-  }  const { logout } = useContext(AuthContext);
+// const currentUserArr = getCurrentUserIdFromCookie();
+//   const currentRole = currentUserArr[1];
+//   if (currentRole !== "Admin") {
+//     return (
+//       <div style={{
+//         color: "#dc2626",
+//         fontWeight: "bold",
+//         padding: 40,
+//         textAlign: "center",
+//         fontSize: 22
+//       }}>
+//         You are not allowed to view this. Get out.
+//       </div>
+//     );
+//   }  const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
   const [quickActionMsg, setQuickActionMsg] = useState("");

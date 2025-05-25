@@ -28,21 +28,21 @@ const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const UserDashboard = () => {
 
-const currentUserArr = getCurrentUserIdFromCookie();
-  const currentRole = currentUserArr[1];
-  if (currentRole !== "User") {
-    return (
-      <div style={{
-        color: "#dc2626",
-        fontWeight: "bold",
-        padding: 40,
-        textAlign: "center",
-        fontSize: 22
-      }}>
-        You are not allowed to view this. Get out.
-      </div>
-    );
-  }
+// const currentUserArr = getCurrentUserIdFromCookie();
+//   const currentRole = currentUserArr[1];
+//   if (currentRole !== "User") {
+//     return (
+//       <div style={{
+//         color: "#dc2626",
+//         fontWeight: "bold",
+//         padding: 40,
+//         textAlign: "center",
+//         fontSize: 22
+//       }}>
+//         You are not allowed to view this. Get out.
+//       </div>
+//     );
+//   }
 
 
 
