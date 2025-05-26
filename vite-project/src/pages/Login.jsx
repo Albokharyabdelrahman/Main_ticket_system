@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import logo from "./logo.png"; // Update the path if needed
-import { Link } from "react-router-dom";
 
 export default function Login() {
   const [data, setData] = useState({ email: "", password: "" });
@@ -11,7 +10,12 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverGuest, setHoverGuest] = useState(false);
+  const [animate, setAnimate] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setAnimate(true);
+  }, []);
 
   function handleChange(e) {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -99,10 +103,31 @@ export default function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.logoContainer}>
-        <img src={logo} alt="Ticket Logo" style={styles.logoImage} />
+        <img
+          src={logo}
+          alt="Ticket Logo"
+          style={{
+            ...styles.logoImage,
+            animation: animate ? "bounceIn 1s ease-out" : "none",
+          }}
+        />
         <div style={styles.brandContainer}>
-          <div style={styles.brandName}>BOOKEDIN</div>
-          <div style={styles.brandTagline}>CLICK.BOOK.ENJOY</div>
+          <div
+            style={{
+              ...styles.brandName,
+              animation: animate ? "fadeUp 1.2s ease-out" : "none",
+            }}
+          >
+            BOOKEDIN
+          </div>
+          <div
+            style={{
+              ...styles.brandTagline,
+              animation: animate ? "slideInRight 1.4s ease-out" : "none",
+            }}
+          >
+            CLICK.BOOK.ENJOY
+          </div>
         </div>
       </div>
 
@@ -154,47 +179,52 @@ export default function Login() {
         </button>
 
         <div style={styles.secondaryActions}>
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            style={styles.textButton}
-          >
+          <button type="button" onClick={handleForgotPassword} style={styles.textButton}>
             Forgot Password?
           </button>
           <span style={styles.divider}>|</span>
-          <button
-            type="button"
-            onClick={handleRegisterRedirect}
-            style={styles.textButton}
-          >
+          <button type="button" onClick={handleRegisterRedirect} style={styles.textButton}>
             Create Account
           </button>
         </div>
       </form>
 
-       <footer style={styles.footer}>
+      <footer style={styles.footer}>
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
         <div style={styles.footerLinks}>
-          <Link to="/contact" style={styles.footerLink}>
-            Contact
-          </Link>
+          <Link to="/contact" style={styles.footerLink}>Contact</Link>
           <span style={styles.footerDivider}>|</span>
-          <Link to="/privacy" style={styles.footerLink}>
-            Privacy
-          </Link>
+          <Link to="/privacy" style={styles.footerLink}>Privacy</Link>
           <span style={styles.footerDivider}>|</span>
-          <Link to="/about" style={styles.footerLink}>
-            About
-          </Link>
+          <Link to="/about" style={styles.footerLink}>About</Link>
         </div>
       </footer>
-              </div>
 
+      {/* Animations */}
+      <style>
+        {`
+          @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+          }
+
+          @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+
+          @keyframes slideInRight {
+            0% { opacity: 0; transform: translateX(50px); }
+            100% { opacity: 1; transform: translateX(0); }
+          }
+        `}
+      </style>
+    </div>
   );
 }
 
 const styles = {
-  
   container: {
     minHeight: "100vh",
     display: "flex",
@@ -231,7 +261,7 @@ const styles = {
     textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
     fontFamily: "'Arial Black', sans-serif",
   },
-  brandTagline: {
+   brandTagline: {
     fontSize: "12px",
     color: "white",
     letterSpacing: "2.5px",

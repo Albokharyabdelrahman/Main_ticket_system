@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { Link } from "react-router-dom";
+
 function getCurrentUserIdFromCookie() {
   const cookie = document.cookie
     .split("; ")
@@ -108,9 +108,9 @@ const OrganizerDashboard = () => {
     );
 
     if (analyticsError) return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorIcon}>⚠️</div>
-        <p>{analyticsError}</p>
+      <div style={styles.noDataContainer}>
+        <div style={styles.noDataIcon}>📊</div>
+        <p>No event data available</p>
       </div>
     );
 
@@ -242,10 +242,7 @@ const OrganizerDashboard = () => {
           </div>
 
           <div style={styles.contentCard}>
-            <h3 style={styles.cardTitle}>Quick Actions</h3>
-            <p style={styles.cardText}>
-              Get started with these options or explore more features from the menu.
-            </p>
+          
             
             <div style={{ 
               height: '1px', 

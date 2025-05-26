@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import UserRow from "../components/UserRow";
 import { Link } from "react-router-dom"; 
+
 function getCurrentUserIdFromCookie() {
   const cookie = document.cookie
     .split("; ")
@@ -18,7 +19,7 @@ function getCurrentUserIdFromCookie() {
     const payloadBase64 = token.split(".")[1];
     const decodedPayload = JSON.parse(atob(payloadBase64));
     const UserArr=[decodedPayload.userId,decodedPayload.role||"Rando"];
-    return UserArr; // <--- THIS is the correct field
+    return UserArr;
   } catch (e) {
     console.error("Invalid token:", e);
     return null;
@@ -28,25 +29,9 @@ function getCurrentUserIdFromCookie() {
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
 const AdminDashboard = () => {
-// const currentUserArr = getCurrentUserIdFromCookie();
-//   const currentRole = currentUserArr[1];
-//   if (currentRole !== "Admin") {
-//     return (
-//       <div style={{
-//         color: "#dc2626",
-//         fontWeight: "bold",
-//         padding: 40,
-//         textAlign: "center",
-//         fontSize: 22
-//       }}>
-//         You are not allowed to view this. Get out.
-//       </div>
-//     );
-  
-   const { logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
-  const [quickActionMsg, setQuickActionMsg] = useState("");
   const [editingObj, setEditingObj] = useState(null);
   const [editingType, setEditingType] = useState(null);
   const navigate = useNavigate();
@@ -68,20 +53,19 @@ const AdminDashboard = () => {
     fetchProfile();
   }, []);
 
- const handleLogout = async () => {
-  try {
-    const BASE_URL = "http://localhost:5173/login";
-    await axios.post("http://localhost:7000/api/v1/logout", null, {
-      withCredentials: true,
-    })
-    localStorage.removeItem("token");
-    logout(); 
-    window.location.href = BASE_URL;
-  } catch (err) {
-    console.error("Logout failed:", err);
-  }
-};
-
+  const handleLogout = async () => {
+    try {
+      const BASE_URL = "http://localhost:5173/login";
+      await axios.post("http://localhost:7000/api/v1/logout", null, {
+        withCredentials: true,
+      })
+      localStorage.removeItem("token");
+      logout(); 
+      window.location.href = BASE_URL;
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
   const handleUpdateProfile = () => navigate('/update-profile');
 
@@ -99,29 +83,26 @@ const AdminDashboard = () => {
 
   // EVENTS
   const getAllEvents = async () => {
-  navigate("/admin/events");
+    navigate("/admin/events");
   };
 
- const updateEvent = () => {
-  navigate('/update-event'); 
-};
+  const updateEvent = () => {
+    navigate('/update-event'); 
+  };
 
-    const deleteEvent = () => {
-  navigate('/delete-event'); 
-};
+  const deleteEvent = () => {
+    navigate('/delete-event'); 
+  };
   
-
   // USERS
   const viewProfile = async () => {
-   navigate('/user-profiles');
+    navigate('/user-profiles');
   };
 
- 
   const updateUserProfile = () =>
-  navigate("/user-profile");
+    navigate("/user-profile");
     
-
- const getUserProfile = () =>
+  const getUserProfile = () =>
     navigate("/user-getProfile");
  
 
@@ -130,17 +111,16 @@ const AdminDashboard = () => {
       <div style={{ display: "flex", flex: 1 }}>
         <aside style={styles.sidebar}>
           <div style={styles.profilePictureContainer}>
-          {profile && profile.profilePic ? (
-           <img
-             src={profile.profilePic}
-             alt="Profile"
-            style={styles.profilePicture}
-             />
-              ) : (
-                <div style={styles.defaultProfileIcon}>👤</div> // Optional icon emoji
-              )     }
+            {profile && profile.profilePic ? (
+              <img
+                src={profile.profilePic}
+                alt="Profile"
+                style={styles.profilePicture}
+              />
+            ) : (
+              <div style={styles.defaultProfileIcon}>👤</div>
+            )}
           </div>
-
 
           <div style={styles.sidebarHeader}>
             <h2 style={styles.sidebarTitle}>Admin Profile</h2>
@@ -190,53 +170,63 @@ const AdminDashboard = () => {
           </div>
 
           <div style={styles.dashboardButtons}>
-            <button style={styles.actionButton} onClick={getAllEvents}>
-              <span style={styles.buttonIcon}>📋</span>
-              <span>Get All Events</span>
-            </button>
-            <button style={styles.actionButton} onClick={updateEvent}>
-              <span style={styles.buttonIcon}>✏️</span>
-              <span>Update Event</span>
-            </button>
-            <button style={styles.actionButton} onClick={deleteEvent}>
-              <span style={styles.buttonIcon}>🗑️</span>
-              <span>Delete Event</span>
-            </button>
-            <button style={styles.actionButton} onClick={viewProfile}>
-              <span style={styles.buttonIcon}>👥</span>
-              <span>View All Profiles</span>
-            </button>
-            <button style={styles.actionButton} onClick={getUserProfile}>
-              <span style={styles.buttonIcon}>🔍</span>
-              <span>Get User Profile</span>
-            </button>
-            <button style={styles.actionButton} onClick={updateUserProfile}>
-              <span style={styles.buttonIcon}>🔄</span>
-              <span>Update User Profile</span>
-            </button>
-           
-          </div>
+            {/* Events Section */}
+            <div style={styles.buttonGroup}>
+              <h3 style={styles.sectionTitle}>Event Management</h3>
+              <div style={styles.buttonRow}>
+                <button style={styles.actionButton} onClick={getAllEvents}>
+                  <span style={styles.buttonIcon}>📋</span>
+                  <span>Get All Events</span>
+                </button>
+                <button style={styles.actionButton} onClick={updateEvent}>
+                  <span style={styles.buttonIcon}>✏️</span>
+                  <span>Update Event</span>
+                </button>
+                <button style={styles.actionButton} onClick={deleteEvent}>
+                  <span style={styles.buttonIcon}>🗑️</span>
+                  <span>Delete Event</span>
+                </button>
+              </div>
+            </div>
 
-          
+            {/* User Management Section */}
+            <div style={styles.buttonGroup}>
+              <h3 style={styles.sectionTitle}>User Management</h3>
+              <div style={styles.buttonRow}>
+                <button style={styles.actionButton} onClick={viewProfile}>
+                  <span style={styles.buttonIcon}>👥</span>
+                  <span>View All Profiles</span>
+                </button>
+                <button style={styles.actionButton} onClick={getUserProfile}>
+                  <span style={styles.buttonIcon}>🔍</span>
+                  <span>Get User Profile</span>
+                </button>
+                <button style={styles.actionButton} onClick={updateUserProfile}>
+                  <span style={styles.buttonIcon}>🔄</span>
+                  <span>Update User Profile</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </main>
       </div>
 
-     <footer style={styles.footer}>
-  <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-  <div style={styles.footerLinks}>
-    <Link to="/contact" style={styles.footerLink}>
-      Contact
-    </Link>
-    <span style={styles.footerDivider}>|</span>
-    <Link to="/privacy" style={styles.footerLink}>
-      Privacy
-    </Link>
-    <span style={styles.footerDivider}>|</span>
-    <Link to="/about" style={styles.footerLink}>
-      About
-    </Link>
-  </div>
-</footer>
+      <footer style={styles.footer}>
+        <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
+        <div style={styles.footerLinks}>
+          <Link to="/contact" style={styles.footerLink}>
+            Contact
+          </Link>
+          <span style={styles.footerDivider}>|</span>
+          <Link to="/privacy" style={styles.footerLink}>
+            Privacy
+          </Link>
+          <span style={styles.footerDivider}>|</span>
+          <Link to="/about" style={styles.footerLink}>
+            About
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 };
@@ -391,10 +381,28 @@ const styles = {
     color: "#4f46e5",
   },
   dashboardButtons: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "30px",
+    marginBottom: "40px",
+  },
+  buttonGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  sectionTitle: {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#4f46e5",
+    margin: "0 0 10px 0",
+    paddingBottom: "5px",
+    borderBottom: "2px solid #e2e8f0",
+  },
+  buttonRow: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
     gap: "20px",
-    marginBottom: "40px",
   },
   actionButton: {
     display: "flex",
@@ -410,11 +418,11 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.3s ease",
     boxShadow: "0 6px 12px rgba(79, 70, 229, 0.2)",
+    minWidth: "200px",
   },
   buttonIcon: {
     fontSize: "24px",
   },
-
   footer: {
     padding: "25px 40px",
     backgroundColor: "#3f51b5",

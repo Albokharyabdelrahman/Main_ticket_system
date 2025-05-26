@@ -279,13 +279,6 @@ const ForgotPassword = () => {
       {/* Footer */}
       <footer style={styles.footer}>
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-        <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>Contact</a>
-          <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>Privacy</a>
-          <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>About</a>
-        </div>
       </footer>
     </div>
   );
