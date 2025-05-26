@@ -226,9 +226,7 @@ exports.getAnalytics = async (req, res) => {
     res.status(500).json({ error: "Server error while fetching analytics" });
   }
   
-};
-
-exports.getMyEvents = async (req, res) => {
+};exports.getMyEvents = async (req, res) => {
   try {
     // 1️⃣ Verify the user is an organizer
     if (req.user.role !== "Organizer") {
@@ -240,7 +238,7 @@ exports.getMyEvents = async (req, res) => {
     // 2️⃣ Find all events for this organizer
     const events = await Event.find({ 
       organizerId: req.user.userId 
-    }).select('-__v'); // Exclude the version key
+    }).select('-__v');
 
     if (!events.length) {
       return res.status(200).json({
@@ -249,7 +247,7 @@ exports.getMyEvents = async (req, res) => {
       });
     }
 
-    // 3️⃣ Format the response
+    // 3️⃣ Format the response with image handling
     const formattedEvents = events.map(event => ({
       id: event._id,
       title: event.title,
@@ -260,6 +258,8 @@ exports.getMyEvents = async (req, res) => {
         total: event.totalTickets,
         available: event.availableTickets
       },
+      price: event.price,
+      image: event.image ? `data:image/png;base64,${event.image}` : null,
       createdAt: event.createdAt
     }));
 

@@ -49,13 +49,19 @@ body, html, #root, .home-wrapper {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-color: white !important;
-}
+} 
 .header-container {
-  display: flex;
-  justify-content: space-between; /* Pushes items to left and right edges */
-  align-items: center;            /* Vertically center items */
-  padding: 0 1.5rem;              /* Optional: some horizontal padding */
+ max-width: 1200px;
+ width: 100%;
+ margin: 0 auto;
+ padding: 1rem 2rem;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+flex-wrap: wrap;
+gap: 1rem;
 }
+        /* Optional: some horizontal padding */
 
 
 .logo-container {
@@ -412,6 +418,7 @@ body, html, #root, .home-wrapper {
   z-index: 1;
 }
 
+
 .footer-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -450,6 +457,43 @@ body, html, #root, .home-wrapper {
 .footer-links a:hover {
   color: var(--accent-color);
 }
+.custom-footer {
+  margin-top: 0px;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+
+}
+
+.footer-text {
+  margin-bottom: 6px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: var(--accent-color); /* or use #764ba2 if you want a fixed color */
+}
+
+.footer-divider {
+  color: #764ba2;
+  font-weight: 600;
+}
+
 
 /* Responsive Design */
 @media (max-width: 992px) {

@@ -94,6 +94,22 @@ const modalStyles = {
   },
 };
 
+const formatDate = (dateString) => {
+  if (!dateString) return "📅 Date to be announced";
+  try {
+    const options = { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return `📅 ${new Date(dateString).toLocaleDateString(undefined, options)}`;
+  } catch (e) {
+    return "📅 Date to be announced";
+  }
+};
+
 const EventsTable = () => {
   const [events, setEvents] = useState([]);
   const [ticketsInput, setTicketsInput] = useState({});
@@ -346,7 +362,29 @@ const EventsTable = () => {
       transition: "all 0.3s ease",
       display: "flex",
       flexDirection: "column",
-      minHeight: "320px",
+      minHeight: "420px", // Increased height to accommodate image
+    },
+    cardImageContainer: {
+      width: "100%",
+      height: "180px",
+      borderRadius: "0.75rem",
+      overflow: "hidden",
+      marginBottom: "1rem",
+    },
+    cardImage: {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+    },
+    cardImagePlaceholder: {
+      width: "100%",
+      height: "100%",
+      backgroundColor: "#f1f5f9",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      color: "#64748b",
+      fontSize: "2rem",
     },
     cardHeader: {
       display: "flex",
@@ -509,6 +547,20 @@ const EventsTable = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
                   >
+                    <div style={styles.cardImageContainer}>
+                      {event.image ? (
+                        <img 
+                          src={event.image} 
+                          alt={event.title} 
+                          style={styles.cardImage}
+                        />
+                      ) : (
+                        <div style={styles.cardImagePlaceholder}>
+                          <span>🎭</span>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div style={styles.cardHeader}>
                       <h2 style={styles.cardTitle}>{event.title}</h2>
                       <span style={styles.priceBadge}>${event.price}</span>
@@ -518,25 +570,17 @@ const EventsTable = () => {
                       <p style={styles.cardDescription}>{event.description}</p>
                       
                       <div style={styles.infoRow}>
-                        <span style={styles.infoIcon}>📅</span>
-                        <span>{eventDate.toLocaleDateString()}</span>
-                        <span style={{ margin: "0 8px" }}>•</span>
-                        <span>{eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        <span>{formatDate(event.date)}</span>
                       </div>
                       
                       <div style={styles.infoRow}>
                         <span style={styles.infoIcon}>📍</span>
-                        <span>{event.location}</span>
+                        <span>{event.location || "Venue to be confirmed"}</span>
                       </div>
                       
                       <div style={styles.infoRow}>
                         <span style={styles.infoIcon}>🎟️</span>
-                        <span>{event.availableTickets} / {event.totalTickets} available</span>
-                      </div>
-                      
-                      <div style={styles.infoRow}>
-                        <span style={styles.infoIcon}>📁</span>
-                        <span>{event.category}</span>
+                        <span>{event.availableTickets} tickets available</span>
                       </div>
                     </div>
 

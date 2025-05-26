@@ -226,7 +226,6 @@ const MyEvents = () => {
         <div style={styles.grid}>
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
-              
               <div key={event.id} style={styles.card}>
                 {/* Status Badge */}
                 <div style={{ 
@@ -245,63 +244,25 @@ const MyEvents = () => {
                   {event.status}
                 </div>
 
-                <div style={{ 
-                  ...styles.cardHeader, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  gap: '1rem' 
-                }}>
-                  <div style={{ padding: '1rem' }}>
-                  jsx
-{event.image ? (
-  <img
-    src={event.image} // Use DIRECTLY without processing
-    alt="Event"
-    style={{
-      width: '100px',
-      height: '100px',
-      borderRadius: '50%',
-      objectFit: 'cover',
-      border: '2px solid #fff'
-    }}
-  />
-) : (
-                      <div
-                        style={{
-                          width: '100px',
-                          height: '100px',
-                          borderRadius: '50%',
-                          backgroundColor: '#f0f0f0',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        No Image
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div style={styles.cardBody}>
-                  {event.image && (
+                {/* Event Image - Now rectangular and full width */}
+                <div style={styles.imageContainer}>
+                  {event.image ? (
                     <img
                       src={event.image}
                       alt="Event"
-                      style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        objectFit: 'cover', 
-                        borderRadius: '6px'
-                      }}
+                      style={styles.eventImage}
                     />
-                  )}
-                  <div style={styles.infoRow}>
-                    <div style={styles.infoRow}>
-                      <span style={styles.infoIcon}>🎭</span>
-                      <span>{event.title}</span>
+                  ) : (
+                    <div style={styles.noImagePlaceholder}>
+                      No Image Available
                     </div>
+                  )}
+                </div>
+
+                <div style={styles.cardBody}>
+                  <div style={styles.infoRow}>
+                    <span style={styles.infoIcon}>🎭</span>
+                    <span>{event.title}</span>
                   </div>
                   <div style={styles.infoRow}>
                     <span style={styles.infoIcon}>📅</span>
@@ -315,6 +276,12 @@ const MyEvents = () => {
                     <span style={styles.infoIcon}>🎟️</span>
                     <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
                   </div>
+                
+<div style={styles.infoRow}>
+  <span style={styles.infoIcon}>💰</span>
+  <span>{event.price} EGP</span>
+</div>
+
                 </div>
 
                 {/* BUTTONS - SIDE BY SIDE */}
@@ -483,14 +450,36 @@ const styles = {
     transition: "all 0.3s ease",
     display: "flex",
     flexDirection: "column",
-    minHeight: "280px",
+    minHeight: "400px",
+    position: "relative",
+    overflow: "hidden",
+  },
+  imageContainer: {
+    width: "100%",
+    height: "180px",
+    marginBottom: "1rem",
+    borderRadius: "0.5rem",
+    overflow: "hidden",
     position: "relative",
   },
-  cardHeader: {
+  eventImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.3s ease",
+    ":hover": {
+      transform: "scale(1.05)",
+    }
+  },
+  noImagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#f0f0f0",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "1rem",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#666",
+    fontSize: "0.9rem",
   },
   cardBody: {
     flex: "1",
@@ -498,6 +487,7 @@ const styles = {
     flexDirection: "column",
     gap: "0.75rem",
     marginBottom: "1.5rem",
+    width: "100%",
   },
   infoRow: {
     display: "flex",
@@ -513,6 +503,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-end",
+    width: "100%",
   },
   timestamp: {
     fontSize: "0.75rem",
@@ -552,11 +543,6 @@ const styles = {
       transform: "translateY(-2px)",
       boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
     },
-  },
-   bookingImageContainer: {
-    width: "120px",
-    height: "120px",
-    flexShrink: 0,
   },
 };
 

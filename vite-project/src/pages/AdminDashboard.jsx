@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import UserRow from "../components/UserRow";
-
+import { Link } from "react-router-dom"; 
 function getCurrentUserIdFromCookie() {
   const cookie = document.cookie
     .split("; ")
@@ -221,22 +221,22 @@ const AdminDashboard = () => {
         </main>
       </div>
 
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-        <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>
-             Contact
-          </a>
-          <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>
-             Privacy
-          </a>
-          <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>
-            ℹAbout
-          </a>
-        </div>
-      </footer>
+     <footer style={styles.footer}>
+  <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
+  <div style={styles.footerLinks}>
+    <Link to="/contact" style={styles.footerLink}>
+      Contact
+    </Link>
+    <span style={styles.footerDivider}>|</span>
+    <Link to="/privacy" style={styles.footerLink}>
+      Privacy
+    </Link>
+    <span style={styles.footerDivider}>|</span>
+    <Link to="/about" style={styles.footerLink}>
+      About
+    </Link>
+  </div>
+</footer>
     </div>
   );
 };

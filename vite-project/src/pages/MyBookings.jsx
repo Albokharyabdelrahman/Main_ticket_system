@@ -89,14 +89,7 @@ const Spinner = () => (
           style={styles.logo}
           onClick={() => navigate("/UserDashboard")}
         />
-         
-        {error && <div style={styles.errorMessage}>{error}</div>}
-        {loading && (
-          <div style={styles.loadingMessage}>
-            <Spinner />
-            Loading bookings...
-          </div>
-        )}
+      
         <div style={styles.header}>
           <h1 style={styles.title}>My Bookings</h1>
           <p style={styles.subtitle}>Manage your upcoming events</p>

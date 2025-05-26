@@ -68,13 +68,21 @@ exports.getAllEvents = async (req, res) => {
     }
 
     const events = await Event.find();
-    res.json(events);
+
+    const transformedEvents = events.map(event => ({
+      ...event._doc,
+      tickets: {
+        available: event.availableTickets,
+        total: event.totalTickets
+      },
+      image: event.image ? `data:image/png;base64,${event.image}` : null
+    }));
+
+    res.json(transformedEvents);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 // Get event by ID
 exports.getEventById = async (req, res) => {
   try {

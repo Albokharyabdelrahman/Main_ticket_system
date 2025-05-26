@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import logo from "./logo.png"; // Update the path if needed
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [data, setData] = useState({ email: "", password: "" });
@@ -171,27 +172,29 @@ export default function Login() {
         </div>
       </form>
 
-      <footer style={styles.footer}>
+       <footer style={styles.footer}>
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
         <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>
+          <Link to="/contact" style={styles.footerLink}>
             Contact
-          </a>
+          </Link>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>
+          <Link to="/privacy" style={styles.footerLink}>
             Privacy
-          </a>
+          </Link>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>
+          <Link to="/about" style={styles.footerLink}>
             About
-          </a>
+          </Link>
         </div>
       </footer>
-    </div>
+              </div>
+
   );
 }
 
 const styles = {
+  
   container: {
     minHeight: "100vh",
     display: "flex",

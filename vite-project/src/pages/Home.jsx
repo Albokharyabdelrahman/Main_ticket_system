@@ -48,31 +48,62 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [carouselImages.length]);
 
+  // Define styles object for the footer
+  const styles = {
+    footer: {
+      padding: "25px 40px",
+      backgroundColor: "#3f51b5",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      color: "white",
+      fontSize: "14px",
+    },
+    footerText: {
+      margin: 0,
+    },
+    footerLinks: {
+      display: "flex",
+      gap: "15px",
+      alignItems: "center",
+    },
+    footerLink: {
+      color: "white",
+      textDecoration: "none",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+      transition: "opacity 0.2s ease",
+    },
+    footerDivider: {
+      color: "white",
+    },
+  };
+
   return (
     <div className="home-wrapper">
       {/* Clean White Header */}
-    <header className="main-header">
-  <div className="header-container">
-    <div className="logo-container">
-      <img src={logo} alt="BookedIn Logo" className="header-logo" />
-      <span className="brand-name">BookedIn</span>
-    </div>
+      <header className="main-header">
+        <div className="header-container">
+          <div className="logo-container">
+            <img src={logo} alt="BookedIn Logo" className="header-logo" />
+            <span className="brand-name">BookedIn</span>
+          </div>
 
-    <div className="header-actions">
-      <a href="/login" className="header-button">Login</a>
-      <a href="/register" className="header-button primary">Register</a>
-    </div>
-  </div>
-</header>
-
+          <div className="header-actions">
+            <a href="/login" className="header-button">Login</a>
+            <a href="/register" className="header-button primary">Register</a>
+          </div>
+        </div>
+      </header>
 
       <div className="home-container">
-  <div className="home-header" style={{ paddingTop: '30px' }}> {/* Add padding here */}
-    <h1 className="home-title">
-      Discover <span className="highlight">Amazing</span> Events
-    </h1>
-    <p className="home-tagline">Find and book tickets to the best events in your city</p>
-  </div>
+        <div className="home-header" style={{ paddingTop: '30px' }}>
+          <h1 className="home-title">
+            Discover <span className="highlight">Amazing</span> Events
+          </h1>
+          <p className="home-tagline">Find and book tickets to the best events in your city</p>
+        </div>
 
         <div className="home-content">
           {/* Image Carousel - Size controlled by CSS variables */}
@@ -116,23 +147,17 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="home-footer">
-        <div className="footer-content">
-          <div className="footer-logo">
-            <img src={logo} alt="BookedIn Logo" className="footer-logo-img" />
-            <span>BookedIn</span>
-          </div>
-          <div className="footer-copyright">
-            &copy; {new Date().getFullYear()} BookedIn. All rights reserved.
-          </div>
-          <div className="footer-links">
-            <Link to="/terms">Terms</Link>
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/contact">Contact</Link>
-            <Link to="/faq">FAQ</Link>
-          </div>
-        </div>
-      </footer>
+  <footer className="custom-footer">
+  <p className="footer-text">© 2025 BookedIn. All rights reserved.</p>
+  <div className="footer-links">
+    <Link to="/contact" className="footer-link">Contact</Link>
+    <span className="footer-divider">|</span>
+    <Link to="/privacy" className="footer-link">Privacy</Link>
+    <span className="footer-divider">|</span>
+    <Link to="/about" className="footer-link">About</Link>
+  </div>
+</footer>
+
     </div>
   );
 }

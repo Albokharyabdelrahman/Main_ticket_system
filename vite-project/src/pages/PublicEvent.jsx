@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import logo from "./logo.png";
 
-
 const EventsTable = () => {
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -19,16 +19,17 @@ const EventsTable = () => {
         setEvents(response.data);
       } catch (err) {
         console.error("Error fetching events:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchEvents();
   }, []);
 
- const handleLogoClick = () => {
-  window.history.back();
-};
-
+  const handleLogoClick = () => {
+    window.history.back();
+  };
 
   // Extract unique categories for dropdown
   const categories = ["All", ...new Set(events.map((e) => e.category))];
@@ -48,7 +49,7 @@ const EventsTable = () => {
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
         .container {
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: linear-gradient(135deg, #434190, #2c2e8f);
           min-height: 100vh;
           padding: 50px 30px 30px;
           font-family: 'Poppins', sans-serif;
@@ -110,15 +111,27 @@ const EventsTable = () => {
 
         .event-card {
           background: #fff;
-          padding: 20px;
           border-radius: 14px;
           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
           transition: transform 0.2s ease, box-shadow 0.2s ease;
+          overflow: hidden;
         }
 
         .event-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .event-image {
+          width: 100%;
+          height: 180px;
+          object-fit: cover;
+          border-top-left-radius: 14px;
+          border-top-right-radius: 14px;
+        }
+
+        .event-content {
+          padding: 20px;
         }
 
         .event-card h3 {
@@ -147,6 +160,40 @@ const EventsTable = () => {
           color: white;
           font-size: 1.2rem;
           margin-top: 40px;
+        }
+
+        /* Loading spinner styles */
+        .spinner {
+          width: 50px;
+          height: 50px;
+          border: 5px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top-color: #fff;
+          animation: spin 1s ease-in-out infinite;
+          margin: 40px auto;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+          color: white;
+          text-align: center;
+          margin-top: 10px;
+        }
+
+        .default-event-image {
+          width: 100%;
+          height: 180px;
+          background-color: #f0f0f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #888;
+          font-size: 0.9rem;
+          border-top-left-radius: 14px;
+          border-top-right-radius: 14px;
         }
       `}</style>
 
@@ -184,31 +231,57 @@ const EventsTable = () => {
           </select>
         </div>
 
-        <div className="events-grid">
-          {filteredEvents.length === 0 ? (
-            <p className="no-events-msg">
-              {events.length === 0 ? "Loading events..." : "No matching events found."}
-            </p>
-          ) : (
-            filteredEvents.map((event) => {
-              const eventDate = new Date(event.date);
-              return (
-                <div className="event-card" key={event._id}>
-                  <h3>{event.title}</h3>
-                  <p className="event-description">{event.description}</p>
-                  <div className="event-info">
-                    <span><strong>📍</strong> {event.location}</span>
-                    <span><strong>📅</strong> {eventDate.toLocaleDateString()}</span>
-                    <span><strong>⏰</strong> {eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                    <span><strong>🎟️</strong> {event.availableTickets} / {event.totalTickets} available</span>
-                    <span><strong>💰</strong> ${event.price}</span>
-                    <span><strong>📁</strong> {event.category}</span>
+        {isLoading ? (
+          <div>
+            <div className="spinner"></div>
+            <p className="loading-text">Loading events...</p>
+          </div>
+        ) : (
+          <div className="events-grid">
+            {filteredEvents.length === 0 ? (
+              <p className="no-events-msg">
+                {events.length === 0 ? "No events available." : "No matching events found."}
+              </p>
+            ) : (
+              filteredEvents.map((event) => {
+                const eventDate = new Date(event.date);
+                return (
+                  <div className="event-card" key={event._id}>
+                    {event.image ? (
+                      <img 
+                        src={event.image} 
+                        alt={event.title} 
+                        className="event-image" 
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentNode.querySelector('.default-event-image').style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className="default-event-image" 
+                      style={{ display: event.image ? 'none' : 'flex' }}
+                    >
+                      No Image Available
+                    </div>
+                    <div className="event-content">
+                      <h3>{event.title}</h3>
+                      <p className="event-description">{event.description}</p>
+                      <div className="event-info">
+                        <span><strong>📍</strong> {event.location}</span>
+                        <span><strong>📅</strong> {eventDate.toLocaleDateString()}</span>
+                        <span><strong>⏰</strong> {eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        <span><strong>🎟️</strong> {event.availableTickets} / {event.totalTickets} available</span>
+                        <span><strong>💰</strong> ${event.price}</span>
+                        <span><strong>📁</strong> {event.category}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
     </>
   );

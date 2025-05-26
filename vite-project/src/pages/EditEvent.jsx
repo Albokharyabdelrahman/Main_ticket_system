@@ -8,6 +8,7 @@ const API_BASE_URL = "http://localhost:7000/api/v1";
 export default function EditEvent() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const [event, setEvent] = useState({
     title: "",
@@ -72,14 +73,14 @@ export default function EditEvent() {
       setError("Please fill all fields correctly. Tickets and price must be zero or more.");
       return;
     }
-const payload = {
-  title: event.title.trim(),
-  date: event.date,
-  location: event.location.trim(),
-  totalTickets: totalTicketsNum,
-  price: Number(event.price),
-};
 
+    const payload = {
+      title: event.title.trim(),
+      date: event.date,
+      location: event.location.trim(),
+      totalTickets: totalTicketsNum,
+      price: Number(event.price),
+    };
 
     try {
       await axios.put(`${API_BASE_URL}/events/${id}`, payload, {
@@ -90,6 +91,19 @@ const payload = {
     } catch (err) {
       setError(err.response?.data?.message || "Update failed.");
       console.error("Update event error:", err);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(
+        `${API_BASE_URL}/events/${id.trim()}`,
+        { withCredentials: true }
+      );
+      navigate(-1, { state: { message: "Event deleted successfully!" } });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete event.");
+      setIsConfirming(false);
     }
   };
 
@@ -178,11 +192,44 @@ const payload = {
             />
           </label>
 
-          <button type="submit" style={styles.button}>
-            Save Changes
-          </button>
+          <div style={styles.buttonGroup}>
+            <button type="submit" style={styles.button}>
+              Save Changes
+            </button>
+            
+            <button 
+              type="button" 
+              style={styles.deleteButton}
+              onClick={() => setIsConfirming(true)}
+            >
+              Delete Event
+            </button>
+          </div>
         </form>
       </div>
+
+      {isConfirming && (
+        <div style={styles.confirmationModal}>
+          <div style={styles.confirmationContent}>
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this event? This action cannot be undone.</p>
+            <div style={styles.confirmationButtons}>
+              <button 
+                style={styles.confirmDeleteButton}
+                onClick={handleDelete}
+              >
+                Delete
+              </button>
+              <button 
+                style={styles.cancelButton}
+                onClick={() => setIsConfirming(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -246,9 +293,15 @@ const styles = {
     color: "#000",
     outline: "none",
   },
+  buttonGroup: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "10px",
+  },
   button: {
     marginTop: "10px",
     padding: "14px 0",
+    flex: 1,
     background: "linear-gradient(135deg, #667eea, #764ba2)",
     color: "white",
     fontWeight: "700",
@@ -257,6 +310,22 @@ const styles = {
     borderRadius: "10px",
     cursor: "pointer",
     transition: "background 0.3s ease",
+  },
+  deleteButton: {
+    marginTop: "10px",
+    padding: "14px 0",
+    flex: 1,
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
+    color: "white",
+    fontWeight: "700",
+    fontSize: "16px",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    transition: "background 0.3s ease",
+    ":hover": {
+      background: "linear-gradient(135deg, #ff7043, #ff5722)",
+    }
   },
   success: {
     color: "#90ee90",
@@ -267,5 +336,50 @@ const styles = {
     color: "#ff6b6b",
     fontWeight: "600",
     marginBottom: "10px",
+  },
+  confirmationModal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  confirmationContent: {
+    backgroundColor: "#2c2e8f",
+    padding: "30px",
+    borderRadius: "10px",
+    maxWidth: "400px",
+    width: "90%",
+    textAlign: "center",
+    boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
+  },
+  confirmationButtons: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "15px",
+    marginTop: "20px",
+  },
+  confirmDeleteButton: {
+    padding: "10px 20px",
+    background: "linear-gradient(135deg, #ff9800, #ff7043)",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+  cancelButton: {
+    padding: "10px 20px",
+    backgroundColor: "#434190",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontWeight: "600",
   },
 };

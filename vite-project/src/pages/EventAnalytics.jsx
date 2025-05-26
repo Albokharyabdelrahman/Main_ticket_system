@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar, Pie } from "react-chartjs-2";
-import { useNavigate } from "react-router-dom";  // <--- import useNavigate
-import logo from "./logo.png"; // <-- adjust the path to your logo image
+import { useNavigate } from "react-router-dom";
+import logo from "./logo.png";
 
 import {
   Chart as ChartJS,
@@ -19,7 +19,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const API_BASE_URL = "http://localhost:7000/api/v1/users";
 
 const EventAnalytics = () => {
-  const navigate = useNavigate();  // <--- useNavigate hook
+  const navigate = useNavigate();
 
   const [analytics, setAnalytics] = useState([]);
   const [error, setError] = useState("");
@@ -45,9 +45,15 @@ const EventAnalytics = () => {
     fetchAnalytics();
   }, []);
 
+  const Spinner = () => (
+    <div style={styles.spinnerContainer}>
+      <div style={styles.spinner}></div>
+      <p>Loading analytics...</p>
+    </div>
+  );
+
   return (
     <div style={styles.container}>
-      {/* Logo top right */}
       <img
         src={logo}
         alt="Logo"
@@ -57,7 +63,7 @@ const EventAnalytics = () => {
 
       <h1 style={styles.title}>Event Analytics</h1>
 
-      {loading && <p>Loading analytics...</p>}
+      {loading && <Spinner />}
       {error && <div style={styles.error}>{error}</div>}
 
       <div style={styles.grid}>
@@ -125,7 +131,7 @@ const styles = {
     background: "linear-gradient(135deg, #434190, #2c2e8f)",
     minHeight: "100vh",
     color: "white",
-    position: "relative",  // needed for absolute positioning of logo
+    position: "relative",
   },
   logo: {
     position: "absolute",
@@ -184,6 +190,21 @@ const styles = {
     marginBottom: "0.5rem",
     color: "#475569",
     textAlign: "center",
+  },
+  spinnerContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "200px",
+  },
+  spinner: {
+    border: "6px solid #f3f3f3",
+    borderTop: "6px solid #f97316",
+    borderRadius: "50%",
+    width: "50px",
+    height: "50px",
+    animation: "spin 1s linear infinite",
   },
 };
 

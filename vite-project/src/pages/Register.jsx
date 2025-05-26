@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate } from "react-router-dom";
 import logo from "./logo.png"; // <-- Make sure this path matches your project
 
 
@@ -184,14 +184,20 @@ export default function Register() {
           </button>
         </div>
       </form>
-      <footer style={styles.footer}>
+          <footer style={styles.footer}>
         <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
         <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>Contact</a>
+          <Link to="/contact" style={styles.footerLink}>
+            Contact
+          </Link>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>Privacy</a>
+          <Link to="/privacy" style={styles.footerLink}>
+            Privacy
+          </Link>
           <span style={styles.footerDivider}>|</span>
-          <a href="#" style={styles.footerLink}>About</a>
+          <Link to="/about" style={styles.footerLink}>
+            About
+          </Link>
         </div>
       </footer>
     </div>

@@ -29,9 +29,12 @@ import SearchUserProfile from "../pages/SearchUserProfile";
 import GetUserProfile from "../pages/GetUserProfile";
 import ViewUserProfile from "../pages/ViewUserProfile";
 import UnauthorizedPage from "../pages/UnauthorizedPage";
-
-// Wrapper
 import ProtectedRoute from "../components/ProtectedRoute";
+import ContactPage from "../pages/ContactPage";
+import PrivacyPage from "../pages/PrivacyPage";
+import AboutPage from "../pages/AboutPage";
+
+// Inside your Routes component
 
 export default function MyRoutes() {
   return (
@@ -43,6 +46,9 @@ export default function MyRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/public-event" element={<PublicEvent />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/about" element={<AboutPage />} />
 
       {/* Admin Protected Routes */}
       <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
