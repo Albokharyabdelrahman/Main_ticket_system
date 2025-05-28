@@ -27,33 +27,33 @@ const ForgotPassword = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSuccess("");
+  e.preventDefault();
+  setSuccess("");
+  setError("");
+
+  if (!mode) {
+    setError("Please select an action.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await axios.put("http://localhost:7000/api/v1/forgetPassword", {
+      email,
+      otp: otp ? Number(otp) : undefined, // Convert to number (or undefined if empty)
+      newPassword,
+      mode,
+    });
+    setSuccess(response.data.message || "Success!");
     setError("");
-
-    if (!mode) {
-      setError("Please select an action.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await axios.put("http://localhost:7000/api/v1/forgetPassword", {
-        email,
-        otp,
-        newPassword,
-        mode,
-      });
-      setSuccess(response.data.message || "Success!");
-      setError("");
-    } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.error || "Unknown error";
-      setError(msg);
-      setSuccess("");
-    }
-    setIsLoading(false);
-  };
+  } catch (err) {
+    const msg = err.response?.data?.message || err.response?.data?.error || "Unknown error";
+    setError(msg);
+    setSuccess("");
+  }
+  setIsLoading(false);
+};
 
   // Paste your styles object here  
   const styles = {
