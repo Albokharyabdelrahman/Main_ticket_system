@@ -28,6 +28,33 @@ function getCurrentUserIdFromCookie() {
 
 const API_BASE_URL = "http://localhost:7000/api/v1";
 
+// Add purple theme CSS variables and modern styles
+const purpleTheme = {
+  "--primary-purple": "#7c3aed",
+  "--secondary-purple": "#a78bfa",
+  "--accent-purple": "#c4b5fd",
+  "--glass-bg": "rgba(124, 58, 237, 0.15)",
+  "--glass-border": "rgba(124, 58, 237, 0.25)",
+  "--header-gradient": "linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)",
+};
+
+// Floating ticket positions
+const ticketPositions = [
+  { top: 40, left: 60, size: 120, rot: -8, delay: 0 },
+  { top: 120, left: 320, size: 100, rot: 12, delay: 1 },
+  { top: 300, left: 180, size: 90, rot: 6, delay: 2 },
+  { top: 500, left: 80, size: 110, rot: -10, delay: 3 },
+  { top: 80, right: 120, size: 130, rot: 8, delay: 1.5 },
+  { top: 260, right: 60, size: 100, rot: -6, delay: 2.5 },
+  { bottom: 120, left: 200, size: 140, rot: 10, delay: 2 },
+  { bottom: 60, right: 180, size: 110, rot: -12, delay: 3.5 },
+  { bottom: 200, right: 60, size: 100, rot: 4, delay: 1.2 },
+  { bottom: 40, left: 60, size: 120, rot: 0, delay: 2.8 },
+  { top: 180, left: 600, size: 100, rot: 7, delay: 2.2 },
+  { bottom: 300, right: 320, size: 90, rot: -7, delay: 1.7 },
+  { top: 400, right: 400, size: 110, rot: 5, delay: 2.9 },
+];
+
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
@@ -51,6 +78,25 @@ const AdminDashboard = () => {
       }
     };
     fetchProfile();
+  }, []);
+
+  // Apply theme variables to root
+  useEffect(() => {
+    Object.entries(purpleTheme).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
+    });
+  }, []);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes ticketFloat {
+        0% { transform: translateY(0) scale(1) rotate(-8deg); opacity: 0.22; }
+        100% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.28; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
   }, []);
 
   const handleLogout = async () => {
@@ -107,358 +153,267 @@ const AdminDashboard = () => {
  
 
   return (
-    <div style={styles.pageContainer}>
-      <div style={{ display: "flex", flex: 1 }}>
-        <aside style={styles.sidebar}>
-          <div style={styles.profilePictureContainer}>
+    <div className="dashboard-root" style={{ minHeight: "100vh", background: "#fff", padding: 0, margin: 0, position: 'relative', overflow: 'hidden' }}>
+      {/* Floating ticket background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
+        {ticketPositions.map((pos, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="ticket"
+            style={{
+              position: 'absolute',
+              opacity: 0.22,
+              filter: 'blur(1.5px) drop-shadow(0 2px 12px #a78bfa88)',
+              userSelect: 'none',
+              zIndex: 0,
+              pointerEvents: 'none',
+              width: pos.size,
+              height: 'auto',
+              top: pos.top,
+              left: pos.left,
+              right: pos.right,
+              bottom: pos.bottom,
+              transform: `rotate(${pos.rot}deg)`,
+              animation: 'ticketFloat 8s ease-in-out infinite alternate',
+              animationDelay: `${pos.delay}s`,
+            }}
+            draggable={false}
+          />
+        ))}
+      </div>
+
+      {/* Header */}
+      <div className="dashboard-header" style={{
+        background: "var(--header-gradient)",
+        color: "white",
+        padding: "2.5rem 2rem 4rem 2rem",
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
+        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
+        position: "relative",
+        marginBottom: 40,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src={logo} alt="Logo" style={{ width: 60, height: 60, borderRadius: "50%", marginRight: 24, boxShadow: "0 2px 8px #a78bfa" }} />
+            <div>
+              <h1 style={{ fontSize: 32, fontWeight: 700, margin: 0 }}>Welcome back, <span style={{ color: "#fff", textShadow: "0 2px 8px #a78bfa" }}>{profile?.name || "Admin"}</span>!</h1>
+              <div style={{ fontSize: 18, opacity: 0.85 }}>Manage your platform with admin controls.</div>
+            </div>
+          </div>
+          <div>
+            <button onClick={handleLogout} style={{ background: "var(--primary-purple)", color: "#fff", border: "none", borderRadius: 20, padding: "0.75rem 2rem", fontWeight: 600, fontSize: 16, boxShadow: "0 2px 8px #a78bfa", cursor: "pointer" }}>Log Out</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Layout: Sidebar + Main */}
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 40, maxWidth: 1400, margin: "-60px auto 0 auto", padding: "0 24px 48px 24px" }}>
+        {/* Sidebar/Profile Card */}
+        <aside style={{ minWidth: 320, maxWidth: 340, background: "rgba(124, 58, 237, 0.18)", border: "1.5px solid #a78bfa", borderRadius: 28, boxShadow: "0 4px 24px #a78bfa33", padding: 36, marginTop: 32, display: "flex", flexDirection: "column", alignItems: "center", backdropFilter: "blur(14px)", position: "relative", color: '#fff' }}>
+          <div style={{ background: "#fff", borderRadius: "50%", padding: 6, marginBottom: 16, boxShadow: "0 2px 8px #a78bfa22" }}>
             {profile && profile.profilePic ? (
-              <img
-                src={profile.profilePic}
-                alt="Profile"
-                style={styles.profilePicture}
-              />
+              <img src={profile.profilePic} alt="Profile" style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--primary-purple)" }} />
             ) : (
-              <div style={styles.defaultProfileIcon}>👤</div>
+              <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ede9fe", color: "#7c3aed", fontSize: 48, display: "flex", alignItems: "center", justifyContent: "center" }}>👤</div>
             )}
           </div>
-
-          <div style={styles.sidebarHeader}>
-            <h2 style={styles.sidebarTitle}>Admin Profile</h2>
-          </div>
-          {error && <p style={styles.error}>{error}</p>}
-          {profile && (
-            <div style={styles.profileInfo}>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Name:</span>
-                <span style={styles.profileValue}>{profile.name}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}> Email:</span>
-                <span style={styles.profileValue}>{profile.email}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}> Role:</span>
-                <span style={styles.profileValue}>{profile.role}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}> Id:</span>
-                <span style={styles.profileValue}>{profile._id}</span>
-              </div>
-
-              <button
-                onClick={handleUpdateProfile}
-                style={styles.updateProfileButton}
-              >
-                Update Profile
-              </button>
-
-              <button onClick={handleLogout} style={styles.logoutButton}>
-                <span style={styles.logoutText}> Log Out</span>
-                <span style={styles.logoutIcon}>→</span>
-              </button>
-            </div>
-          )}
+          <h2 style={{ color: "var(--primary-purple)", fontWeight: 700, margin: "8px 0 0 0", textAlign: "center" }}>{profile?.name || "Admin"}</h2>
+          <div style={{ color: "#6d28d9", fontSize: 15, marginBottom: 8, textAlign: "center" }}>{profile?.email}</div>
+          <div style={{ color: "#a78bfa", fontSize: 14, marginBottom: 8 }}>Role: {profile?.role}</div>
+          <div style={{ color: "#a78bfa", fontSize: 13, marginBottom: 16, wordBreak: "break-all" }}>ID: {profile?._id}</div>
+          {error && <p style={{ color: "#f87171", fontWeight: 600 }}>{error}</p>}
+          <button onClick={handleUpdateProfile} style={{ background: "var(--primary-purple)", color: "#fff", border: "none", borderRadius: 16, padding: "0.5rem 1.5rem", fontWeight: 600, fontSize: 15, marginBottom: 14, cursor: "pointer", width: "100%" }}>Update Profile</button>
         </aside>
 
-        <main style={styles.contentArea}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>
-              👋 Welcome back,{" "}
-              <span style={styles.highlight}>{profile?.name || "Admin"}</span>!
-            </h1>
-            <img src={logo} alt="BookedIn Logo" style={styles.logo} />
+        {/* Main Dashboard Content */}
+        <main style={{ flex: 1, minWidth: 340, display: "flex", flexDirection: "column", gap: 32 }}>
+          {/* Event Management Section */}
+          <div className="dashboard-events" style={{ marginBottom: 0, background: "rgba(124, 58, 237, 0.18)", borderRadius: 24, boxShadow: "0 2px 8px #a78bfa11", padding: 24, border: "1.5px solid #a78bfa", marginTop: 32, color: '#fff', backdropFilter: 'blur(14px)' }}>
+            <h2 style={{ color: "var(--primary-purple)", marginBottom: 20 }}>Event Management</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+              <button onClick={getAllEvents} style={{ 
+                background: "var(--glass-bg)", 
+                border: "1.5px solid var(--glass-border)", 
+                borderRadius: 16, 
+                padding: "1rem", 
+                color: "#fff", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 12, 
+                fontSize: 16, 
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(124, 58, 237, 0.25)";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "var(--glass-bg)";
+                e.target.style.transform = "translateY(0)";
+              }}>
+                <span style={{ fontSize: 24 }}>📋</span>
+                <span>Get All Events</span>
+              </button>
+              <button onClick={updateEvent} style={{ 
+                background: "var(--glass-bg)", 
+                border: "1.5px solid var(--glass-border)", 
+                borderRadius: 16, 
+                padding: "1rem", 
+                color: "#fff", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 12, 
+                fontSize: 16, 
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(124, 58, 237, 0.25)";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "var(--glass-bg)";
+                e.target.style.transform = "translateY(0)";
+              }}>
+                <span style={{ fontSize: 24 }}>✏️</span>
+                <span>Update Event</span>
+              </button>
+              <button onClick={deleteEvent} style={{ 
+                background: "var(--glass-bg)", 
+                border: "1.5px solid var(--glass-border)", 
+                borderRadius: 16, 
+                padding: "1rem", 
+                color: "#fff", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 12, 
+                fontSize: 16, 
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(124, 58, 237, 0.25)";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "var(--glass-bg)";
+                e.target.style.transform = "translateY(0)";
+              }}>
+                <span style={{ fontSize: 24 }}>🗑️</span>
+                <span>Delete Event</span>
+              </button>
+            </div>
           </div>
 
-          <div style={styles.dashboardButtons}>
-            {/* Events Section */}
-            <div style={styles.buttonGroup}>
-              <h3 style={styles.sectionTitle}>Event Management</h3>
-              <div style={styles.buttonRow}>
-                <button style={styles.actionButton} onClick={getAllEvents}>
-                  <span style={styles.buttonIcon}>📋</span>
-                  <span>Get All Events</span>
-                </button>
-                <button style={styles.actionButton} onClick={updateEvent}>
-                  <span style={styles.buttonIcon}>✏️</span>
-                  <span>Update Event</span>
-                </button>
-                <button style={styles.actionButton} onClick={deleteEvent}>
-                  <span style={styles.buttonIcon}>🗑️</span>
-                  <span>Delete Event</span>
-                </button>
-              </div>
-            </div>
-
-            {/* User Management Section */}
-            <div style={styles.buttonGroup}>
-              <h3 style={styles.sectionTitle}>User Management</h3>
-              <div style={styles.buttonRow}>
-                <button style={styles.actionButton} onClick={viewProfile}>
-                  <span style={styles.buttonIcon}>👥</span>
-                  <span>View All Profiles</span>
-                </button>
-                <button style={styles.actionButton} onClick={getUserProfile}>
-                  <span style={styles.buttonIcon}>🔍</span>
-                  <span>Get User Profile</span>
-                </button>
-                <button style={styles.actionButton} onClick={updateUserProfile}>
-                  <span style={styles.buttonIcon}>🔄</span>
-                  <span>Update User Profile</span>
-                </button>
-              </div>
+          {/* User Management Section */}
+          <div className="dashboard-users" style={{ background: "rgba(124, 58, 237, 0.18)", borderRadius: 24, border: "1.5px solid #a78bfa", boxShadow: "0 4px 24px #a78bfa11", padding: 24, color: '#fff', backdropFilter: 'blur(14px)' }}>
+            <h2 style={{ color: "var(--primary-purple)", marginBottom: 20 }}>User Management</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+              <button onClick={viewProfile} style={{ 
+                background: "var(--glass-bg)", 
+                border: "1.5px solid var(--glass-border)", 
+                borderRadius: 16, 
+                padding: "1rem", 
+                color: "#fff", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 12, 
+                fontSize: 16, 
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(124, 58, 237, 0.25)";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "var(--glass-bg)";
+                e.target.style.transform = "translateY(0)";
+              }}>
+                <span style={{ fontSize: 24 }}>👥</span>
+                <span>View All Profiles</span>
+              </button>
+              <button onClick={getUserProfile} style={{ 
+                background: "var(--glass-bg)", 
+                border: "1.5px solid var(--glass-border)", 
+                borderRadius: 16, 
+                padding: "1rem", 
+                color: "#fff", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 12, 
+                fontSize: 16, 
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(124, 58, 237, 0.25)";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "var(--glass-bg)";
+                e.target.style.transform = "translateY(0)";
+              }}>
+                <span style={{ fontSize: 24 }}>🔍</span>
+                <span>Get User Profile</span>
+              </button>
+              <button onClick={updateUserProfile} style={{ 
+                background: "var(--glass-bg)", 
+                border: "1.5px solid var(--glass-border)", 
+                borderRadius: 16, 
+                padding: "1rem", 
+                color: "#fff", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 12, 
+                fontSize: 16, 
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(124, 58, 237, 0.25)";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "var(--glass-bg)";
+                e.target.style.transform = "translateY(0)";
+              }}>
+                <span style={{ fontSize: 24 }}>🔄</span>
+                <span>Update User Profile</span>
+              </button>
             </div>
           </div>
         </main>
       </div>
 
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-        <div style={styles.footerLinks}>
-          <Link to="/contact" style={styles.footerLink}>
-            Contact
-          </Link>
-          <span style={styles.footerDivider}>|</span>
-          <Link to="/privacy" style={styles.footerLink}>
-            Privacy
-          </Link>
-          <span style={styles.footerDivider}>|</span>
-          <Link to="/about" style={styles.footerLink}>
-            About
-          </Link>
+      {/* Footer (modern glassy) */}
+      <footer style={{ background: "rgba(124, 58, 237, 0.18)", borderTopLeftRadius: 32, borderTopRightRadius: 32, boxShadow: "0 -2px 16px #a78bfa22", padding: "18px 0 10px 0", marginTop: 32, textAlign: "center", color: "#7c3aed", fontSize: 15, zIndex: 2, position: "relative" }}>
+        <div style={{ marginBottom: 6 }}>&copy; 2025 BookedIn. All rights reserved.</div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 18, alignItems: "center", fontSize: 15 }}>
+          <Link to="/contact" style={{ color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>Contact</Link>
+          <span style={{ color: "#a78bfa" }}>|</span>
+          <Link to="/privacy" style={{ color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>Privacy</Link>
+          <span style={{ color: "#a78bfa" }}>|</span>
+          <Link to="/about" style={{ color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>About</Link>
         </div>
       </footer>
     </div>
   );
-};
-
-const styles = {
-  pageContainer: {
-    display: "flex",
-    flexDirection: "column",
-    minHeight: "100vh",
-    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
-    backgroundColor: "#f8fafc",
-  },
-  sidebar: {
-    width: "300px",
-    background: "linear-gradient(135deg, #434190, #2c2e8f)",
-    color: "#ffffff",
-    padding: "0",
-    display: "flex",
-    flexDirection: "column",
-    boxShadow: "4px 0 15px rgba(0, 0, 0, 0.1)",
-  },
-  profilePictureContainer: {
-    display: "flex",
-    justifyContent: "center",
-    padding: "20px 0",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-  },
-  profilePicture: {
-    width: "90px",
-    height: "90px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "3px solid white",
-    boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
-  },
-  defaultProfileIcon: {
-    width: "90px",
-    height: "90px",
-    borderRadius: "50%",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    color: "white",
-    fontSize: "48px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    border: "3px solid white",
-    boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
-    userSelect: "none",
-  },
-  sidebarHeader: {
-    padding: "30px 25px",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-  },
-  sidebarTitle: {
-    fontSize: "20px",
-    fontWeight: "600",
-    margin: "0",
-    color: "#ffffff",
-    letterSpacing: "0.5px",
-  },
-  profileInfo: {
-    padding: "25px",
-    flex: 1,
-  },
-  profileItem: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: "20px",
-  },
-  profileLabel: {
-    fontSize: "13px",
-    fontWeight: "500",
-    color: "rgba(255, 255, 255, 0.7)",
-    marginBottom: "5px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-  },
-  profileValue: {
-    fontSize: "16px",
-    fontWeight: "500",
-    color: "#ffffff",
-  },
-  updateProfileButton: {
-    marginTop: "20px",
-    padding: "12px 20px",
-    background: "linear-gradient(135deg, #ff9800, #ff7043)",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    width: "100%",
-    transition: "all 0.3s ease",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-  },
-  logoutButton: {
-    marginTop: "20px",
-    padding: "12px 20px",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "500",
-    width: "100%",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    transition: "all 0.3s ease",
-  },
-  logoutText: {
-    marginRight: "10px",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-  },
-  logoutIcon: {
-    fontSize: "18px",
-  },
-  contentArea: {
-    flex: 1,
-    padding: "40px 50px",
-    background: "#f8fafc",
-    position: "relative",
-    overflowY: "auto",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "40px",
-  },
-  title: {
-    fontSize: "28px",
-    fontWeight: "700",
-    margin: "0",
-    color: "#1e293b",
-    lineHeight: "1.3",
-    display: "flex",
-    alignItems: "center",
-  },
-  highlight: {
-    color: "#4f46e5",
-  },
-  dashboardButtons: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "30px",
-    marginBottom: "40px",
-  },
-  buttonGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  sectionTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#4f46e5",
-    margin: "0 0 10px 0",
-    paddingBottom: "5px",
-    borderBottom: "2px solid #e2e8f0",
-  },
-  buttonRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-    gap: "20px",
-  },
-  actionButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "18px 24px",
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#4f46e5",
-    backgroundColor: "white",
-    border: "2px solid #4f46e5",
-    borderRadius: "12px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    boxShadow: "0 6px 12px rgba(79, 70, 229, 0.2)",
-    minWidth: "200px",
-  },
-  buttonIcon: {
-    fontSize: "24px",
-  },
-  footer: {
-    padding: "25px 40px",
-    backgroundColor: "#3f51b5",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    color: "white",
-    fontSize: "14px",
-  },
-  footerText: {
-    margin: 0,
-  },
-  footerLinks: {
-    display: "flex",
-    gap: "15px",
-    alignItems: "center",
-  },
-  footerLink: {
-    color: "white",
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-  },
-  footerDivider: {
-    color: "white",
-  },
-  error: {
-    color: "#f87171",
-    padding: "10px 25px",
-    fontWeight: "600",
-  },
-  logo: {
-    height: "50px",
-    objectFit: "contain",
-  },
 };
 
 export default AdminDashboard;

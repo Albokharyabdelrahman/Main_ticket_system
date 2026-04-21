@@ -1,12 +1,41 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import logo from "./logo.png";
+import logo from "../assets/logo.png";
+
+const ticketPositions = [
+  { top: 40, left: 60, size: 120, rot: -8, delay: 0 },
+  { top: 120, left: 320, size: 100, rot: 12, delay: 1 },
+  { top: 300, left: 180, size: 90, rot: 6, delay: 2 },
+  { top: 500, left: 80, size: 110, rot: -10, delay: 3 },
+  { top: 80, right: 120, size: 130, rot: 8, delay: 1.5 },
+  { top: 260, right: 60, size: 100, rot: -6, delay: 2.5 },
+  { bottom: 120, left: 200, size: 140, rot: 10, delay: 2 },
+  { bottom: 60, right: 180, size: 110, rot: -12, delay: 3.5 },
+  { bottom: 200, right: 60, size: 100, rot: 4, delay: 1.2 },
+  { bottom: 40, left: 60, size: 120, rot: 0, delay: 2.8 },
+  { top: 180, left: 600, size: 100, rot: 7, delay: 2.2 },
+  { bottom: 300, right: 320, size: 90, rot: -7, delay: 1.7 },
+  { top: 400, right: 400, size: 110, rot: 5, delay: 2.9 },
+];
 
 const EventsTable = () => {
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
+
+  // Floating ticket animation keyframes (must be inside component)
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes ticketFloat {
+        0% { transform: translateY(0) scale(1) rotate(-8deg); opacity: 0.22; }
+        100% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.28; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -49,7 +78,7 @@ const EventsTable = () => {
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
         .container {
-          background: linear-gradient(135deg, #434190, #2c2e8f);
+          background: transparent !important;
           min-height: 100vh;
           padding: 50px 30px 30px;
           font-family: 'Poppins', sans-serif;
@@ -110,39 +139,44 @@ const EventsTable = () => {
         }
 
         .event-card {
-          background: #fff;
-          border-radius: 14px;
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          background: rgba(124, 58, 237, 0.18); /* more purple glassy */
+          border-radius: 18px;
+          box-shadow: 0 8px 32px 0 rgba(124, 58, 237, 0.18), 0 1.5px 8px #a78bfa44;
+          transition: transform 0.22s cubic-bezier(.4,2,.6,1), box-shadow 0.22s cubic-bezier(.4,2,.6,1);
           overflow: hidden;
+          border: 1.5px solid #a78bfa;
+          backdrop-filter: blur(14px);
+          color: #fff;
         }
 
         .event-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+          transform: translateY(-8px) scale(1.025);
+          box-shadow: 0 16px 40px 0 #a78bfa33, 0 2px 12px #7c3aed22;
         }
 
         .event-image {
           width: 100%;
           height: 180px;
           object-fit: cover;
-          border-top-left-radius: 14px;
-          border-top-right-radius: 14px;
+          border-top-left-radius: 18px;
+          border-top-right-radius: 18px;
+          box-shadow: 0 2px 12px #a78bfa22;
         }
 
         .event-content {
-          padding: 20px;
+          padding: 22px 20px 18px 20px;
         }
 
         .event-card h3 {
           font-size: 1.25rem;
-          color: #333;
+          color: #7c3aed;
           margin-bottom: 10px;
+          text-shadow: 0 2px 8px #a78bfa22;
         }
 
         .event-description {
-          font-size: 0.95rem;
-          color: #666;
+          font-size: 0.98rem;
+          color: #4b5563;
           margin-bottom: 10px;
           min-height: 48px;
         }
@@ -151,8 +185,8 @@ const EventsTable = () => {
           display: flex;
           flex-direction: column;
           gap: 6px;
-          font-size: 0.9rem;
-          color: #444;
+          font-size: 0.93rem;
+          color: #6d28d9;
         }
 
         .no-events-msg {
@@ -195,9 +229,55 @@ const EventsTable = () => {
           border-top-left-radius: 14px;
           border-top-right-radius: 14px;
         }
+
+        body, html, #root, .container {
+          background: #fff !important;
+        }
+        .floating-ticket-bg {
+          position: fixed;
+          top: 0; left: 0; width: 100vw; height: 100vh;
+          z-index: 0;
+          pointer-events: none;
+        }
+        .floating-ticket-img {
+          position: absolute;
+          opacity: 0.22;
+          filter: blur(1.5px) drop-shadow(0 2px 12px #a78bfa88);
+          user-select: none;
+          z-index: 0;
+          pointer-events: none;
+          animation: ticketFloat 8s ease-in-out infinite alternate;
+        }
       `}</style>
 
-      <div className="container">
+      <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+        <div className="floating-ticket-bg" style={{ zIndex: 0 }}>
+          {ticketPositions.map((pos, i) => (
+            <img
+              key={i}
+              src={logo}
+              alt="ticket"
+              className="floating-ticket-img"
+              style={{
+                width: pos.size,
+                height: 'auto',
+                top: pos.top,
+                left: pos.left,
+                right: pos.right,
+                bottom: pos.bottom,
+                transform: `rotate(${pos.rot}deg)`,
+                animationDelay: `${pos.delay}s`,
+                opacity: 0.22,
+                filter: 'blur(1.5px) drop-shadow(0 2px 12px #a78bfa88)',
+                pointerEvents: 'none',
+                position: 'absolute',
+                zIndex: 0,
+              }}
+              draggable={false}
+            />
+          ))}
+        </div>
+
         <img
           src={logo}
           alt="Logo"

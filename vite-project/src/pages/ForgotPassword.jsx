@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import logo from "../assets/logo.png"; // Update this path
+import logo from "../assets/logo.png";
+import { useNavigate } from "react-router-dom";
+import "./Home.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -10,12 +12,15 @@ const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const numParticles = 18;
+  const particles = Array.from({ length: numParticles });
 
   const submitButtonStyle = {
     marginTop: "16px",
     padding: "12px 0",
     width: "100%",
-    background: "#764ba2",
+    background: "linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)",
     color: "white",
     border: "none",
     borderRadius: "8px",
@@ -24,262 +29,176 @@ const ForgotPassword = () => {
     cursor: "pointer",
     transition: "background 0.2s",
     opacity: isLoading ? 0.7 : 1,
+    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setSuccess("");
-  setError("");
-
-  if (!mode) {
-    setError("Please select an action.");
-    return;
-  }
-
-  setIsLoading(true);
-
-  try {
-    const response = await axios.put("http://localhost:7000/api/v1/forgetPassword", {
-      email,
-      otp: otp ? Number(otp) : undefined, // Convert to number (or undefined if empty)
-      newPassword,
-      mode,
-    });
-    setSuccess(response.data.message || "Success!");
-    setError("");
-  } catch (err) {
-    const msg = err.response?.data?.message || err.response?.data?.error || "Unknown error";
-    setError(msg);
+    e.preventDefault();
     setSuccess("");
-  }
-  setIsLoading(false);
-};
-
-  // Paste your styles object here  
-  const styles = {
-    container: {
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "linear-gradient(135deg, #667eea, #764ba2)",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      padding: "20px",
-    },
-    logoContainer: {
-      textAlign: "center",
-      marginBottom: "25px",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    },
-    logoImage: {
-      width: "200px",
-      height: "auto",
-      marginBottom: "15px",
-    },
-    brandContainer: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    },
-    brandName: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      color: "white",
-      letterSpacing: "1.2px",
-      marginBottom: "4px",
-      textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
-      fontFamily: "'Arial Black', sans-serif",
-    },
-    brandTagline: {
-      fontSize: "12px",
-      color: "white",
-      letterSpacing: "2.5px",
-      textTransform: "uppercase",
-      fontFamily: "Arial, sans-serif",
-    },
-    form: {
-      backgroundColor: "white",
-      padding: "40px 30px",
-      borderRadius: "10px",
-      boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
-      width: "320px",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    },
-    title: {
-      marginBottom: "24px",
-      color: "#333",
-      textAlign: "center",
-    },
-    input: {
-      padding: "12px",
-      marginBottom: "16px",
-      borderRadius: "6px",
-      border: "1px solid #ccc",
-      fontSize: "16px",
-      outlineColor: "#764ba2",
-      width: "100%",
-      boxSizing: "border-box",
-    },
-    error: {
-      marginBottom: "12px",
-      color: "#e74c3c",
-      textAlign: "center",
-      fontWeight: "bold",
-    },
-    secondaryActions: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "10px",
-      width: "100%",
-    },
-    textButton: {
-      background: "none",
-      border: "none",
-      color: "#764ba2",
-      cursor: "pointer",
-      fontSize: "14px",
-      textDecoration: "underline",
-      padding: "0",
-    },
-    divider: {
-      color: "#764ba2",
-      fontSize: "14px",
-    },
-    footer: {
-      marginTop: "40px",
-      textAlign: "center",
-      color: "white",
-      padding: "20px 10px",
-      borderTop: "1px solid rgba(255, 255, 255, 0.2)",
-      width: "100%",
-      maxWidth: "400px",
-    },
-    footerText: {
-      fontSize: "12px",
-      marginBottom: "8px",
-      color: "rgba(255,255,255,0.85)",
-    },
-    footerLinks: {
-      display: "flex",
-      justifyContent: "center",
-      gap: "10px",
-      fontSize: "12px",
-      flexWrap: "wrap",
-    },
-    footerLink: {
-      color: "white",
-      textDecoration: "underline",
-      cursor: "pointer",
-    },
-    footerDivider: {
-      color: "white",
-      fontSize: "12px",
-    },
+    setError("");
+    if (!mode) {
+      setError("Please select an action.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await axios.put("http://localhost:7000/api/v1/forgetPassword", {
+        email,
+        otp: otp ? Number(otp) : undefined,
+        newPassword,
+        mode,
+      });
+      setSuccess(response.data.message || "Success!");
+      setError("");
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.error || "Unknown error";
+      setError(msg);
+      setSuccess("");
+    }
+    setIsLoading(false);
   };
 
   return (
-    <div style={styles.container}>
-      {/* Logo and branding */}
-      <div style={styles.logoContainer}>
-        <img
-          src={logo}
-          alt="Ticket Logo"
-          style={styles.logoImage}
-        />
-        <div style={styles.brandContainer}>
-          <div style={styles.brandName}>BOOKEDIN</div>
-          <div style={styles.brandTagline}>CLICK.BOOK.ENJOY</div>
-        </div>
+    <div className="home-wrapper home-bg-white" style={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Floating logo particles */}
+      <div className="particles">
+        {particles.map((_, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="logo particle"
+            className="particle-logo"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 32 + 32}px`,
+              height: "auto",
+              opacity: Math.random() * 0.18 + 0.08,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${10 + Math.random() * 10}s`,
+            }}
+            draggable={false}
+          />
+        ))}
       </div>
-
-      {/* Forgot Password Form */}
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <h2 style={styles.title}>Forgot Password</h2>
-        {error && <div style={styles.error}>{error}</div>}
-        {success && <div style={{ ...styles.error, color: "green" }}>{success}</div>}
-
-        <input
-          style={styles.input}
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          style={styles.input}
-          type="number"
-          placeholder="OTP (if verifying)"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-        />
-
-        <input
-          style={styles.input}
-          type="password"
-          placeholder="New Password (if verifying)"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-
-        {/* Radio buttons for mode selection */}
-        <div style={{
-          width: "100%",
-          marginBottom: 10,
-          display: "flex",
-          justifyContent: "center",
-          gap: "24px",
-        }}>
-          <label style={{ fontSize: '15px', color: '#764ba2', cursor: "pointer" }}>
-            <input
-              type="radio"
-              value="send"
-              checked={mode === "send"}
-              onChange={() => setMode("send")}
-              style={{ marginRight: "8px" }}
-            />
-            Send OTP
-          </label>
-          <label style={{ fontSize: '15px', color: '#764ba2', cursor: "pointer" }}>
-            <input
-              type="radio"
-              value="verify"
-              checked={mode === "verify"}
-              onChange={() => setMode("verify")}
-              style={{ marginRight: "8px" }}
-            />
-            Verify OTP
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          style={submitButtonStyle}
-          disabled={isLoading}
-        >
-          {isLoading ? "Processing..." : "Submit"}
-        </button>
-        
-        {mode && (
-          <div style={{ marginTop: "12px", fontSize: "14px", fontWeight: "bold", color: "#764ba2" }}>
-            Current mode: <span style={{ fontWeight: "normal" }}>
-              {mode === "send" ? "Send" : mode === "verify" ? "Verify" : ""}
-            </span>
+      {/* Back Logo */}
+      <div className="category-logo-circle" style={{ position: 'absolute', top: 32, left: 32, cursor: 'pointer', zIndex: 10 }} onClick={() => navigate(-1)}>
+        <img src={logo} alt="BookedIn Logo" style={{ width: 40, height: 40, borderRadius: '50%' }} />
+      </div>
+      {/* Centered Large Logo */}
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 32, marginBottom: 0 }}>
+        <img src={logo} alt="BookedIn Logo" style={{ width: 110, height: 'auto', borderRadius: 24, background: 'transparent' }} />
+      </div>
+      {/* Main Content Card */}
+      <main style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', minHeight: '60vh', margin: '2.2rem 0 1.5rem 0' }}>
+        <div className="cta-glassy-purple-card" style={{ maxWidth: 400, padding: '3rem 2.5rem', width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <span className="refined-title" style={{ fontSize: 28, color: '#7c3aed', fontWeight: 700 }}>BookedIn</span>
+            <div className="footer-glassy-slogan" style={{ marginBottom: 18 }}>click.book.enjoy</div>
           </div>
-        )}
-      </form>
-
+          <form style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onSubmit={handleSubmit}>
+            <h2 className="refined-title" style={{ fontSize: 22, textAlign: 'center', marginBottom: 8 }}>Forgot Password</h2>
+            {error && <div style={{ color: '#e74c3c', fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>{error}</div>}
+            {success && <div style={{ color: 'green', fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>{success}</div>}
+            <input
+              style={{ padding: '12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16, marginBottom: 6 }}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              style={{ padding: '12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16, marginBottom: 6 }}
+              type="number"
+              placeholder="OTP (if verifying)"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+            <input
+              style={{ padding: '12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16, marginBottom: 6 }}
+              type="password"
+              placeholder="New Password (if verifying)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            {/* Radio buttons for mode selection */}
+            <div style={{
+              width: "100%",
+              marginBottom: 10,
+              display: "flex",
+              justifyContent: "center",
+              gap: "24px",
+            }}>
+              <label style={{ fontSize: '15px', color: '#7c3aed', cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  value="send"
+                  checked={mode === "send"}
+                  onChange={() => setMode("send")}
+                  style={{ marginRight: "8px" }}
+                />
+                Send OTP
+              </label>
+              <label style={{ fontSize: '15px', color: '#7c3aed', cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  value="verify"
+                  checked={mode === "verify"}
+                  onChange={() => setMode("verify")}
+                  style={{ marginRight: "8px" }}
+                />
+                Verify OTP
+              </label>
+            </div>
+            <button
+              type="submit"
+              style={submitButtonStyle}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Submit"}
+            </button>
+            {mode && (
+              <div style={{ marginTop: "12px", fontSize: "14px", fontWeight: "bold", color: "#7c3aed" }}>
+                Current mode: <span style={{ fontWeight: "normal" }}>
+                  {mode === "send" ? "Send" : mode === "verify" ? "Verify" : ""}
+                </span>
+              </div>
+            )}
+          </form>
+        </div>
+      </main>
       {/* Footer */}
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-      </footer>
+      <div className="footer-glassy-outer">
+        <footer className="footer-glassy-purple">
+          <div className="footer-glassy-inner">
+            <div className="footer-glassy-brand">
+              BookedIn
+              <div className="footer-glassy-slogan">click.book.enjoy</div>
+            </div>
+            <div className="footer-glassy-links">
+              <div className="footer-glassy-col">
+                <a href="/public-event">All Tickets on Sale</a>
+                <a href="/public-event">Hot Events</a>
+              </div>
+              <div className="footer-glassy-col">
+                <a href="/about">About Us</a>
+                <a href="/contact">Contact Us</a>
+                <a href="/policies">Policies</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/faqs">FAQs</a>
+              </div>
+            </div>
+            <a href="/contact" className="footer-glassy-help-btn">
+              <span className="footer-glassy-help-icon">?</span>
+              <span className="footer-glassy-help-text">Need some help? Contact us</span>
+            </a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 };

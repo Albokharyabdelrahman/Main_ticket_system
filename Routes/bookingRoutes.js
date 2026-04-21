@@ -8,7 +8,10 @@ const {
   bookTickets,
   getBookingById,
   cancelBooking,
+  getTopTrendingEventsLast2Weeks,
 } = bookingController;
+
+router.get("/trending-events-2weeks", AuthenticationMiddleware, getTopTrendingEventsLast2Weeks);
 
 router.post("/", AuthenticationMiddleware, AuthorizationMiddleware("User"), bookTickets);
 router.get("/:id", AuthenticationMiddleware, AuthorizationMiddleware("User"), getBookingById);

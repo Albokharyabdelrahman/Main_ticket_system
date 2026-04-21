@@ -5,7 +5,7 @@ const Event = require('../models/Event');
 
 
 exports.updateProfile = async (req, res) => {
-  const { name, email, password, profilePicture } = req.body;
+  const { name, email, password, profilePicture, birthdate, phone, country, gender } = req.body;
 
   try {
     const token = req.cookies.token;
@@ -22,6 +22,10 @@ exports.updateProfile = async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = await bcrypt.hash(password, 10);
+    if (birthdate !== undefined) user.birthdate = birthdate;
+    if (phone !== undefined) user.phone = phone;
+    if (country !== undefined) user.country = country;
+    if (gender !== undefined) user.gender = gender;
     
     // Save base64 profile picture directly
     if (profilePicture) {

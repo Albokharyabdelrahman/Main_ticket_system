@@ -29,6 +29,12 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  maxTicketsPerPerson: {
+    type: Number,
+    required: true,
+    default: 10, // Default maximum of 10 tickets per person
+    min: 1, // Minimum 1 ticket per person
+  },
   organizerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -37,6 +43,10 @@ const eventSchema = new mongoose.Schema({
   image: {
     type: String,
     required: true,
+  },
+  thumbnail: {
+    type: String,
+    required: false, // Optional thumbnail for better performance
   },
   date: {
     type: Date,

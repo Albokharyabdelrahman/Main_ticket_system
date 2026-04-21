@@ -1,605 +1,436 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { Link } from "react-router-dom";
-function getCurrentUserIdFromCookie() {
-  const cookie = document.cookie
-    .split("; ")
-    .find(row => row.startsWith("token="));
-  if (!cookie) return null;
+import sportsImg from "../assets/category-sports.jpg";
+import musicImg from "../assets/category-music.jpg";
+import talksImg from "../assets/category-talks.jpg";
+import comedyImg from "../assets/category-comedy.jpg";
+import theatreImg from "../assets/category-theatre.jpg";
+import { AuthContext } from "../context/AuthContext";
+import "../App.css";
 
-  const token = cookie.split("=")[1];
-  if (!token || !token.includes(".")) return null;
+const CATEGORY_DATA = [
+  { name: "Sports", image: sportsImg },
+  { name: "Music", image: musicImg },
+  { name: "Talks", image: talksImg },
+  { name: "Comedy", image: comedyImg },
+  { name: "Theatre", image: theatreImg },
+];
 
-  try {
-    const payloadBase64 = token.split(".")[1];
-    const decodedPayload = JSON.parse(atob(payloadBase64));
-    const UserArr=[decodedPayload.userId,decodedPayload.role||"RandomValue"];
-    return UserArr; 
-  } catch (e) {
-    console.error("Invalid token:", e);
-    return null;
-  }
-}
+const ticketPositions = [
+  { top: 40, left: 60, size: 120, rot: -8, delay: 0 },
+  { top: 120, left: 320, size: 100, rot: 12, delay: 1 },
+  { top: 300, left: 180, size: 90, rot: 6, delay: 2 },
+  { top: 500, left: 80, size: 110, rot: -10, delay: 3 },
+  { top: 80, right: 120, size: 130, rot: 8, delay: 1.5 },
+  { top: 260, right: 60, size: 100, rot: -6, delay: 2.5 },
+  { bottom: 120, left: 200, size: 140, rot: 10, delay: 2 },
+  { bottom: 60, right: 180, size: 110, rot: -12, delay: 3.5 },
+  { bottom: 200, right: 60, size: 100, rot: 4, delay: 1.2 },
+  { bottom: 40, left: 60, size: 120, rot: 0, delay: 2.8 },
+  { top: 180, left: 600, size: 100, rot: 7, delay: 2.2 },
+  { bottom: 300, right: 320, size: 90, rot: -7, delay: 1.7 },
+  { top: 400, right: 400, size: 110, rot: 5, delay: 2.9 },
+];
 
-const API_BASE_URL = "http://localhost:7000/api/v1";
+const SearchIcon = () => (
+  <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="7" stroke="#888" strokeWidth="2"/>
+    <path d="M20 20l-3-3" stroke="#888" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
 
-const UserDashboard = () => {
-
-// const currentUserArr = getCurrentUserIdFromCookie();
-//   const currentRole = currentUserArr[1];
-//   if (currentRole !== "User") {
-//     return (
-//       <div style={{
-//         color: "#dc2626",
-//         fontWeight: "bold",
-//         padding: 40,
-//         textAlign: "center",
-//         fontSize: 22
-//       }}>
-//         You are not allowed to view this. Get out.
-//       </div>
-//     );
-//   }
-
-
-
+export default function UserDashboard() {
+  const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
-  const [error, setError] = useState("");
-  const [randomEvents, setRandomEvents] = useState([]);
-  const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [categoryCounts, setCategoryCounts] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchInputRef = useRef();
+
+  // Floating logo particles setup
+  const numParticles = 18;
+  const particles = Array.from({ length: numParticles });
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/users/profile`, {
-          withCredentials: true,
-        });
-        setProfile(res.data.user);
-      } catch (err) {
-        setError("Failed to load profile. Please try again.");
-      }
-    };
-    fetchProfile();
+    axios.get("http://localhost:7000/api/v1/events/future")
+      .then(res => setEvents(res.data || []))
+      .catch(() => setEvents([]));
   }, []);
 
   useEffect(() => {
-    const fetchRandomEvents = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/events`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
-        
-        if (res.data.length > 0) {
-          const upcomingEvents = res.data.filter(event => {
-            const eventDate = new Date(event.date);
-            return eventDate > new Date();
-          });
-
-          const shuffled = [...upcomingEvents].sort(() => 0.5 - Math.random());
-          const selected = shuffled.slice(0, 2);
-          setRandomEvents(selected);
-        }
-      } catch (err) {
-        console.log("Could not fetch events", err);
-      }
-    };
-    fetchRandomEvents();
+    axios.get("http://localhost:7000/api/v1/users/profile", { withCredentials: true })
+      .then(res => setProfile(res.data.user))
+      .catch(() => setProfile(null));
   }, []);
 
- const handleLogout = async () => {
-  try {
-    const BASE_URL = "http://localhost:5173/login";
-    await axios.post("http://localhost:7000/api/v1/logout", null, { withCredentials: true });
-    localStorage.removeItem("token");
-    logout(); 
-    window.location.href = BASE_URL;
-  } catch (err) {
-    console.error("Logout failed:", err);
-  }
-};
+  // Event switching every 8 seconds (no fade)
+  useEffect(() => {
+    if (events.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentEventIndex(idx => (idx + 1) % events.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [events]);
 
+  // Category counts
+  useEffect(() => {
+    const catCounts = {};
+    CATEGORY_DATA.forEach(cat => {
+      catCounts[cat.name] = events.filter(e => (e.category || '').toLowerCase() === cat.name.toLowerCase()).length;
+    });
+    setCategoryCounts(catCounts);
+  }, [events]);
 
-  const handleUpdateProfile = () => navigate("/update-profile");
-  const handleBookTickets = () => navigate("/book-tickets");
-  const handleViewBookings = () => navigate("/my-bookings");
-  const handleFindBooking = () => navigate("/find-booking");
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "📅 Date to be announced";
-    try {
-      const options = { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      };
-      return `📅 ${new Date(dateString).toLocaleDateString(undefined, options)}`;
-    } catch (e) {
-      return "📅 Date to be announced";
+  // Live search logic (optional, can be removed if not needed)
+  useEffect(() => {
+    if (!searchTerm) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
     }
-  };
+    const filtered = events.filter(e => {
+      const term = searchTerm.toLowerCase();
+      return (
+        (e.title && e.title.toLowerCase().includes(term)) ||
+        (e.location && e.location.toLowerCase().includes(term)) ||
+        (e.category && e.category.toLowerCase().includes(term))
+        );
+    });
+    setSearchResults(filtered.slice(0, 6));
+    setShowDropdown(filtered.length > 0);
+  }, [searchTerm, events]);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (searchInputRef.current && !searchInputRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Theme
+  useEffect(() => {
+    document.documentElement.style.setProperty('--primary-purple', '#7c3aed');
+    document.documentElement.style.setProperty('--secondary-purple', '#a78bfa');
+    document.documentElement.style.setProperty('--accent-purple', '#c4b5fd');
+    document.documentElement.style.setProperty('--glass-bg', 'rgba(124, 58, 237, 0.15)');
+    document.documentElement.style.setProperty('--glass-border', 'rgba(124, 58, 237, 0.25)');
+    document.documentElement.style.setProperty('--header-gradient', 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)');
+  }, []);
+
+  // Floating ticket animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes ticketFloat {
+        0% { transform: translateY(0) scale(1) rotate(-8deg); opacity: 0.22; }
+        100% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.28; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
+
+  const featured = events[currentEventIndex] || {};
+  const eventDate = featured.date ? new Date(featured.date) : null;
+
+  // User action buttons
+  const userButtons = [
+    { label: "Book Tickets", onClick: () => navigate("/book-tickets") },
+    { label: "View My Bookings", onClick: () => navigate("/my-bookings") },
+    { label: "Find Booking", onClick: () => navigate("/find-booking") },
+  ];
 
   return (
-    <div style={styles.pageContainer}>
-      <div style={{ display: "flex", flex: 1 }}>
-        <aside style={styles.sidebar}>
-          <div style={styles.profilePictureContainer}>
-          {profile && profile.profilePic ? (
-           <img
-             src={profile.profilePic}
-             alt="Profile"
-            style={styles.profilePicture}
-             />
-              ) : (
-                <div style={styles.defaultProfileIcon}>👤</div> // Optional icon emoji
-              )     }
+    <div className="home-wrapper home-bg-white" style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#fff' }}>
+      {/* Floating ticket background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
+        {ticketPositions.map((pos, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="ticket"
+            style={{
+              position: 'absolute',
+              opacity: 0.22,
+              filter: 'blur(1.5px) drop-shadow(0 2px 12px #a78bfa88)',
+              userSelect: 'none',
+              zIndex: 0,
+              pointerEvents: 'none',
+              width: pos.size,
+              height: 'auto',
+              top: pos.top,
+              left: pos.left,
+              right: pos.right,
+              bottom: pos.bottom,
+              transform: `rotate(${pos.rot}deg)`,
+              animation: 'ticketFloat 8s ease-in-out infinite alternate',
+              animationDelay: `${pos.delay}s`,
+            }}
+            draggable={false}
+          />
+        ))}
+      </div>
+      {/* Header from Home with search bar, profile, and welcome message */}
+      <header className="modern-header">
+        <div className="modern-header-inner">
+          <div className="modern-header-left">
+            <img src={logo} alt="BookedIn Logo" className="modern-header-logo" />
+            <span className="modern-header-brand">BookedIn</span>
           </div>
-
-          <div style={styles.sidebarHeader}>
-            <h2 style={styles.sidebarTitle}>User Profile</h2>
+          <div className="modern-header-center">
+            <div className="modern-header-search" ref={searchInputRef} style={{ position: 'relative' }}>
+              <SearchIcon />
+              <input
+                type="text"
+                placeholder="Search for events..."
+                className="modern-header-search-input"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                autoComplete="off"
+                style={{ zIndex: 20 }}
+              />
+              {showDropdown && (
+                <div style={{
+                  position: 'absolute',
+                  top: 38,
+                  left: 0,
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.98)',
+                  borderRadius: 16,
+                  boxShadow: '0 4px 24px #a78bfa22',
+                  zIndex: 30,
+                  padding: '0.5rem 0',
+                  border: '1.5px solid #a78bfa33',
+                  maxHeight: 320,
+                  overflowY: 'auto',
+                }}>
+                  {searchResults.map(ev => (
+                    <div
+                      key={ev._id}
+                      onClick={() => { setShowDropdown(false); setSearchTerm(""); navigate(`/event/${ev._id}`); }}
+                      style={{
+                        padding: '0.7rem 1.2rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderBottom: '1px solid #f3e8ff',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseDown={e => e.preventDefault()}
+                      onMouseOver={e => e.currentTarget.style.background = '#f3e8ff'}
+                      onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span style={{ fontWeight: 600, color: '#7c3aed', fontSize: 16 }}>{ev.title}</span>
+                      <span style={{ color: '#666', fontSize: 13 }}>{ev.location} {ev.date ? '| ' + new Date(ev.date).toLocaleDateString() : ''}</span>
+                    </div>
+                  ))}
+                  {searchResults.length === 0 && (
+                    <div style={{ padding: '0.7rem 1.2rem', color: '#aaa', fontSize: 15 }}>No results found.</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          {error && <p style={styles.error}>{error}</p>}
-          {profile && (
-            <div style={styles.profileInfo}>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Name:</span>
-                <span style={styles.profileValue}>{profile.name}</span>
+          <div className="modern-header-right" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            {/* Profile picture clickable */}
+            {profile && profile.profilePic ? (
+              <img
+                src={profile.profilePic}
+                alt="Profile"
+                style={{ width: 70, height: 70, borderRadius: '50%', objectFit: 'cover', border: '3px solid #a78bfa', background: '#fff', cursor: 'pointer', transition: 'box-shadow 0.2s' }}
+                onClick={() => navigate('/profile')}
+                onMouseOver={e => e.currentTarget.style.boxShadow = '0 0 0 4px #a78bfa44'}
+                onMouseOut={e => e.currentTarget.style.boxShadow = ''}
+              />
+            ) : (
+              <div
+                style={{ width: 70, height: 70, borderRadius: '50%', background: '#ede9fe', color: '#7c3aed', fontSize: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'box-shadow 0.2s' }}
+                onClick={() => navigate('/profile')}
+                onMouseOver={e => e.currentTarget.style.boxShadow = '0 0 0 4px #a78bfa44'}
+                onMouseOut={e => e.currentTarget.style.boxShadow = ''}
+              >👤</div>
+            )}
+            {/* User name clickable */}
+            <span
+              style={{ color: '#7c3aed', fontWeight: 700, fontSize: 20, cursor: 'pointer', transition: 'text-shadow 0.2s' }}
+              onClick={() => navigate('/profile')}
+              onMouseOver={e => e.currentTarget.style.textShadow = '0 2px 8px #a78bfa44'}
+              onMouseOut={e => e.currentTarget.style.textShadow = ''}
+            >{profile?.name || 'User'}</span>
+            <button onClick={() => { logout(); localStorage.removeItem("token"); window.location.href = "/login"; }} style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)', color: '#fff', border: 'none', borderRadius: 14, padding: '12px 32px', fontWeight: 700, fontSize: 16, boxShadow: '0 2px 8px #a78bfa22', cursor: 'pointer', transition: 'background 0.2s', minWidth: 120 }}>Log Out</button>
+          </div>
+        </div>
+      </header>
+      {/* Welcome message below header */}
+      <div style={{ textAlign: 'center', marginTop: 18, marginBottom: 8 }}>
+        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: 28, letterSpacing: 0.2 }}>Welcome{profile ? `, ${profile.name}` : ''}!</span>
+      </div>
+      {/* User action buttons */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 18, margin: '32px 0 24px 0', flexWrap: 'wrap' }}>
+        {userButtons.map(btn => (
+          <button
+            key={btn.label}
+            onClick={btn.onClick}
+            className="refined-book-btn"
+            style={{
+              background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
+              color: '#fff',
+              padding: '1.35rem 3.2rem',
+              fontSize: '1.35rem',
+              minWidth: 240,
+              borderRadius: '2.5rem',
+              fontWeight: 700,
+              boxShadow: '0 4px 16px #a78bfa33',
+              margin: '0 4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
+      {/* Hero Event Section */}
+      {featured && featured.title && (
+        <section className="hero-glassy-card hero-glassy-card-home refined-hero" style={{ maxWidth: '1100px', minHeight: '500px', width: '1100px', height: '340px', margin: '0 auto', display: 'flex', alignItems: 'stretch', overflow: 'hidden', position: 'relative' }}>
+          <div className="hero-info-card">
+            <h1 className="hero-title refined-title">{featured.title}</h1>
+            <div className="hero-meta refined-meta">
+              {eventDate && (
+                <>
+                  <span>{eventDate.toLocaleString('en-US', { month: 'short', day: '2-digit' })} | {eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  <br />
+                  <span>{featured.location}</span>
+                </>
+              )}
+            </div>
+            <div className="refined-organizer-block">
+              <span className="refined-organized-by">Organized by</span><br />
+              <div className="refined-organizer-row">
+                {featured.organizerProfilePic ? (
+                  <img
+                    src={featured.organizerProfilePic}
+                    alt="Organizer profile"
+                    className="refined-organizer-profile"
+                    style={{ width: '140px', height: '60px', objectFit: 'cover', borderRadius: '1rem', background: '#fff' }}
+                  />
+                ) : null}
               </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}> Email:</span>
-                <span style={styles.profileValue}>{profile.email}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}> Role:</span>
-                <span style={styles.profileValue}>{profile.role}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}> Id:</span>
-                <span style={styles.profileValue}>{profile._id}</span>
-              </div>
-
+            </div>
+            <div className="refined-hero-btns">
               <button
-                onClick={handleUpdateProfile}
-                style={styles.updateProfileButton}
+                className="refined-book-btn"
+                onClick={() => navigate(`/event/${featured._id}`)}
+                style={{
+                  background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
+                  color: '#fff',
+                }}
               >
-                Update Profile
-              </button>
-
-              <button onClick={handleLogout} style={styles.logoutButton}>
-                <span style={styles.logoutText}> Log Out</span>
-                <span style={styles.logoutIcon}>→</span>
+                <span className="refined-book-btn-icon">🎟️</span> View Details
               </button>
             </div>
-          )}
-        </aside>
-
-        <main style={styles.contentArea}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>
-              👋 Welcome back,{" "}
-              <span style={styles.highlight}>{profile?.name || "User"}</span>!
-            </h1>
-            <img src={logo} alt="BookedIn Logo" style={styles.logo} />
           </div>
-
-          <div style={styles.dashboardButtons}>
-            <button style={styles.actionButton} onClick={handleBookTickets}>
-              <span style={styles.buttonIcon}>🎫</span>
-              <span>Book Tickets</span>
-            </button>
-            <button style={styles.actionButton} onClick={handleViewBookings}>
-              <span style={styles.buttonIcon}>📋</span>
-              <span>View My Bookings</span>
-            </button>
-            <button style={styles.actionButton} onClick={handleFindBooking}>
-              <span style={styles.buttonIcon}>🔍</span>
-              <span>Find Booking</span>
-            </button>
-          </div>
-
-          <div style={styles.contentGrid}>
-            {randomEvents.length > 0 ? (
-              randomEvents.map((event) => (
-                <div key={event._id} style={styles.bookingCard}>
-                  <h3 style={styles.cardTitle}>🎪 {event.title}</h3>
-                  <div style={styles.bookingDetails}>
-                    <div style={styles.bookingImageContainer}>
-                      {event.image ? (
-                        <img 
-                          src={event.image} 
-                          alt={event.title} 
-                          style={styles.bookingImage}
-                        />
-                      ) : (
-                        <div style={styles.bookingImagePlaceholder}>
-                          <span style={styles.placeholderIcon}>🎭</span>
-                        </div>
-                      )}
-                    </div>
-                    <div style={styles.bookingInfo}>
-                      <h4 style={styles.eventTitle}>✨ {event.title}</h4>
-                      <p style={styles.bookingText}>
-                        {formatDate(event.date)}
-                      </p>
-                      <p style={styles.bookingText}>
-                        📍 {event.location || "Venue to be confirmed"}
-                      </p>
-                      <p style={styles.bookingText}>
-                        🎟️ {event.availableTickets} tickets available
-                      </p>
-                      <p style={styles.bookingText}>
-                        💰 ${event.price} per ticket
-                      </p>
-                      <button 
-                        style={styles.viewBookingButton}
-                        onClick={() => navigate(`/book-tickets?eventId=${event._id}`)}
-                      >
-                        ⚡ Book Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
+          <div className="hero-image-container hero-image-container-home refined-image-container">
+            {featured.image ? (
+              <img src={featured.image} alt={featured.title} className="hero-image refined-hero-image" />
             ) : (
-              <>
-                <div style={styles.bookingCard}>
-                  <h3 style={styles.cardTitle}>😔 No Upcoming Events</h3>
-                  <p style={styles.cardText}>🔍 Check back later for new events</p>
-                </div>
-                <div style={styles.bookingCard}>
-                  <h3 style={styles.cardTitle}>🌟 Discover Events</h3>
-                  <p style={styles.cardText}>🎉 Browse our collection of exciting events</p>
-                </div>
-              </>
+              <img src={logo} alt="BookedIn" className="hero-image refined-hero-image" style={{ objectFit: "contain", background: "#f6f6f6" }} />
             )}
           </div>
-        </main>
+        </section>
+      )}
+      {/* Upcoming Events Section */}
+      <section className="upcoming-events-section">
+        <h2 className="upcoming-events-title">Upcoming Events</h2>
+        <div className="upcoming-events-carousel">
+          <button className="carousel-arrow" onClick={() => setCurrentEventIndex(idx => Math.max(0, idx - 1))} disabled={currentEventIndex === 0}>&larr;</button>
+          <div className="upcoming-events-cards">
+            {events.slice(currentEventIndex, currentEventIndex + 3).map(event => {
+              const eventDate = event.date ? new Date(event.date) : null;
+              return (
+                <div className="upcoming-event-card" key={event._id} onClick={() => navigate(`/event/${event._id}`)} style={{ cursor: 'pointer' }}>
+                  <div className="upcoming-event-image-wrapper">
+                    {event.image ? (
+                      <img src={event.image} alt={event.title} className="upcoming-event-image" />
+                    ) : (
+                      <div className="upcoming-event-image-fallback" />
+                    )}
+                  </div>
+                  <div className="upcoming-event-info">
+                    <div className="upcoming-event-title">{event.title}</div>
+                    <div className="upcoming-event-date">
+                      {eventDate && eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      {eventDate && ' | ' + eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    <div className="upcoming-event-location">{event.location}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <button className="carousel-arrow" onClick={() => setCurrentEventIndex(idx => Math.min(events.length - 3, idx + 1))} disabled={currentEventIndex >= events.length - 3}>&rarr;</button>
+        </div>
+        <div className="upcoming-events-explore-btn-wrapper">
+          <button className="upcoming-events-explore-btn" onClick={() => navigate("/book-tickets")}>Explore All Events</button>
+        </div>
+      </section>
+      {/* Top Categories Section (limit to 4 cards) */}
+      <section className="top-categories-section">
+        <h2 className="top-categories-title">Explore Top Categories For Fun Things To Do</h2>
+        <div className="top-categories-carousel">
+          {CATEGORY_DATA.slice(0, 4).map(cat => (
+            <div className="top-category-card" key={cat.name} onClick={() => navigate(`/events/category/${encodeURIComponent(cat.name)}`)}>
+              <div className="top-category-image-wrapper">
+                <img src={cat.image} alt={cat.name} className="top-category-image" />
+              </div>
+              <div className="top-category-info">
+                <div className="top-category-name">{cat.name}</div>
+                <div className="top-category-count">{categoryCounts[cat.name] || 0} Events</div>
+                <span className="top-category-arrow">&rarr;</span>
+              </div>
+            </div>
+          ))}
+          </div>
+      </section>
+      {/* Footer (modern glassy, same as Home) */}
+      <div className="footer-glassy-outer">
+        <footer className="footer-glassy-purple">
+          <div className="footer-glassy-inner">
+            <div className="footer-glassy-brand">
+              BookedIn
+              <div className="footer-glassy-slogan">click.book.enjoy</div>
+            </div>
+            <div className="footer-glassy-links">
+              <div className="footer-glassy-col">
+                <a href="/public-event">All Tickets on Sale</a>
+                <a href="/public-event">Hot Events</a>
+              </div>
+              <div className="footer-glassy-col">
+                <a href="/about">About Us</a>
+                <a href="/contact">Contact Us</a>
+                <a href="/policies">Policies</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/faqs">FAQs</a>
+              </div>
+            </div>
+            <a href="/contact" className="footer-glassy-help-btn">
+              <span className="footer-glassy-help-icon">?</span>
+              <span className="footer-glassy-help-text">Need some help? Contact us</span>
+            </a>
+          </div>
+        </footer>
       </div>
-
- <footer style={styles.footer}>
-  <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-  <div style={styles.footerLinks}>
-    <Link to="/contact" style={styles.footerLink}>
-      Contact
-    </Link>
-    <span style={styles.footerDivider}>|</span>
-    <Link to="/privacy" style={styles.footerLink}>
-      Privacy
-    </Link>
-    <span style={styles.footerDivider}>|</span>
-    <Link to="/about" style={styles.footerLink}>
-      About
-    </Link>
-  </div>
-</footer>
     </div>
   );
-};
-
-const styles = {
-  pageContainer: {
-    display: "flex",
-    flexDirection: "column",
-    minHeight: "100vh",
-    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
-    backgroundColor: "#f8fafc",
-  },
-  sidebar: {
-    width: "300px",
-    background: "linear-gradient(135deg, #434190, #2c2e8f)",
-    color: "#ffffff",
-    padding: "0",
-    display: "flex",
-    flexDirection: "column",
-    boxShadow: "4px 0 15px rgba(0, 0, 0, 0.1)",
-  },
-  profilePictureContainer: {
-    display: "flex",
-    justifyContent: "center",
-    padding: "20px 0",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-  },
-  profilePicture: {
-    width: "90px",
-    height: "90px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "3px solid white",
-    boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
-  },
-  defaultProfileIcon: {
-    width: "90px",
-    height: "90px",
-    borderRadius: "50%",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    color: "white",
-    fontSize: "48px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    border: "3px solid white",
-    boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
-    userSelect: "none",
-  },
-  sidebarHeader: {
-    padding: "30px 25px",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-  },
-  sidebarTitle: {
-    fontSize: "20px",
-    fontWeight: "600",
-    margin: "0",
-    color: "#ffffff",
-    letterSpacing: "0.5px",
-  },
-  profileInfo: {
-    padding: "25px",
-    flex: 1,
-  },
-  profileItem: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: "20px",
-  },
-  profileLabel: {
-    fontSize: "13px",
-    fontWeight: "500",
-    color: "rgba(255, 255, 255, 0.7)",
-    marginBottom: "5px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-  },
-  profileValue: {
-    fontSize: "16px",
-    fontWeight: "500",
-    color: "#ffffff",
-  },
-  updateProfileButton: {
-    marginTop: "20px",
-    padding: "12px 20px",
-    background: "linear-gradient(135deg, #ff9800, #ff7043)",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    width: "100%",
-    transition: "all 0.3s ease",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-  },
-  logoutButton: {
-    marginTop: "20px",
-    padding: "12px 20px",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "500",
-    width: "100%",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    transition: "all 0.3s ease",
-  },
-  logoutText: {
-    marginRight: "10px",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-  },
-  logoutIcon: {
-    fontSize: "18px",
-  },
-  contentArea: {
-    flex: 1,
-    padding: "40px 50px",
-    background: "#f8fafc",
-    position: "relative",
-    overflowY: "auto",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "40px",
-  },
-  title: {
-    fontSize: "28px",
-    fontWeight: "700",
-    margin: "0",
-    color: "#1e293b",
-    lineHeight: "1.3",
-    display: "flex",
-    alignItems: "center",
-  },
-  highlight: {
-    color: "#4f46e5",
-  },
-  dashboardButtons: {
-    display: "flex",
-    gap: "20px",
-    marginBottom: "40px",
-  },
-  actionButton: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "18px 24px",
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#4f46e5",
-    backgroundColor: "white",
-    border: "2px solid #4f46e5",
-    borderRadius: "12px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    boxShadow: "0 6px 12px rgba(79, 70, 229, 0.2)",
-  },
-  buttonIcon: {
-    fontSize: "24px",
-  },
-  contentGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "20px",
-    marginBottom: "40px",
-  },
-  bookingCard: {
-    padding: "25px 30px",
-    background: "white",
-    borderRadius: "12px",
-    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
-    transition: "transform 0.3s ease, box-shadow 0.3s ease",
-    ":hover": {
-      transform: "translateY(-5px)",
-      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-    }
-  },
-  bookingDetails: {
-    display: "flex",
-    gap: "20px",
-    marginTop: "15px",
-  },
-  bookingImageContainer: {
-    width: "120px",
-    height: "120px",
-    flexShrink: 0,
-  },
-  bookingImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    borderRadius: "8px",
-  },
-  bookingImagePlaceholder: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#f1f5f9",
-    borderRadius: "8px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderIcon: {
-    fontSize: "40px",
-  },
-  bookingInfo: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  },
-  eventTitle: {
-    margin: "0 0 12px 0",
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#1e293b",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  bookingText: {
-    margin: "0 0 10px 0",
-    fontSize: "15px",
-    color: "#475569",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  cardTitle: {
-    margin: "0 0 12px",
-    fontSize: "20px",
-    fontWeight: "700",
-    color: "#1e293b",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  cardText: {
-    margin: 0,
-    fontSize: "16px",
-    color: "#475569",
-    lineHeight: "1.5",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  viewBookingButton: {
-    marginTop: "15px",
-    padding: "12px 20px",
-    backgroundColor: "#4f46e5",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "15px",
-    fontWeight: "600",
-    fontFamily: "'Poppins', sans-serif",
-    alignSelf: "flex-start",
-    transition: "all 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    ":hover": {
-      backgroundColor: "#4338ca",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-    },
-  },
-  footer: {
-    padding: "25px 40px",
-    backgroundColor: "#3f51b5",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    color: "white",
-    fontSize: "14px",
-  },
-  footerText: {
-    margin: 0,
-  },
-  footerLinks: {
-    display: "flex",
-    gap: "15px",
-    alignItems: "center",
-  },
-  footerLink: {
-    color: "white",
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-  },
-  footerDivider: {
-    color: "white",
-  },
-  error: {
-    color: "#f87171",
-    padding: "10px 25px",
-    fontWeight: "600",
-  },
-  logo: {
-    height: "50px",
-    objectFit: "contain",
-  },
-};
-
-export default UserDashboard;
+}

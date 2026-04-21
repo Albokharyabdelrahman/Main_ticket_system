@@ -11,9 +11,11 @@ const upload = multer({ storage }); // Use in your route
 
 const fs = require("fs");
 const path = require("path");
+const { sendVerificationEmail } = require('../Utils/sendEmail');
+const PendingUser = require('../models/PendingUser');
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, birthdate, phone, gender } = req.body;
   let profilePicture = undefined;
 
   if (!name || !email || !password || !role) {
@@ -22,10 +24,46 @@ exports.registerUser = async (req, res) => {
     });
   }
 
+  // Validate role
+  if (!["User", "Organizer"].includes(role)) {
+    return res.status(400).json({
+      error: "Invalid role. Must be either 'User' or 'Organizer'.",
+    });
+  }
+
+  // Validate required fields based on role
+  if (role === "User") {
+    if (!birthdate || !phone || !gender) {
+      return res.status(400).json({
+        error: "For User registration, birthdate, phone, and gender are required.",
+      });
+    }
+    if (!["Male", "Female", "Prefer not to mention"].includes(gender)) {
+      return res.status(400).json({
+        error: "Gender must be 'Male', 'Female', or 'Prefer not to mention'.",
+      });
+    }
+  } else if (role === "Organizer") {
+    if (!phone) {
+      return res.status(400).json({
+        error: "For Organizer registration, phone is required.",
+      });
+    }
+  }
+
+  // Only allow @gmail.com emails
+  if (!/^[^@\s]+@gmail\.com$/.test(email)) {
+    return res.status(400).json({ error: "Only Gmail addresses are allowed for registration." });
+  }
+
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
+    }
+    const existingPending = await PendingUser.findOne({ email });
+    if (existingPending) {
+      return res.status(400).json({ error: "A verification is already pending for this email. Please check your email." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,23 +73,33 @@ exports.registerUser = async (req, res) => {
       profilePicture = buffer.toString("base64");
     }
 
-    const newUser = new User({
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    const newPendingUser = new PendingUser({
       name,
       email,
       password: hashedPassword,
       role,
       profilePicture,
+      birthdate: role === "User" ? birthdate : null,
+      phone: phone || null,
+      gender: role === "User" ? gender : null,
+      otp,
+      otpExpires,
     });
 
-    await newUser.save();
+    await newPendingUser.save();
 
-    const token = jwt.sign(
-      { userId: newUser._id, role: newUser.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // Send verification email with OTP (no link, just OTP)
+    const html = `<p>Welcome to BookedIn! Your OTP code is: <b>${otp}</b> (valid for 10 minutes)</p>`;
+    await sendVerificationEmail(email, 'Verify your BookedIn account', html);
 
-    res.status(201).json({ token });
+    res.status(201).json({
+      message: 'Registration successful. Please check your email to verify your account.',
+      email
+    });
   } catch (err) {
     console.error("Server error during registration:", err);
     res.status(500).json({ error: err.message || "Internal Server Error" });
@@ -167,21 +215,15 @@ exports.sendOtp = async (req, res) => {
     return res.status(404).json({ error: "User not found." });
   }
 
-  const otp = crypto.randomInt(100000, 999999);
-
-  // Store OTP with expiration
-  otpStore.set(email, { otp, expiresAt: Date.now() + 500000 * 60 * 1000 });
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
   try {
-    await client.sendEmail({
-      From: "yassin.azab@student.giu-uni.de",
-      To: email,
-      Subject: "Your OTP Code",
-      TextBody: `Your OTP code is ${otp}`,
-      HtmlBody: `<p>Your OTP code is <strong>${otp}</strong></p>`,
-      MessageStream: "outbound",
-    });
-
+    await sendVerificationEmail(
+      email,
+      'BookedIn Password Reset OTP',
+      `<p>Your OTP code for resetting your password is: <b>${otp}</b> (valid for 10 minutes)</p>`
+    );
     res.json({ message: "OTP sent successfully" });
   } catch (err) {
     console.error("Error sending OTP:", err);
@@ -199,19 +241,15 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ error: "User not found." });
 
-    const generatedOtp = crypto.randomInt(100000, 999999);
-    otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 500000 * 60 * 1000 });
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
     try {
-      await client.sendEmail({
-        From: "yassin.azab@student.giu-uni.de",
-        To: email,
-        Subject: "Your OTP Code",
-        TextBody: `Your OTP code is ${generatedOtp}`,
-        HtmlBody: `<p>Your OTP code is <strong>${generatedOtp}</strong></p>`,
-        MessageStream: "outbound",
-      });
-
+      await sendVerificationEmail(
+        email,
+        'BookedIn Password Reset OTP',
+        `<p>Your OTP code for resetting your password is: <b>${generatedOtp}</b> (valid for 10 minutes)</p>`
+      );
       return res.json({ message: "OTP sent successfully" });
     } catch (err) {
       console.error("Error sending OTP:", err);
@@ -254,4 +292,72 @@ exports.forgotPassword = async (req, res) => {
   }
 
   res.status(400).json({ message: "Invalid mode" });
+};
+
+// POST /api/v1/verify-email
+exports.verifyEmail = async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP are required.' });
+  }
+  try {
+    const pendingUser = await PendingUser.findOne({ email });
+    if (!pendingUser) {
+      return res.status(400).json({ message: 'No pending registration found for this email.' });
+    }
+    if (!pendingUser.otp || pendingUser.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP.' });
+    }
+    if (!pendingUser.otpExpires || pendingUser.otpExpires < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired.' });
+    }
+    // Move to User collection
+    const newUser = new User({
+      name: pendingUser.name,
+      email: pendingUser.email,
+      password: pendingUser.password,
+      role: pendingUser.role,
+      profilePicture: pendingUser.profilePicture,
+      birthdate: pendingUser.birthdate,
+      phone: pendingUser.phone,
+      country: pendingUser.country,
+      gender: pendingUser.gender,
+      isVerified: true,
+      verificationToken: undefined,
+      otp: undefined,
+      otpExpires: undefined,
+    });
+    await newUser.save();
+    await PendingUser.deleteOne({ _id: pendingUser._id });
+    return res.json({ message: 'Email verified successfully! You can now log in.' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// POST /api/v1/resend-otp
+exports.resendOtp = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+  try {
+    const pendingUser = await PendingUser.findOne({ email });
+    if (!pendingUser) {
+      return res.status(404).json({ message: 'No pending registration found for this email.' });
+    }
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    pendingUser.otp = otp;
+    pendingUser.otpExpires = otpExpires;
+    await pendingUser.save();
+    // Resend verification email
+    const verificationUrl = `http://localhost:3000/verify-email?token=${pendingUser.verificationToken}&email=${encodeURIComponent(email)}`;
+    const html = `<p>Welcome to BookedIn! Please verify your email by clicking the link below:</p><p><a href="${verificationUrl}">Verify Email</a></p><p>Your new OTP code is: <b>${otp}</b> (valid for 10 minutes)</p>`;
+    await sendVerificationEmail(email, 'Verify your BookedIn account (Resent OTP)', html);
+    return res.json({ message: 'A new OTP has been sent to your email.' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error.' });
+  }
 };

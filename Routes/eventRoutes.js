@@ -14,16 +14,23 @@ const {
   getEventById,
   updateEvent,
   deleteEvent,
-  getApprovedEvents
+  getApprovedEvents,
+  getFutureEvents,
+  getOrganizerProfilePic
 } = require("../Controllers/eventController");
 
 // PUBLIC ROUTES
 router.get("/", getApprovedEvents);               // Get list of all events
+router.get("/future", getFutureEvents);           // Get only future approved events
 router.get("/all", AuthenticationMiddleware, AuthorizationMiddleware("Admin"), getAllEvents);
 router.get("/:id", getEventById);                   // Get details of a single eventg
 
 // PRIVATE ROUTES (Organizer)
 router.post("/", AuthenticationMiddleware,upload.single('image'), AuthorizationMiddleware("Organizer"), createEvent); // Create a new event
-router.put("/:id", AuthenticationMiddleware, AuthorizationMiddleware(["Organizer", "Admin"]), updateEvent); // Update an event
+router.put("/:id", AuthenticationMiddleware, upload.single('image'), AuthorizationMiddleware(["Organizer", "Admin"]), updateEvent); // Update an event
 router.delete("/:id", AuthenticationMiddleware, AuthorizationMiddleware(["Organizer", "Admin"]), deleteEvent); // Delete an event
+
+// Organizer profile picture by ID
+router.get("/organizer-profile-pic/:organizerId", getOrganizerProfilePic);
+
 module.exports = router;

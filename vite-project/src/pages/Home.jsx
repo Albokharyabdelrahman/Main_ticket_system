@@ -1,164 +1,501 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
+import axios from "axios";
 import logo from "../assets/logo.png";
-import './home.css';
+import sportsImg from "../assets/category-sports.jpg";
+import musicImg from "../assets/category-music.jpg";
+import talksImg from "../assets/category-talks.jpg";
+import comedyImg from "../assets/category-comedy.jpg";
+import theatreImg from "../assets/category-theatre.jpg";
+import { useEvents } from "../hooks/useEvents";
+import "./home.css";
 
-import event1 from "../assets/event1.jpg";
-import event2 from "../assets/conference.jpg";
-import event3 from "../assets/event3.jpg";
-import event4 from "../assets/event4.jpg";
-import event5 from "../assets/event5.jpg";
-import event6 from "../assets/event6.jpeg";
+// Icons (SVG inline for globe/user)
+const GlobeIcon = () => (
+  <svg width="26" height="26" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#222" strokeWidth="1.7"/><ellipse cx="12" cy="12" rx="4.5" ry="10" stroke="#222" strokeWidth="1.7"/><path d="M2 12h20" stroke="#222" strokeWidth="1.7"/><path d="M4 6.5h16M4 17.5h16" stroke="#222" strokeWidth="1.2"/></svg>
+);
+const UserIcon = () => (
+  <svg width="26" height="26" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" stroke="#222" strokeWidth="1.7"/><path d="M4 20c0-3.3137 3.134-6 7-6s7 2.6863 7 6" stroke="#222" strokeWidth="1.7"/></svg>
+);
+const SearchIcon = () => (
+  <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="#888" strokeWidth="2"/><path d="M20 20l-3-3" stroke="#888" strokeWidth="2" strokeLinecap="round"/></svg>
+);
+
+// Loading skeleton component
+const EventCardSkeleton = () => (
+  <div className="upcoming-event-card" style={{ opacity: 0.7 }}>
+    <div className="upcoming-event-image-wrapper">
+      <div className="upcoming-event-image-fallback" style={{ 
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'loading 1.5s infinite'
+      }} />
+    </div>
+    <div className="upcoming-event-info">
+      <div style={{ height: '20px', background: '#f0f0f0', borderRadius: '4px', marginBottom: '8px', animation: 'loading 1.5s infinite' }} />
+      <div style={{ height: '16px', background: '#f0f0f0', borderRadius: '4px', marginBottom: '8px', width: '60%', animation: 'loading 1.5s infinite' }} />
+      <div style={{ height: '16px', background: '#f0f0f0', borderRadius: '4px', width: '80%', animation: 'loading 1.5s infinite' }} />
+    </div>
+  </div>
+);
+
+const HeroSkeleton = () => (
+  <section className="hero-glassy-card hero-glassy-card-home refined-hero" style={{ maxWidth: '1100px', minHeight: '500px', width: '1100px', height: '340px', margin: '0 auto', display: 'flex', alignItems: 'stretch', overflow: 'hidden', position: 'relative' }}>
+    <div className="hero-info-card">
+      <div style={{ height: '40px', background: '#f0f0f0', borderRadius: '8px', marginBottom: '16px', width: '80%', animation: 'loading 1.5s infinite' }} />
+      <div style={{ height: '20px', background: '#f0f0f0', borderRadius: '4px', marginBottom: '8px', width: '60%', animation: 'loading 1.5s infinite' }} />
+      <div style={{ height: '20px', background: '#f0f0f0', borderRadius: '4px', marginBottom: '16px', width: '40%', animation: 'loading 1.5s infinite' }} />
+      <div style={{ height: '60px', background: '#f0f0f0', borderRadius: '8px', marginBottom: '16px', width: '140px', animation: 'loading 1.5s infinite' }} />
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ height: '40px', background: '#f0f0f0', borderRadius: '8px', width: '120px', animation: 'loading 1.5s infinite' }} />
+        <div style={{ height: '40px', background: '#f0f0f0', borderRadius: '8px', width: '100px', animation: 'loading 1.5s infinite' }} />
+      </div>
+    </div>
+    <div className="hero-image-container hero-image-container-home refined-image-container">
+      <div style={{ 
+        width: '100%', 
+        height: '100%', 
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'loading 1.5s infinite'
+      }} />
+    </div>
+  </section>
+);
+
+function UpcomingEvents({ events, loading }) {
+  const [startIdx, setStartIdx] = useState(0);
+  const cardsToShow = 3;
+  const navigate = useNavigate();
+
+  const handlePrev = () => {
+    setStartIdx(idx => Math.max(0, idx - 1));
+  };
+  const handleNext = () => {
+    setStartIdx(idx => Math.min(events.length - cardsToShow, idx + 1));
+  };
+
+  const visibleEvents = events.slice(startIdx, startIdx + cardsToShow);
+
+  return (
+    <section className="upcoming-events-section">
+      <h2 className="upcoming-events-title">Upcoming Events</h2>
+      <div className="upcoming-events-carousel">
+        <button className="carousel-arrow" onClick={handlePrev} disabled={startIdx === 0}>&larr;</button>
+        <div className="upcoming-events-cards">
+          {loading ? (
+            // Show skeleton loading
+            Array.from({ length: cardsToShow }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))
+          ) : (
+            visibleEvents.map(event => {
+              const eventDate = event.date ? new Date(event.date) : null;
+              return (
+                <div className="upcoming-event-card" key={event._id} onClick={() => navigate(`/public-event-details/${event._id}`)} style={{ cursor: 'pointer' }}>
+                  <div className="upcoming-event-image-wrapper">
+                    {event.image ? (
+                      <img src={event.image} alt={event.title} className="upcoming-event-image" />
+                    ) : (
+                      <div className="upcoming-event-image-fallback" />
+                    )}
+                  </div>
+                  <div className="upcoming-event-info">
+                    <div className="upcoming-event-title">{event.title}</div>
+                    <div className="upcoming-event-date">
+                      {eventDate && eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      {eventDate && ' | ' + eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    <div className="upcoming-event-location">{event.location}</div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        <button className="carousel-arrow" onClick={handleNext} disabled={startIdx >= events.length - cardsToShow}>&rarr;</button>
+      </div>
+      <div className="upcoming-events-explore-btn-wrapper">
+        <a href="/public-event" className="upcoming-events-explore-btn">Explore All Events</a>
+      </div>
+    </section>
+  );
+}
+
+const CATEGORY_DATA = [
+  { name: "Sports", image: sportsImg },
+  { name: "Music", image: musicImg },
+  { name: "Talks", image: talksImg },
+  { name: "Comedy", image: comedyImg },
+  { name: "Theatre", image: theatreImg },
+];
+
+function TopCategories({ events, loading }) {
+  const navigate = useNavigate();
+  const [startIdx, setStartIdx] = useState(0);
+  const cardsToShow = 4;
+
+  // Memoize category counts to avoid recalculation
+  const counts = useMemo(() => {
+    if (loading || !events.length) return {};
+    const catCounts = {};
+    CATEGORY_DATA.forEach(cat => {
+      catCounts[cat.name] = events.filter(e => (e.category || '').toLowerCase() === cat.name.toLowerCase()).length;
+    });
+    return catCounts;
+  }, [events, loading]);
+
+  const handlePrev = () => setStartIdx(idx => Math.max(0, idx - 1));
+  const handleNext = () => setStartIdx(idx => Math.min(CATEGORY_DATA.length - cardsToShow, idx + 1));
+  const visibleCategories = CATEGORY_DATA.slice(startIdx, startIdx + cardsToShow);
+
+  return (
+    <section className="top-categories-section">
+      <h2 className="top-categories-title">Explore Top Categories For Fun Things To Do</h2>
+      <div className="top-categories-carousel">
+        <button className="carousel-arrow" onClick={handlePrev} disabled={startIdx === 0}>&larr;</button>
+        <div className="top-categories-cards">
+          {visibleCategories.map(cat => (
+            <div className="top-category-card" key={cat.name} onClick={() => navigate(`/events/category/${encodeURIComponent(cat.name)}`)}>
+              <div className="top-category-image-wrapper">
+                <img src={cat.image} alt={cat.name} className="top-category-image" />
+              </div>
+              <div className="top-category-info">
+                <div className="top-category-name">{cat.name}</div>
+                <div className="top-category-count">
+                  {loading ? (
+                    <div style={{ 
+                      height: '16px', 
+                      background: '#f0f0f0', 
+                      borderRadius: '4px', 
+                      width: '60px',
+                      animation: 'loading 1.5s infinite'
+                    }} />
+                  ) : (
+                    `${counts[cat.name] || 0} Events`
+                  )}
+                </div>
+                <span className="top-category-arrow">&rarr;</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="carousel-arrow" onClick={handleNext} disabled={startIdx >= CATEGORY_DATA.length - cardsToShow}>&rarr;</button>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLogoHovering, setIsLogoHovering] = useState(false);
-  const [isMainLogoHovering, setIsMainLogoHovering] = useState(false);
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [organizerPic, setOrganizerPic] = useState(null);
+  const [organizerPicLoading, setOrganizerPicLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchInputRef = useRef();
 
-  const carouselImages = [
-    { src: event1, alt: "Music concert", caption: "Experience live music like never before" },
-    { src: event2, alt: "Conference", caption: "Learn from industry leaders" },
-    { src: event6, alt: "Stadium", caption: "Join the excitement of live sports" },
-    { src: event3, alt: "Food festival", caption: "Taste culinary delights from around the world" },
-    { src: event4, alt: "Performance", caption: "Enjoy a night of unforgettable performances" },
-    { src: event5, alt: "Football", caption: "Cheer for your favorite team" },
-  ];
+  // Use the optimized hook for fetching events
+  const { events, loading, error } = useEvents('/future', {
+    params: { limit: 20 } // Limit to 20 events for better performance
+  });
 
+  // Floating logo particles setup
+  const numParticles = 18;
+  const particles = Array.from({ length: numParticles });
+
+  // Event switching every 8 seconds (no fade)
   useEffect(() => {
+    if (events.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === carouselImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 3000);
+      setCurrentEventIndex(idx => (idx + 1) % events.length);
+    }, 8000);
     return () => clearInterval(interval);
-  }, [carouselImages.length]);
+  }, [events]);
+
+  // Fetch organizer profile picture if not present
+  useEffect(() => {
+    const featured = events[currentEventIndex] || {};
+    // Organizer profile pic logic
+    if (featured.organizerId) {
+      if (typeof featured.organizerId === 'object' && featured.organizerId.profilePic) {
+        setOrganizerPic(featured.organizerId.profilePic);
+        setOrganizerPicLoading(false);
+      } else if (typeof featured.organizerId === 'string') {
+        setOrganizerPicLoading(true);
+        axios.get(`/api/v1/events/organizer-profile-pic/${featured.organizerId}`)
+          .then(res => {
+            if (res.data && res.data.profilePic) setOrganizerPic(res.data.profilePic);
+            else setOrganizerPic(null);
+            setOrganizerPicLoading(false);
+          })
+          .catch(() => {
+            setOrganizerPic(null);
+            setOrganizerPicLoading(false);
+          });
+      } else {
+        setOrganizerPic(null);
+        setOrganizerPicLoading(false);
+      }
+    } else {
+      setOrganizerPic(null);
+      setOrganizerPicLoading(false);
+    }
+  }, [events, currentEventIndex]);
+
+  // Live search logic
+  useEffect(() => {
+    if (!searchTerm) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    const filtered = events.filter(e => {
+      const term = searchTerm.toLowerCase();
+      return (
+        (e.title && e.title.toLowerCase().includes(term)) ||
+        (e.location && e.location.toLowerCase().includes(term)) ||
+        (e.category && e.category.toLowerCase().includes(term))
+      );
+    });
+    setSearchResults(filtered.slice(0, 6)); // Show up to 6 results
+    setShowDropdown(filtered.length > 0);
+  }, [searchTerm, events]);
+
+  // Hide dropdown on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (searchInputRef.current && !searchInputRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const featured = events[currentEventIndex] || {};
+  const eventDate = featured.date ? new Date(featured.date) : null;
 
   return (
-    <div className="home-wrapper">
+    <div className="home-wrapper home-bg-white">
+      {/* Loading animation CSS */}
+      <style>{`
+        @keyframes loading {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      `}</style>
+
+      {/* Floating logo particles */}
       <div className="particles">
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="particle" style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            width: `${Math.random() * 10 + 5}px`,
-            height: `${Math.random() * 10 + 5}px`,
-            animationDelay: `${Math.random() * 5}s`,
-            opacity: Math.random() * 0.5 + 0.3
-          }} />
+        {particles.map((_, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="logo particle"
+            className="particle-logo"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 32 + 32}px`,
+              height: "auto",
+              opacity: Math.random() * 0.18 + 0.08,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${10 + Math.random() * 10}s`,
+            }}
+            draggable={false}
+          />
         ))}
       </div>
 
-      <header className="main-header">
-        <div className="header-container">
-          <div className="logo-container"
-            onMouseEnter={() => setIsLogoHovering(true)}
-            onMouseLeave={() => setIsLogoHovering(false)}>
-            <img
-              src={logo}
-              alt="BookedIn Logo"
-              className={`header-logo ${isLogoHovering ? 'spin' : ''}`}
-            />
-            <span className="brand-name">
-              {"BookedIn".split("").map((char, i) => (
-                <span key={i} className="letter-bounce">{char}</span>
-              ))}
-            </span>
+      {/* Header */}
+      <header className="modern-header">
+        <div className="modern-header-inner">
+          <div className="modern-header-left">
+            <img src={logo} alt="BookedIn Logo" className="modern-header-logo" />
+            <span className="modern-header-brand">BookedIn</span>
           </div>
-
-          <div className="header-actions">
-            <a href="/login" className="header-button hover-scale">Login</a>
-            <a href="/register" className="header-button primary hover-scale">Register</a>
+          <div className="modern-header-center">
+            <div className="modern-header-search" ref={searchInputRef} style={{ position: 'relative' }}>
+              <SearchIcon />
+              <input
+                type="text"
+                placeholder="Search for events..."
+                className="modern-header-search-input"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                autoComplete="off"
+                style={{ zIndex: 20 }}
+              />
+              {showDropdown && (
+                <div style={{
+                  position: 'absolute',
+                  top: 38,
+                  left: 0,
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.98)',
+                  borderRadius: 16,
+                  boxShadow: '0 4px 24px #a78bfa22',
+                  zIndex: 30,
+                  padding: '0.5rem 0',
+                  border: '1.5px solid #a78bfa33',
+                  maxHeight: 320,
+                  overflowY: 'auto',
+                }}>
+                  {searchResults.map(ev => (
+                    <div
+                      key={ev._id}
+                      onClick={() => { setShowDropdown(false); setSearchTerm(""); navigate(`/public-event-details/${ev._id}`); }}
+                      style={{
+                        padding: '0.7rem 1.2rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderBottom: '1px solid #f3e8ff',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseDown={e => e.preventDefault()}
+                      onMouseOver={e => e.currentTarget.style.background = '#f3e8ff'}
+                      onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span style={{ fontWeight: 600, color: '#7c3aed', fontSize: 16 }}>{ev.title}</span>
+                      <span style={{ color: '#666', fontSize: 13 }}>{ev.location} {ev.date ? '| ' + new Date(ev.date).toLocaleDateString() : ''}</span>
+                    </div>
+                  ))}
+                  {searchResults.length === 0 && (
+                    <div style={{ padding: '0.7rem 1.2rem', color: '#aaa', fontSize: 15 }}>No results found.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="modern-header-right">
+            <Link to="/public-event" className="modern-header-link">Events</Link>
+            <Link to="/contact" className="modern-header-link">Contact & Support</Link>
+            <span className="modern-header-icon" onClick={() => navigate('/about')} style={{ cursor: 'pointer' }}><GlobeIcon /></span>
+            <span className="modern-header-icon" onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}><UserIcon /></span>
           </div>
         </div>
       </header>
 
-      <div className="home-container" style={{ paddingTop: "4rem", paddingBottom: "1rem" }}>
-        <div className="main-logo-container" style={{ width: "100px", height: "100px" }}
-          onMouseEnter={() => setIsMainLogoHovering(true)}
-          onMouseLeave={() => setIsMainLogoHovering(false)}>
-          <img
-            src={logo}
-            alt="BookedIn Logo"
-            className={`main-logo ${isMainLogoHovering ? 'pulse' : 'float'}`}
-          />
-          <div className="logo-orbits">
-            <div className="orbit orbit-1"></div>
-            <div className="orbit orbit-2"></div>
-            <div className="orbit orbit-3"></div>
-          </div>
-        </div>
-
-        <div className="home-header" style={{ marginBottom: "2rem" }}>
-          <h1 className="home-title" style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>
-            <span className="title-word title-word-1">BookedIn</span>
-          </h1>
-          <p className="home-tagline typing-animation">Click.Book.Enjoy</p>
-        </div>
-
-        <div className="home-content">
-          <div className="right-side">
-            <div className="card-carousel-wrapper" style={{ marginBottom: "2rem" }}>
-              <div className="card-carousel">
-                {carouselImages.map((image, index) => (
-                  <div
-                    key={index}
-                    className={`carousel-card ${index === currentImageIndex ? 'active' : ''} 
-                      ${index < currentImageIndex ? 'prev' : ''} 
-                      ${index > currentImageIndex ? 'next' : ''}`}
-                    style={{ backgroundImage: `url(${image.src})` }}
-                  >
-                    <div className="card-content">
-                      <div className="card-caption">
-                        <p>{image.caption}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+      {/* Hero Event Section */}
+      {loading ? (
+        <HeroSkeleton />
+      ) : (
+        featured && featured.title && (
+          <section className="hero-glassy-card hero-glassy-card-home refined-hero" style={{ maxWidth: '1100px', minHeight: '500px', width: '1100px', height: '340px', margin: '0 auto', display: 'flex', alignItems: 'stretch', overflow: 'hidden', position: 'relative' }}>
+            <div className="hero-info-card">
+              <h1 className="hero-title refined-title">{featured.title}</h1>
+              <div className="hero-meta refined-meta">
+                {eventDate && (
+                  <>
+                    <span>{eventDate.toLocaleString('en-US', { month: 'short', day: '2-digit' })} | {eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                    <br />
+                    <span>{featured.location}</span>
+                  </>
+                )}
               </div>
-
-              <div className="carousel-dots">
-                {carouselImages.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                    onClick={() => setCurrentImageIndex(index)}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
+              <div className="refined-organizer-block">
+                <span className="refined-organized-by">Organized by</span><br />
+                <div className="refined-organizer-row">
+                  {featured.organizerProfilePic ? (
+                    <img
+                      src={featured.organizerProfilePic}
+                      alt="Organizer profile"
+                      className="refined-organizer-profile"
+                      style={{ width: '140px', height: '60px', objectFit: 'cover', borderRadius: '1rem', boxShadow: '0 2px 8px #a78bfa22', background: '#fff' }}
+                    />
+                  ) : featured.organizerLogo ? (
+                    <img
+                      src={featured.organizerLogo}
+                      alt="Organizer logo"
+                      className="refined-organizer-logo"
+                      style={{ width: '140px', height: '60px', objectFit: 'contain', borderRadius: '1rem', boxShadow: '0 2px 8px #a78bfa22', background: '#fff' }}
+                    />
+                  ) : null}
+                </div>
+              </div>
+              <div className="refined-hero-btns">
+                <button
+                  className="refined-book-btn"
+                  onClick={() => navigate("/login")}
+                  style={{
+                    background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
+                    color: '#fff',
+                  }}
+                >
+                  <span className="refined-book-btn-icon">🎟️</span> Book Now
+                </button>
+                <button className="refined-more-btn" onClick={() => navigate(`/public-event-details/${featured._id}`)}>More Info</button>
               </div>
             </div>
+            <div className="hero-image-container hero-image-container-home refined-image-container">
+              {featured.image ? (
+                <img src={featured.image} alt={featured.title} className="hero-image refined-hero-image" />
+              ) : (
+                <img src={logo} alt="BookedIn" className="hero-image refined-hero-image" style={{ objectFit: "contain", background: "#f6f6f6" }} />
+              )}
+            </div>
+          </section>
+        )
+      )}
 
-            <button
-              onClick={() => navigate("/public-event")}
-              className="explore-btn hover-grow"
-            >
-              <span className="explore-text">Explore All Events</span>
-              <span className="explore-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M13.4697 8.53033C13.1768 8.23744 13.1768 7.76256 13.4697 7.46967C13.7626 7.17678 14.2374 7.17678 14.5303 7.46967L18.5303 11.4697C18.8232 11.7626 18.8232 12.2374 18.5303 12.5303L14.5303 16.5303C14.2374 16.8232 13.7626 16.8232 13.4697 16.5303C13.1768 16.2374 13.1768 15.7626 13.4697 15.4697L16.1893 12.75H6.5C6.08579 12.75 5.75 12.4142 5.75 12C5.75 11.5858 6.08579 11.25 6.5 11.25H16.1893L13.4697 8.53033Z" />
-                </svg>
-              </span>
-              <span className="btn-particles">
-                {[...Array(8)].map((_, i) => (
-                  <span key={i} className="btn-particle" />
-                ))}
-              </span>
-            </button>
-          </div>
-        </div>
+      {/* Upcoming Events Section */}
+      <div style={{ marginTop: "3.5rem" }}>
+        <UpcomingEvents events={events} loading={loading} />
       </div>
 
-      <footer className="custom-footer">
-        <p className="footer-text">© 2025 BookedIn. All rights reserved.</p>
-        <div className="footer-links">
-          <Link to="/contact" className="footer-link hover-underline">Contact</Link>
-          <span className="footer-divider">•</span>
-          <Link to="/privacy" className="footer-link hover-underline">Privacy</Link>
-          <span className="footer-divider">•</span>
-          <Link to="/about" className="footer-link hover-underline">About</Link>
+      {/* Top Categories Section */}
+      <div style={{ marginTop: "3.5rem" }}>
+        <TopCategories events={events} loading={loading} />
+      </div>
+
+      {/* Glassy Purple CTA Section */}
+      <section className="cta-glassy-purple-section">
+        <div className="cta-glassy-purple-card">
+          <div className="cta-icon-wrapper">
+            <svg width="80" height="80" fill="none" viewBox="0 0 48 48">
+              <circle cx="24" cy="16" r="10" stroke="#6b46c1" strokeWidth="3"/>
+              <path d="M8 40c0-6.627 7.163-12 16-12s16 5.373 16 12" stroke="#6b46c1" strokeWidth="3"/>
+            </svg>
+          </div>
+          <h2 className="cta-title">Login Or Signup To Gain Additional Benefits</h2>
+          <p className="cta-desc">Get your own personal profile, follow artists you love and more when you sign up for a BookedIn account</p>
+          <button className="cta-btn" onClick={() => navigate('/login')}>Login / Signup <span style={{marginLeft:'0.7rem',fontSize:'1.3rem'}}>&rarr;</span></button>
         </div>
-      </footer>
+      </section>
+
+      {/* Glassy Purple Footer */}
+      <div className="footer-glassy-outer">
+        <footer className="footer-glassy-purple">
+          <div className="footer-glassy-inner">
+            <div className="footer-glassy-brand">
+              BookedIn
+              <div className="footer-glassy-slogan">click.book.enjoy</div>
+            </div>
+            <div className="footer-glassy-links">
+              <div className="footer-glassy-col">
+                <a href="/public-event">All Tickets on Sale</a>
+                <a href="/public-event">Hot Events</a>
+              </div>
+              <div className="footer-glassy-col">
+                <a href="/about">About Us</a>
+                <a href="/contact">Contact Us</a>
+                <a href="/policies">Policies</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/faqs">FAQs</a>
+              </div>
+            </div>
+            <a href="/contact" className="footer-glassy-help-btn">
+              <span className="footer-glassy-help-icon">?</span>
+              <span className="footer-glassy-help-text">Need some help? Contact us</span>
+            </a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

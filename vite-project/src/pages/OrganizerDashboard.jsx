@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import ticketImg from "../assets/logo.png";
 
 function getCurrentUserIdFromCookie() {
   const cookie = document.cookie
@@ -159,127 +160,135 @@ const OrganizerDashboard = () => {
   const handleViewAllEvents = () => navigate("/public-event");
   const handleEventAnalytics = () => navigate("/my-events/analytics");
 
+  // --- Glassy ticket background ---
+  const ticketPositions = [
+    { top: 40, left: 60, size: 120, rot: -8, delay: 0 },
+    { top: 120, left: 320, size: 100, rot: 12, delay: 1 },
+    { top: 300, left: 180, size: 90, rot: 6, delay: 2 },
+    { top: 500, left: 80, size: 110, rot: -10, delay: 3 },
+    { top: 80, right: 120, size: 130, rot: 8, delay: 1.5 },
+    { top: 260, right: 60, size: 100, rot: -6, delay: 2.5 },
+    { bottom: 120, left: 200, size: 140, rot: 10, delay: 2 },
+    { bottom: 60, right: 180, size: 110, rot: -12, delay: 3.5 },
+    { bottom: 200, right: 60, size: 100, rot: 4, delay: 1.2 },
+    { bottom: 40, left: 60, size: 120, rot: 0, delay: 2.8 },
+    { top: 180, left: 600, size: 100, rot: 7, delay: 2.2 },
+    { bottom: 300, right: 320, size: 90, rot: -7, delay: 1.7 },
+    { top: 400, right: 400, size: 110, rot: 5, delay: 2.9 },
+  ];
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes ticketFloat {
+        0% { transform: translateY(0) scale(1) rotate(-8deg); opacity: 0.22; }
+        100% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.28; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
+
   return (
-    <div style={styles.pageContainer}>
-      <div style={{ display: "flex", flex: 1 }}>
-        <aside style={styles.sidebar}>
-           <div style={styles.profilePictureContainer}>
-          {profile && profile.profilePic ? (
-           <img
-             src={profile.profilePic}
-             alt="Profile"
-            style={styles.profilePicture}
-             />
-              ) : (
-                <div style={styles.defaultProfileIcon}>👤</div> // Optional icon emoji
-              )     }
-          </div>
-
-          <div style={styles.sidebarHeader}>
-            <h2 style={styles.sidebarTitle}>Organizer Profile</h2>
-          </div>
-          {error && <p style={styles.error}>{error}</p>}
-          {profile && (
-            <div style={styles.profileInfo}>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Name:</span>
-                <span style={styles.profileValue}>{profile.name}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Email:</span>
-                <span style={styles.profileValue}>{profile.email}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Role:</span>
-                <span style={styles.profileValue}>{profile.role}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Id:</span>
-                <span style={styles.profileValue}>{profile._id}</span>
-              </div>
-
-              <button
-                onClick={handleUpdateProfile}
-                style={styles.updateProfileButton}
-              >
-                Update Profile
-              </button>
-
-              <button onClick={handleLogout} style={styles.logoutButton}>
-                <span style={styles.logoutText}>Log Out</span>
-                <span style={styles.logoutIcon}>→</span>
-              </button>
+    <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter', sans-serif", position: "relative", overflow: "hidden" }}>
+      {/* Animated Ticket Images Background */}
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }}>
+        {ticketPositions.map((pos, i) => (
+          <img
+            key={i}
+            src={ticketImg}
+            alt="ticket"
+            style={{
+              position: "absolute",
+              opacity: 0.22,
+              filter: "blur(1.5px) drop-shadow(0 2px 12px #a78bfa88)",
+              userSelect: "none",
+              zIndex: 0,
+              pointerEvents: "none",
+              width: pos.size,
+              height: "auto",
+              top: pos.top,
+              left: pos.left,
+              right: pos.right,
+              bottom: pos.bottom,
+              transform: `rotate(${pos.rot}deg)`,
+              animation: "ticketFloat 8s ease-in-out infinite alternate",
+              animationDelay: `${pos.delay}s`,
+            }}
+            draggable={false}
+          />
+        ))}
+      </div>
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)",
+        color: "white",
+        padding: "2.5rem 2rem 4rem 2rem",
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
+        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
+        position: "relative",
+        marginBottom: 40,
+        zIndex: 1,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src={logo} alt="Logo" style={{ width: 60, height: 60, borderRadius: "50%", marginRight: 24, boxShadow: "0 2px 8px #a78bfa" }} />
+            <div>
+              <h1 style={{ fontSize: 32, fontWeight: 700, margin: 0 }}>Welcome back, <span style={{ color: "#fff", textShadow: "0 2px 8px #a78bfa" }}>{profile?.name || "Organizer"}</span>!</h1>
+              <div style={{ fontSize: 18, opacity: 0.85 }}>Manage your events and analytics.</div>
             </div>
-          )}
+          </div>
+          <div>
+            <button onClick={handleLogout} style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 20, padding: "0.75rem 2rem", fontWeight: 600, fontSize: 16, boxShadow: "0 2px 8px #a78bfa", cursor: "pointer" }}>Log Out</button>
+          </div>
+        </div>
+      </div>
+      {/* Main Layout */}
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 40, maxWidth: 1400, margin: "-60px auto 0 auto", padding: "0 24px 48px 24px", position: "relative", zIndex: 1 }}>
+        {/* Sidebar/Profile Card */}
+        <aside style={{ minWidth: 320, maxWidth: 340, background: "var(--glass-bg)", border: "1.5px solid var(--glass-border)", borderRadius: 28, boxShadow: "0 4px 24px #a78bfa33", padding: 36, marginTop: 32, display: "flex", flexDirection: "column", alignItems: "center", backdropFilter: "blur(8px)", position: "relative" }}>
+          <div style={{ background: "#fff", borderRadius: "50%", padding: 6, marginBottom: 16, boxShadow: "0 2px 8px #a78bfa22" }}>
+            {profile && profile.profilePic ? (
+              <img src={profile.profilePic} alt="Profile" style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--primary-purple)" }} />
+            ) : (
+              <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ede9fe", color: "#7c3aed", fontSize: 48, display: "flex", alignItems: "center", justifyContent: "center" }}>👤</div>
+            )}
+          </div>
+          <h2 style={{ color: "var(--primary-purple)", fontWeight: 700, margin: "8px 0 0 0", textAlign: "center" }}>{profile?.name || "Organizer"}</h2>
+          <div style={{ color: "#6d28d9", fontSize: 15, marginBottom: 8, textAlign: "center" }}>{profile?.email}</div>
+          <div style={{ color: "#a78bfa", fontSize: 14, marginBottom: 8 }}>Role: {profile?.role}</div>
+          <div style={{ color: "#a78bfa", fontSize: 13, marginBottom: 16, wordBreak: "break-all" }}>ID: {profile?._id}</div>
+          {error && <p style={{ color: "#f87171", fontWeight: 600 }}>{error}</p>}
+          <button onClick={handleUpdateProfile} style={{ background: "var(--primary-purple)", color: "#fff", border: "none", borderRadius: 16, padding: "0.5rem 1.5rem", fontWeight: 600, fontSize: 15, marginBottom: 14, cursor: "pointer", width: "100%" }}>Update Profile</button>
         </aside>
-
-        <main style={styles.contentArea}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>
-              Welcome back,{" "}
-              <span style={styles.highlight}>{profile?.name || "Organizer"}</span>!
-            </h1>
-            <img src={logo} alt="BookedIn Logo" style={styles.logo} />
+        {/* Main Content */}
+        <main style={{ flex: 1, minWidth: 340, display: "flex", flexDirection: "column", gap: 32 }}>
+          {/* Dashboard Buttons in Glassy Card */}
+          <div style={{ background: "var(--glass-bg)", borderRadius: 24, border: "1.5px solid var(--glass-border)", boxShadow: "0 4px 24px #a78bfa22", padding: 28, marginBottom: 32, marginTop: 32, display: "flex", gap: 24, justifyContent: "center", alignItems: "center" }}>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "16px 0", fontSize: 16, fontWeight: 600, color: "#fff", background: "linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%)", border: "none", borderRadius: 16, cursor: "pointer", transition: "all 0.2s", boxShadow: "0 2px 8px #a78bfa22", justifyContent: "center", outline: "none" }} onMouseOver={e => e.currentTarget.style.boxShadow = '0 6px 18px #a78bfa44'} onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px #a78bfa22'} onClick={handleCreateEvent}><span role="img" aria-label="tent">🎪</span>Create Event</button>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "16px 0", fontSize: 16, fontWeight: 600, color: "#fff", background: "linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%)", border: "none", borderRadius: 16, cursor: "pointer", transition: "all 0.2s", boxShadow: "0 2px 8px #a78bfa22", justifyContent: "center", outline: "none" }} onMouseOver={e => e.currentTarget.style.boxShadow = '0 6px 18px #a78bfa44'} onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px #a78bfa22'} onClick={handleViewEvents}><span role="img" aria-label="clipboard">📋</span>View My Events</button>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "16px 0", fontSize: 16, fontWeight: 600, color: "#fff", background: "linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%)", border: "none", borderRadius: 16, cursor: "pointer", transition: "all 0.2s", boxShadow: "0 2px 8px #a78bfa22", justifyContent: "center", outline: "none" }} onMouseOver={e => e.currentTarget.style.boxShadow = '0 6px 18px #a78bfa44'} onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px #a78bfa22'} onClick={handleEventAnalytics}><span role="img" aria-label="chart">📊</span>Events Analytics</button>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "16px 0", fontSize: 16, fontWeight: 600, color: "#fff", background: "linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%)", border: "none", borderRadius: 16, cursor: "pointer", transition: "all 0.2s", boxShadow: "0 2px 8px #a78bfa22", justifyContent: "center", outline: "none" }} onMouseOver={e => e.currentTarget.style.boxShadow = '0 6px 18px #a78bfa44'} onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px #a78bfa22'} onClick={handleViewAllEvents}><span role="img" aria-label="clipboard">📋</span>View All Events</button>
           </div>
-
-          <div style={styles.dashboardButtons}>
-            <button style={styles.actionButton} onClick={handleCreateEvent}>
-              <span style={styles.buttonIcon}>🎪</span>
-              <span>Create Event</span>
-            </button>
-            <button style={styles.actionButton} onClick={handleViewEvents}>
-              <span style={styles.buttonIcon}>📋</span>
-              <span>View My Events</span>
-            </button>
-            <button style={styles.actionButton} onClick={handleEventAnalytics}>
-              <span style={styles.buttonIcon}>📊</span>
-              <span>Events Analytics</span>
-            </button>
-            <button style={styles.actionButton} onClick={handleViewAllEvents}>
-              <span style={styles.buttonIcon}>📋</span>
-              <span>View All Events</span>
-            </button>
-          </div>
-
-          <div style={styles.contentCard}>
-          
-            
-            <div style={{ 
-              height: '1px', 
-              backgroundColor: '#e2e8f0', 
-              margin: '20px 0' 
-            }} />
-            
-            <h4 style={{ 
-              fontSize: '16px', 
-              fontWeight: '600', 
-              color: '#1e293b',
-              marginBottom: '15px'
-            }}>
-              Event Performance Insight
-            </h4>
-            
+          {/* Analytics Card */}
+          <div style={{ background: "var(--glass-bg)", borderRadius: 24, border: "1.5px solid var(--glass-border)", boxShadow: "0 4px 24px #a78bfa22", padding: 32, marginBottom: 32 }}>
+            <h4 style={{ fontSize: 18, fontWeight: 700, color: "#7c3aed", marginBottom: 18 }}>Event Performance Insight</h4>
             <RandomAnalyticsCard />
           </div>
         </main>
       </div>
-
-      <footer style={styles.footer}>
-  <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-  <div style={styles.footerLinks}>
-    <Link to="/contact" style={styles.footerLink}>
-      Contact
-    </Link>
-    <span style={styles.footerDivider}>|</span>
-    <Link to="/privacy" style={styles.footerLink}>
-      Privacy
-    </Link>
-    <span style={styles.footerDivider}>|</span>
-    <Link to="/about" style={styles.footerLink}>
-      About
-    </Link>
-  </div>
-</footer>
+      {/* Footer (modern glassy) */}
+      <footer style={{ background: "var(--glass-bg)", borderTopLeftRadius: 32, borderTopRightRadius: 32, boxShadow: "0 -2px 16px #a78bfa22", padding: "18px 0 10px 0", marginTop: 32, textAlign: "center", color: "#7c3aed", fontSize: 15, zIndex: 2, position: "relative" }}>
+        <div style={{ marginBottom: 6 }}>&copy; 2025 BookedIn. All rights reserved.</div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 18, alignItems: "center", fontSize: 15 }}>
+          <Link to="/contact" style={{ color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>Contact</Link>
+          <span style={{ color: "#a78bfa" }}>|</span>
+          <Link to="/privacy" style={{ color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>Privacy</Link>
+          <span style={{ color: "#a78bfa" }}>|</span>
+          <Link to="/about" style={{ color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>About</Link>
+        </div>
+      </footer>
     </div>
   );
 };

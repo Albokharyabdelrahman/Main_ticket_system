@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const AdminEventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -14,6 +15,33 @@ const AdminEventsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const API_BASE = "http://localhost:7000/api/v1/events";
+
+  // Add purple theme CSS variables and modern styles
+  const purpleTheme = {
+    "--primary-purple": "#7c3aed",
+    "--secondary-purple": "#a78bfa",
+    "--accent-purple": "#c4b5fd",
+    "--glass-bg": "rgba(124, 58, 237, 0.15)",
+    "--glass-border": "rgba(124, 58, 237, 0.25)",
+    "--header-gradient": "linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)",
+  };
+
+  // Floating ticket positions
+  const ticketPositions = [
+    { top: 40, left: 60, size: 120, rot: -8, delay: 0 },
+    { top: 120, left: 320, size: 100, rot: 12, delay: 1 },
+    { top: 300, left: 180, size: 90, rot: 6, delay: 2 },
+    { top: 500, left: 80, size: 110, rot: -10, delay: 3 },
+    { top: 80, right: 120, size: 130, rot: 8, delay: 1.5 },
+    { top: 260, right: 60, size: 100, rot: -6, delay: 2.5 },
+    { bottom: 120, left: 200, size: 140, rot: 10, delay: 2 },
+    { bottom: 60, right: 180, size: 110, rot: -12, delay: 3.5 },
+    { bottom: 200, right: 60, size: 100, rot: 4, delay: 1.2 },
+    { bottom: 40, left: 60, size: 120, rot: 0, delay: 2.8 },
+    { top: 180, left: 600, size: 100, rot: 7, delay: 2.2 },
+    { bottom: 300, right: 320, size: 90, rot: -7, delay: 1.7 },
+    { top: 400, right: 400, size: 110, rot: 5, delay: 2.9 },
+  ];
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -35,6 +63,25 @@ const AdminEventsPage = () => {
 
   useEffect(() => {
     fetchEvents();
+  }, []);
+
+  // Apply theme variables to root
+  useEffect(() => {
+    Object.entries(purpleTheme).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
+    });
+  }, []);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes ticketFloat {
+        0% { transform: translateY(0) scale(1) rotate(-8deg); opacity: 0.22; }
+        100% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.28; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
   }, []);
 
   const updateEventStatus = async (eventId, newStatus) => {
@@ -133,14 +180,15 @@ const AdminEventsPage = () => {
     modal: {
       backgroundColor: 'white',
       padding: '2rem',
-      borderRadius: '8px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+      borderRadius: '16px',
+      boxShadow: '0 8px 32px rgba(124, 58, 237, 0.2)',
       maxWidth: '400px',
       width: '90%',
+      border: '1.5px solid var(--glass-border)',
     },
     title: {
       marginTop: 0,
-      color: '#1e293b',
+      color: 'var(--primary-purple)',
       fontSize: '1.25rem',
       fontWeight: '600',
     },
@@ -160,390 +208,306 @@ const AdminEventsPage = () => {
       backgroundColor: '#f1f5f9',
       color: '#475569',
       border: 'none',
-      borderRadius: '4px',
+      borderRadius: '8px',
       cursor: 'pointer',
       fontWeight: '500',
     },
     confirmButton: {
       padding: '0.5rem 1rem',
-      backgroundColor: '#ef4444',
+      backgroundColor: 'var(--primary-purple)',
       color: 'white',
       border: 'none',
-      borderRadius: '4px',
+      borderRadius: '8px',
       cursor: 'pointer',
       fontWeight: '500',
     },
   };
 
-  const styles = {
-    pageContainer: {
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #434190, #2c2e8f)",
-      padding: "2rem",
-      fontFamily: "'Poppins', sans-serif",
-    },
-    mainContent: {
-      maxWidth: "1400px",
-      margin: "0 auto",
-      position: "relative",
-    },
-    backButton: {
-      position: "absolute",
-      top: "1.5rem",
-      right: "2rem",
-      padding: "0.5rem 1.25rem",
-      background: "linear-gradient(135deg, #ff9800, #ff7043)",
-      color: "white",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600",
-      boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-      ":hover": {
-        transform: "translateY(-2px)",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    header: {
-      marginBottom: "1.5rem",
-      paddingBottom: "1rem",
-      textAlign: "center",
-      color: "white",
-    },
-    title: {
-      fontSize: "2.5rem",
-      fontWeight: "800",
-      marginBottom: "0.5rem",
-      color: "#ff9800",
-      textShadow: "0 2px 4px rgba(0,0,0,0.2)",
-    },
-    subtitle: {
-      fontSize: "1.2rem",
-      opacity: 0.9,
-      marginTop: "0",
-      color: "#e2e8f0",
-    },
-    filterContainer: {
-      display: "flex",
-      justifyContent: "center",
-      marginBottom: "2rem",
-      gap: "1rem",
-      flexWrap: "wrap",
-    },
-    filterSelect: {
-      padding: "0.75rem 1rem",
-      fontSize: "1rem",
-      borderRadius: "0.5rem",
-      border: "none",
-      outline: "none",
-      minWidth: "200px",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-      fontFamily: "'Poppins', sans-serif",
-      cursor: "pointer",
-    },
-    searchBar: {
-      position: "relative",
-      display: "flex",
-      alignItems: "center",
-      backgroundColor: "#fff",
-      borderRadius: "0.75rem",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-      paddingLeft: "2.5rem",
-      width: "100%",
-      maxWidth: "400px",
-    },
-    searchIcon: {
-      position: "absolute",
-      left: "1rem",
-      width: "1.2rem",
-      height: "1.2rem",
-      color: "#64748b",
-    },
-    searchInputModern: {
-      width: "100%",
-      padding: "0.75rem 1rem",
-      fontSize: "1rem",
-      border: "none",
-      outline: "none",
-      borderRadius: "0.75rem",
-      fontFamily: "'Poppins', sans-serif",
-      color: "#1e293b",
-      backgroundColor: "transparent",
-    },
-    loadingContainer: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "1rem",
-      padding: "2rem",
-      color: "white",
-    },
-    loadingSpinner: {
-      width: "40px",
-      height: "40px",
-      border: "4px solid rgba(255,255,255,0.3)",
-      borderTopColor: "white",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-    },
-    loadingText: {
-      fontSize: "1.2rem",
-      marginTop: "1rem",
-    },
-    error: {
-      backgroundColor: "#fee2e2",
-      color: "#b91c1c",
-      padding: "1rem",
-      borderRadius: "0.5rem",
-      marginBottom: "1.5rem",
-      textAlign: "center",
-      fontWeight: "500",
-      maxWidth: "800px",
-      margin: "0 auto",
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-      gap: "2rem",
-      padding: "1rem",
-    },
-    noEvents: {
-      gridColumn: "1 / -1",
-      textAlign: "center",
-      padding: "2rem",
-      color: "white",
-      fontSize: "1.2rem",
-    },
-    card: {
-      background: "white",
-      borderRadius: "1rem",
-      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
-      padding: "1.5rem",
-      transition: "all 0.3s ease",
-      display: "flex",
-      flexDirection: "column",
-      minHeight: "380px",
-    },
-    cardImage: {
-      width: "100%",
-      height: "160px",
-      objectFit: "cover",
-      borderRadius: "0.75rem",
-      marginBottom: "1rem",
-    },
-    cardHeader: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: "1rem",
-    },
-    cardTitle: {
-      fontSize: "1.5rem",
-      fontWeight: "700",
-      margin: "0",
-      color: "#1e293b",
-    },
-    statusBadge: {
-      color: "white",
-      padding: "0.25rem 0.75rem",
-      borderRadius: "9999px",
-      fontSize: "0.875rem",
-      fontWeight: "600",
-    },
-    cardBody: {
-      flex: "1",
-      display: "flex",
-      flexDirection: "column",
-      gap: "0.75rem",
-      marginBottom: "1.5rem",
-    },
-    infoRow: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.75rem",
-      fontSize: "0.95rem",
-      color: "#475569",
-    },
-    infoIcon: {
-      opacity: "0.8",
-    },
-    cardFooter: {
-      display: "flex",
-      justifyContent: "flex-end",
-    },
-    editButton: {
-      padding: "0.5rem 1.25rem",
-      background: "linear-gradient(135deg, #ff9800, #ff7043)",
-      color: "white",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600",
-      marginRight: "0.5rem",
-      ":hover": {
-        transform: "translateY(-2px)",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-        background: "linear-gradient(135deg, #ff8f00, #ff5722)",
-      },
-    },
-    actionButtons: {
-      display: "flex",
-      gap: "0.5rem",
-    },
-    approveButton: {
-      padding: "0.5rem 1.25rem",
-      backgroundColor: "#38a169",
-      color: "white",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600",
-      ":hover": {
-        backgroundColor: "#2f855a",
-        transform: "translateY(-2px)",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    declineButton: {
-      padding: "0.5rem 1.25rem",
-      backgroundColor: "#e53e3e",
-      color: "white",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600",
-      ":hover": {
-        backgroundColor: "#c53030",
-        transform: "translateY(-2px)",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-      },
-    },
-  };
-
   return (
-    <div style={styles.pageContainer}>
-      <ConfirmationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={confirmStatusUpdate}
-        title={`${updateAction === 'approve' ? 'Approve' : 'Decline'} Event`}
-        message={`Are you sure you want to ${updateAction} this event?`}
-      />
-      
-      <div style={styles.mainContent}>
-        <button 
-          style={styles.backButton} 
-          onClick={() => navigate(-1)}
-        >
-          ← Back
-        </button>
+    <div className="dashboard-root" style={{ minHeight: "100vh", background: "#fff", padding: 0, margin: 0, position: 'relative', overflow: 'hidden' }}>
+      {/* Floating ticket background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
+        {ticketPositions.map((pos, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="ticket"
+            style={{
+              position: 'absolute',
+              opacity: 0.22,
+              filter: 'blur(1.5px) drop-shadow(0 2px 12px #a78bfa88)',
+              userSelect: 'none',
+              zIndex: 0,
+              pointerEvents: 'none',
+              width: pos.size,
+              height: 'auto',
+              top: pos.top,
+              left: pos.left,
+              right: pos.right,
+              bottom: pos.bottom,
+              transform: `rotate(${pos.rot}deg)`,
+              animation: 'ticketFloat 8s ease-in-out infinite alternate',
+              animationDelay: `${pos.delay}s`,
+            }}
+            draggable={false}
+          />
+        ))}
+      </div>
 
-        <div style={styles.header}>
-          <h1 style={styles.title}>Events Management</h1>
-          <p style={styles.subtitle}>Manage all events in the system</p>
-        </div>
-
-        <div style={styles.filterContainer}>
-          <div style={styles.searchBar}>
-            <svg style={styles.searchIcon} viewBox="0 0 24 24">
-              <path fill="currentColor" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.41,13.73L20.39,19.71L19,21.12L13.03,15.14C11.89,16.14 10.41,16.73 8.8,16.73A6.5,6.5 0 0,1 2.3,10.23A6.5,6.5 0 0,1 9.5,3M9.5,5A4.5,4.5 0 0,0 5,9.5A4.5,4.5 0 0,0 9.5,14A4.5,4.5 0 0,0 14,9.5A4.5,4.5 0 0,0 9.5,5Z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search events..."
-              style={styles.searchInputModern}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+      {/* Header */}
+      <div className="dashboard-header" style={{
+        background: "var(--header-gradient)",
+        color: "white",
+        padding: "2.5rem 2rem 4rem 2rem",
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
+        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
+        position: "relative",
+        marginBottom: 40,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img 
+              src={logo} 
+              alt="Logo" 
+              style={{ width: 60, height: 60, borderRadius: "50%", marginRight: 24, boxShadow: "0 2px 8px #a78bfa", cursor: "pointer" }} 
+              onClick={() => navigate("/AdminDashboard")}
+            />
+            <div>
+              <h1 style={{ fontSize: 32, fontWeight: 700, margin: 0 }}>Events Management</h1>
+              <div style={{ fontSize: 18, opacity: 0.85 }}>Manage all events in the system</div>
+            </div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: '50%', width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 24, boxShadow: '0 2px 8px #a78bfa22', cursor: 'pointer' }} onClick={() => navigate("/AdminDashboard")}> 
+            <img 
+              src={logo} 
+              alt="Logo" 
+              style={{ width: 48, height: 48, borderRadius: "50%", boxShadow: "0 2px 8px #a78bfa", objectFit: 'cover' }} 
             />
           </div>
+        </div>
+      </div>
 
-          <select
-            style={styles.filterSelect}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="all">All Events</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="declined">Declined</option>
-          </select>
+      {/* Main Content */}
+      <div style={{ maxWidth: 1400, margin: "-60px auto 0 auto", padding: "0 24px 48px 24px" }}>
+        <ConfirmationModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onConfirm={confirmStatusUpdate}
+          title={`${updateAction === 'approve' ? 'Approve' : 'Decline'} Event`}
+          message={`Are you sure you want to ${updateAction} this event?`}
+        />
+
+        {/* Filters Section */}
+        <div style={{ background: "rgba(124, 58, 237, 0.18)", borderRadius: 24, border: "1.5px solid #a78bfa", boxShadow: "0 4px 24px #a78bfa11", padding: 24, marginBottom: 32, marginTop: 96, color: '#fff', backdropFilter: 'blur(14px)' }}>
+          <h2 style={{ color: "var(--primary-purple)", marginBottom: 20 }}>Search & Filter</h2>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+            <div style={{ position: "relative", flex: 1, minWidth: 300 }}>
+              <input
+                type="text"
+                placeholder="Search events..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem 1rem 0.75rem 3rem",
+                  fontSize: 16,
+                  border: "1.5px solid var(--glass-border)",
+                  borderRadius: 16,
+                  background: "rgba(255, 255, 255, 0.9)",
+                  color: "#1e293b",
+                  outline: "none",
+                  boxShadow: "0 2px 8px #a78bfa22"
+                }}
+              />
+              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#7c3aed", fontSize: 18 }}>🔍</span>
+            </div>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              style={{
+                padding: "0.75rem 1rem",
+                fontSize: 16,
+                border: "1.5px solid var(--glass-border)",
+                borderRadius: 16,
+                background: "rgba(255, 255, 255, 0.9)",
+                color: "#1e293b",
+                outline: "none",
+                cursor: "pointer",
+                minWidth: 200,
+                boxShadow: "0 2px 8px #a78bfa22"
+              }}
+            >
+              <option value="all">All Events</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="declined">Declined</option>
+            </select>
+          </div>
         </div>
 
         {loading && (
-          <div style={styles.loadingContainer}>
-            <div style={styles.loadingSpinner}></div>
-            <p style={styles.loadingText}>Loading events...</p>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 48, color: "#7c3aed" }}>
+            <div style={{ width: 40, height: 40, border: "4px solid #a78bfa", borderTopColor: "#7c3aed", borderRadius: "50%", animation: "spin 1s linear infinite" }}></div>
+            <p style={{ fontSize: 18, fontWeight: 600 }}>Loading events...</p>
           </div>
         )}
         
-        {error && <div style={styles.error}>{error}</div>}
+        {error && (
+          <div style={{ background: "rgba(239, 68, 68, 0.1)", color: "#dc2626", padding: 16, borderRadius: 16, marginBottom: 24, textAlign: "center", fontWeight: 600, border: "1.5px solid rgba(239, 68, 68, 0.3)" }}>
+            {error}
+          </div>
+        )}
 
-        <div style={styles.grid}>
+        {/* Events Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 24 }}>
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
-              <div key={event._id} style={styles.card}>
+              <div key={event._id} style={{
+                background: "rgba(124, 58, 237, 0.18)",
+                border: "1.5px solid #a78bfa",
+                borderRadius: 24,
+                boxShadow: "0 4px 24px #a78bfa11",
+                padding: 24,
+                color: '#fff',
+                backdropFilter: 'blur(14px)',
+                transition: "all 0.3s ease",
+                cursor: "pointer"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-4px)";
+                e.target.style.boxShadow = "0 8px 32px #a78bfa22";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 4px 24px #a78bfa11";
+              }}>
                 {event.image && (
                   <img 
                     src={event.image} 
                     alt={event.title} 
-                    style={styles.cardImage}
+                    style={{
+                      width: "100%",
+                      height: 200,
+                      objectFit: "cover",
+                      borderRadius: 16,
+                      marginBottom: 16,
+                      border: "1.5px solid var(--glass-border)"
+                    }}
                     onError={(e) => {
                       e.target.onerror = null; 
-                      e.target.src = "https://via.placeholder.com/320x160?text=No+Image";
+                      e.target.src = "https://via.placeholder.com/350x200?text=No+Image";
                     }}
                   />
                 )}
-                <div style={styles.cardHeader}>
-                  <h2 style={styles.cardTitle}>{event.title}</h2>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                  <h3 style={{ color: "var(--primary-purple)", fontSize: 20, fontWeight: 700, margin: 0 }}>{event.title}</h3>
                   <span style={{
-                    ...styles.statusBadge,
+                    color: "white",
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: 20,
+                    fontSize: 14,
+                    fontWeight: 600,
                     backgroundColor: event.status === 'approved' ? '#38a169' : 
                                      event.status === 'declined' ? '#e53e3e' : '#3182ce'
                   }}>
                     {event.status}
                   </span>
                 </div>
-                <div style={styles.cardBody}>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>📅</span>
-                    <span>{new Date(event.date).toLocaleDateString()}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ color: "#a78bfa", fontSize: 16 }}>📅</span>
+                    <span style={{ color: "#fff", fontSize: 15 }}>{new Date(event.date).toLocaleDateString()}</span>
                   </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>📍</span>
-                    <span>{event.location || "Location not specified"}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ color: "#a78bfa", fontSize: 16 }}>📍</span>
+                    <span style={{ color: "#fff", fontSize: 15 }}>{event.location || "Location not specified"}</span>
                   </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>🎫</span>
-                    <span>{event.totalTickets || 0} Total Tickets</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ color: "#a78bfa", fontSize: 16 }}>🎫</span>
+                    <span style={{ color: "#fff", fontSize: 15 }}>{event.totalTickets || 0} Total Tickets</span>
                   </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>💰</span>
-                    <span>{event.price || 0} EGP</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ color: "#a78bfa", fontSize: 16 }}>💰</span>
+                    <span style={{ color: "#fff", fontSize: 15 }}>{event.price || 0} EGP</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ color: "#a78bfa", fontSize: 16 }}>🆔</span>
+                    <span style={{ color: "#fff", fontSize: 13, wordBreak: "break-all" }}>ID: {event._id}</span>
                   </div>
                 </div>
-                <div style={styles.infoRow}>
-                  <span style={styles.infoIcon}>🆔</span>
-                  <span>Event ID: {event._id}</span>
-                </div>
-                <div style={styles.cardFooter}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <button 
-                    style={styles.editButton}
                     onClick={() => handleEditEvent(event._id)}
+                    style={{
+                      background: "var(--primary-purple)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 12,
+                      padding: "0.5rem 1rem",
+                      fontWeight: 600,
+                      fontSize: 14,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#6d28d9";
+                      e.target.style.transform = "translateY(-1px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "var(--primary-purple)";
+                      e.target.style.transform = "translateY(0)";
+                    }}
                   >
                     Edit
                   </button>
                   {event.status === "pending" && (
-                    <div style={styles.actionButtons}>
+                    <div style={{ display: "flex", gap: 8 }}>
                       <button 
-                        style={styles.approveButton} 
                         onClick={() => handleStatusUpdateClick(event._id, "approve")}
+                        style={{
+                          background: "#38a169",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 12,
+                          padding: "0.5rem 1rem",
+                          fontWeight: 600,
+                          fontSize: 14,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = "#2f855a";
+                          e.target.style.transform = "translateY(-1px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = "#38a169";
+                          e.target.style.transform = "translateY(0)";
+                        }}
                       >
                         Approve
                       </button>
                       <button 
-                        style={styles.declineButton} 
                         onClick={() => handleStatusUpdateClick(event._id, "decline")}
+                        style={{
+                          background: "#e53e3e",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 12,
+                          padding: "0.5rem 1rem",
+                          fontWeight: 600,
+                          fontSize: 14,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = "#c53030";
+                          e.target.style.transform = "translateY(-1px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = "#e53e3e";
+                          e.target.style.transform = "translateY(0)";
+                        }}
                       >
                         Decline
                       </button>
@@ -553,12 +517,27 @@ const AdminEventsPage = () => {
               </div>
             ))
           ) : (
-            <div style={styles.noEvents}>
+            <div style={{ 
+              gridColumn: "1 / -1", 
+              textAlign: "center", 
+              padding: 48, 
+              color: "#7c3aed", 
+              fontSize: 18, 
+              fontWeight: 600,
+              background: "rgba(124, 58, 237, 0.18)",
+              borderRadius: 24,
+              border: "1.5px solid #a78bfa"
+            }}>
               {loading ? "" : "No events found matching your criteria."}
             </div>
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{ background: "rgba(124, 58, 237, 0.18)", borderTopLeftRadius: 32, borderTopRightRadius: 32, boxShadow: "0 -2px 16px #a78bfa22", padding: "18px 0 10px 0", marginTop: 32, textAlign: "center", color: "#7c3aed", fontSize: 15, zIndex: 2, position: "relative" }}>
+        <div style={{ marginBottom: 6 }}>&copy; 2025 BookedIn. All rights reserved.</div>
+      </footer>
     </div>
   );
 };

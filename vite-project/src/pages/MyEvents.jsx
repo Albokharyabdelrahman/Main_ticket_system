@@ -16,6 +16,23 @@ const MyEvents = () => {
   const [showModal, setShowModal] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
 
+  // Floating ticket positions (same as dashboard)
+  const ticketPositions = [
+    { top: 40, left: 60, size: 120, rot: -8, delay: 0 },
+    { top: 120, left: 320, size: 100, rot: 12, delay: 1 },
+    { top: 300, left: 180, size: 90, rot: 6, delay: 2 },
+    { top: 500, left: 80, size: 110, rot: -10, delay: 3 },
+    { top: 80, right: 120, size: 130, rot: 8, delay: 1.5 },
+    { top: 260, right: 60, size: 100, rot: -6, delay: 2.5 },
+    { bottom: 120, left: 200, size: 140, rot: 10, delay: 2 },
+    { bottom: 60, right: 180, size: 110, rot: -12, delay: 3.5 },
+    { bottom: 200, right: 60, size: 100, rot: 4, delay: 1.2 },
+    { bottom: 40, left: 60, size: 120, rot: 0, delay: 2.8 },
+    { top: 180, left: 600, size: 100, rot: 7, delay: 2.2 },
+    { bottom: 300, right: 320, size: 90, rot: -7, delay: 1.7 },
+    { top: 400, right: 400, size: 110, rot: 5, delay: 2.9 },
+  ];
+
   const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
     if (!isOpen) return null;
 
@@ -171,150 +188,197 @@ const MyEvents = () => {
     setFilteredEvents(filtered);
   }, [searchTerm, statusFilter, events]);
 
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes ticketFloat {
+        0% { transform: translateY(0) scale(1) rotate(-8deg); opacity: 0.22; }
+        100% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.28; }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
+
   return (
-    <div style={styles.pageContainer}>
-      <ConfirmationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={async () => {
-          await confirmDelete();
-          window.location.reload();
-        }}
-        title="Delete Event"
-        message="Are you sure you want to delete this event? This action cannot be undone."
-      />
-      <div style={styles.mainContent}>
-        <img
-          src={logo}
-          alt="Logo"
-          style={styles.logo}
-          onClick={() => navigate(-1)}
-        />
-        <div style={styles.header}>
-          <h1 style={styles.title}>My Events</h1>
-          <p style={styles.subtitle}>Manage your upcoming events</p>
-        </div>
-
-        <div style={styles.filterContainer}>
-          <input
-            type="text"
-            placeholder="🔍 Search events..."
-            style={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
+      {/* Floating ticket background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
+        {ticketPositions.map((pos, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="ticket"
+            style={{
+              position: 'absolute',
+              opacity: 0.22,
+              filter: 'blur(1.5px) drop-shadow(0 2px 12px #a78bfa88)',
+              userSelect: 'none',
+              zIndex: 0,
+              pointerEvents: 'none',
+              width: pos.size,
+              height: 'auto',
+              top: pos.top,
+              left: pos.left,
+              right: pos.right,
+              bottom: pos.bottom,
+              transform: `rotate(${pos.rot}deg)`,
+              animation: 'ticketFloat 8s ease-in-out infinite alternate',
+              animationDelay: `${pos.delay}s`,
+            }}
+            draggable={false}
           />
-          <select
-            style={styles.filterSelect}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="Approved">Approved</option>
-            <option value="Declined">Declined</option>
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
-
-        {loading && (
-          <div style={styles.loadingContainer}>
-            <div style={styles.loadingSpinner}></div>
-            <p style={styles.loadingText}>Loading events...</p>
+        ))}
+      </div>
+      {/* Main content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <ConfirmationModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onConfirm={async () => {
+            await confirmDelete();
+            window.location.reload();
+          }}
+          title="Delete Event"
+          message="Are you sure you want to delete this event? This action cannot be undone."
+        />
+        <div style={styles.mainContent}>
+          <img
+            src={logo}
+            alt="Logo"
+            style={styles.logo}
+            onClick={() => navigate(-1)}
+          />
+          <div style={styles.header}>
+            <h1 style={styles.title}>My Events</h1>
+            <p style={styles.subtitle}>Manage your upcoming events</p>
           </div>
-        )}
-        {error && <div style={styles.error}>{error}</div>}
 
-        <div style={styles.grid}>
-          {filteredEvents.length > 0 ? (
-            filteredEvents.map((event) => (
-              <div key={event.id} style={styles.card}>
-                {/* Status Badge */}
-                <div style={{ 
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                  backgroundColor: event.status === 'Approved' ? '#38a169' : 
-                                 event.status === 'Declined' ? '#e53e3e' : '#3182ce',
-                  color: 'white',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '9999px',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  zIndex: 1
-                }}>
-                  {event.status}
-                </div>
+          <div style={styles.filterContainer}>
+            <input
+              type="text"
+              placeholder="🔍 Search events..."
+              style={styles.searchInput}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              style={styles.filterSelect}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="Approved">Approved</option>
+              <option value="Declined">Declined</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
 
-                {/* Event Image - Now rectangular and full width */}
-                <div style={styles.imageContainer}>
-                  {event.image ? (
-                    <img
-                      src={event.image}
-                      alt="Event"
-                      style={styles.eventImage}
-                    />
-                  ) : (
-                    <div style={styles.noImagePlaceholder}>
-                      No Image Available
-                    </div>
-                  )}
-                </div>
-
-                <div style={styles.cardBody}>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>🎭</span>
-                    <span>{event.title}</span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>📅</span>
-                    <span>{new Date(event.date).toLocaleDateString()}</span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>📍</span>
-                    <span>{event.location}</span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoIcon}>🎟️</span>
-                    <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
-                  </div>
-                
-<div style={styles.infoRow}>
-  <span style={styles.infoIcon}>💰</span>
-  <span>{event.price} EGP</span>
-</div>
-
-                </div>
-
-                {/* BUTTONS - SIDE BY SIDE */}
-                <div style={styles.cardFooter}>
-                  <p style={styles.timestamp}>Created: {new Date(event.createdAt).toLocaleDateString()}</p>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
-                      style={{
-                        ...styles.editButton, 
-                        background: 'linear-gradient(135deg, #434190, #2c2e8f)'
-                      }} 
-                      onClick={() => navigate(`/events/${event.id}/edit`)}
-                    >
-                      Edit Event
-                    </button>
-                    <button 
-                      style={{
-                        ...styles.deleteButton, 
-                        background: 'linear-gradient(135deg, #ff9800, #ff7043)'
-                      }} 
-                      onClick={() => handleDeleteClick(event.id)}
-                    >
-                      Delete Event
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div style={styles.noEvents}>
-              {events.length === 0 ? "You haven't created any events yet." : "No matching events found."}
+          {loading && (
+            <div style={styles.loadingContainer}>
+              <div style={styles.loadingSpinner}></div>
+              <p style={styles.loadingText}>Loading events...</p>
             </div>
           )}
+          {error && <div style={styles.error}>{error}</div>}
+
+          <div style={styles.grid}>
+            {filteredEvents.length > 0 ? (
+              filteredEvents.map((event) => (
+                <div key={event.id} style={styles.card}>
+                  {/* Status Badge */}
+                  <div style={{ 
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    backgroundColor: event.status === 'Approved' ? '#38a169' : 
+                                   event.status === 'Declined' ? '#e53e3e' : '#3182ce',
+                    color: 'white',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    zIndex: 1
+                  }}>
+                    {event.status}
+                  </div>
+
+                  {/* Event Image - Now rectangular and full width */}
+                  <div style={styles.imageContainer}>
+                    {event.image ? (
+                      <img
+                        src={event.image}
+                        alt="Event"
+                        style={styles.eventImage}
+                      />
+                    ) : (
+                      <div style={styles.noImagePlaceholder}>
+                        No Image Available
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={styles.cardBody}>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoIcon}>🎭</span>
+                      <span>{event.title}</span>
+                    </div>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoIcon}>📅</span>
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
+                    </div>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoIcon}>📍</span>
+                      <span>{event.location}</span>
+                    </div>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoIcon}>🎟️</span>
+                      <span>{event.tickets.available} / {event.tickets.total} tickets available</span>
+                    </div>
+                  
+<div style={styles.infoRow}>
+  <span style={styles.infoIcon}>💰</span>
+  <span>{event.price} EGP</span>
+</div>
+
+                  </div>
+
+                  {/* BUTTONS - SIDE BY SIDE */}
+                  <div style={styles.cardFooter}>
+                    <p style={styles.timestamp}>Created: {new Date(event.createdAt).toLocaleDateString()}</p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        style={{
+                          ...styles.editButton, 
+                          background: 'linear-gradient(135deg, #434190, #2c2e8f)'
+                        }} 
+                        onClick={() => navigate(`/events/${event.id}/edit`)}
+                      >
+                        Edit Event
+                      </button>
+                      <button 
+                        style={{
+                          ...styles.deleteButton, 
+                          background: 'linear-gradient(135deg, #ff9800, #ff7043)'
+                        }} 
+                        onClick={() => handleDeleteClick(event.id)}
+                      >
+                        Delete Event
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={styles.noEvents}>
+                {events.length === 0 ? "You haven't created any events yet." : "No matching events found."}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -356,17 +420,21 @@ const styles = {
     color: "white",
   },
   title: {
-    fontSize: "2.5rem",
-    fontWeight: "800",
+    fontSize: "2.8rem",
+    fontWeight: 900,
     marginBottom: "0.5rem",
-    color: "#ff9800",
-    textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    background: "linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+    textFillColor: "transparent",
+    textShadow: "0 4px 16px #a78bfa33",
   },
   subtitle: {
-    fontSize: "1.2rem",
-    opacity: 0.9,
+    fontSize: "1.15rem",
+    opacity: 0.92,
     marginTop: "0",
-    color: "#e2e8f0",
+    color: "#a78bfa",
   },
   filterContainer: {
     display: "flex",
@@ -404,13 +472,13 @@ const styles = {
     justifyContent: "center",
     gap: "1rem",
     padding: "2rem",
-    color: "white",
+    color: "#7c3aed",
   },
   loadingSpinner: {
     width: "40px",
     height: "40px",
-    border: "4px solid rgba(255,255,255,0.3)",
-    borderTopColor: "white",
+    border: "4px solid #a78bfa",
+    borderTop: "4px solid #7c3aed",
     borderRadius: "50%",
     animation: "spin 1s linear infinite",
   },
@@ -443,9 +511,9 @@ const styles = {
     fontSize: "1.2rem",
   },
   card: {
-    background: "white",
+    background: "rgba(124, 58, 237, 0.18)",
     borderRadius: "1rem",
-    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
+    boxShadow: "0 8px 32px 0 rgba(124, 58, 237, 0.18), 0 1.5px 8px #a78bfa44",
     padding: "1.5rem",
     transition: "all 0.3s ease",
     display: "flex",
@@ -453,6 +521,9 @@ const styles = {
     minHeight: "400px",
     position: "relative",
     overflow: "hidden",
+    border: "1.5px solid #a78bfa",
+    backdropFilter: "blur(14px)",
+    color: "#fff",
   },
   imageContainer: {
     width: "100%",
@@ -512,36 +583,48 @@ const styles = {
   },
   editButton: {
     padding: "0.5rem 1.25rem",
-    color: "white",
+    color: "#fff",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
     transition: "all 0.3s ease",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    boxShadow: "0 2px 8px #a78bfa22",
     display: "inline-flex",
     alignItems: "center",
     gap: "8px",
+    background: "linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%)",
+    outline: "none",
+    fontSize: "1rem",
+    letterSpacing: "0.01em",
+    position: "relative",
+    zIndex: 1,
     ":hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+      filter: "brightness(1.08)",
+      boxShadow: "0 4px 16px #a78bfa44",
     },
   },
   deleteButton: {
     padding: "0.5rem 1.25rem",
-    color: "white",
+    color: "#fff",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
     transition: "all 0.3s ease",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    boxShadow: "0 2px 8px #a78bfa22",
     display: "inline-flex",
     alignItems: "center",
     gap: "8px",
+    background: "linear-gradient(90deg, #e11d48 0%, #a78bfa 100%)",
+    outline: "none",
+    fontSize: "1rem",
+    letterSpacing: "0.01em",
+    position: "relative",
+    zIndex: 1,
     ":hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+      filter: "brightness(1.08)",
+      boxShadow: "0 4px 16px #a78bfa44",
     },
   },
 };

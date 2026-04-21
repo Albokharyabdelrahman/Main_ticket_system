@@ -10,7 +10,15 @@ const userSchema = new mongoose.Schema(
       enum: ['Admin', 'Organizer', 'User'],
       required: true
     },
-    profilePicture: { type: String }
+    profilePicture: { type: String },
+    birthdate: { type: Date },
+    phone: { type: String },
+    country: { type: String },
+    gender: { type: String, enum: ['Male', 'Female', 'Prefer not to mention'] },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
+    otp: { type: String },
+    otpExpires: { type: Date },
   },
   { timestamps: true } 
   

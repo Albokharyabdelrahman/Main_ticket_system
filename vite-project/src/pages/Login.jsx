@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import logo from "./logo.png"; // Update the path if needed
+import logo from "../assets/logo.png";
+import "./Home.css";
 
 export default function Login() {
   const [data, setData] = useState({ email: "", password: "" });
@@ -10,12 +11,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverGuest, setHoverGuest] = useState(false);
-  const [animate, setAnimate] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setAnimate(true);
-  }, []);
+  const numParticles = 18;
+  const particles = Array.from({ length: numParticles });
 
   function handleChange(e) {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -42,11 +40,9 @@ export default function Login() {
       await axios.post("http://localhost:7000/api/v1/login", data, {
         withCredentials: true,
       });
-
       const res = await axios.get("http://localhost:7000/api/v1/users/profile", {
         withCredentials: true,
       });
-
       const role = res.data.user.role;
       setSuccess("Login successful! Redirecting...");
       setTimeout(() => {
@@ -61,285 +57,143 @@ export default function Login() {
     }
   }
 
-  const loginButtonStyle = {
-    background: hoverLogin
-      ? "linear-gradient(90deg, #764ba2 0%, #667eea 100%)"
-      : "linear-gradient(135deg, #667eea, #764ba2)",
-    color: "white",
-    padding: "12px",
-    fontSize: "16px",
-    border: "none",
-    borderRadius: "6px",
-    width: "100%",
-    marginBottom: "16px",
-    cursor: isLoading ? "not-allowed" : "pointer",
-    opacity: isLoading ? 0.8 : 1,
-    transition: "background 0.2s, opacity 0.2s",
-    fontWeight: "bold",
-    boxShadow: hoverLogin
-      ? "0 4px 10px rgba(118, 75, 162, 0.18)"
-      : "0 2px 6px rgba(102,126,234,0.09)",
-  };
-
-  const guestButtonStyle = {
-    background: hoverGuest
-      ? "linear-gradient(90deg, #ff8c00 0%, #ff7f50 100%)"
-      : "linear-gradient(135deg, #ffa500, #ff7f50)",
-    color: "white",
-    padding: "12px",
-    fontSize: "16px",
-    border: "none",
-    borderRadius: "6px",
-    width: "100%",
-    marginBottom: "24px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    boxShadow: hoverGuest
-      ? "0 4px 10px rgba(255, 140, 0, 0.25)"
-      : "0 2px 6px rgba(255,165,0,0.15)",
-    transition: "background 0.2s",
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.logoContainer}>
-        <img
-          src={logo}
-          alt="Ticket Logo"
-          style={{
-            ...styles.logoImage,
-            animation: animate ? "bounceIn 1s ease-out" : "none",
-          }}
-        />
-        <div style={styles.brandContainer}>
-          <div
+    <div className="home-wrapper home-bg-white" style={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Floating logo particles */}
+      <div className="particles">
+        {particles.map((_, i) => (
+          <img
+            key={i}
+            src={logo}
+            alt="logo particle"
+            className="particle-logo"
             style={{
-              ...styles.brandName,
-              animation: animate ? "fadeUp 1.2s ease-out" : "none",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 32 + 32}px`,
+              height: "auto",
+              opacity: Math.random() * 0.18 + 0.08,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${10 + Math.random() * 10}s`,
             }}
-          >
-            BOOKEDIN
-          </div>
-          <div
-            style={{
-              ...styles.brandTagline,
-              animation: animate ? "slideInRight 1.4s ease-out" : "none",
-            }}
-          >
-            CLICK.BOOK.ENJOY
-          </div>
-        </div>
+            draggable={false}
+          />
+        ))}
       </div>
-
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <h2 style={styles.title}>Login</h2>
-        {error && <div style={styles.error}>{error}</div>}
-        {success && <div style={{ ...styles.error, color: "green" }}>{success}</div>}
-
-        <input
-          style={styles.input}
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={data.email}
-          onChange={handleChange}
-          required
-          autoComplete="username"
-        />
-
-        <input
-          style={styles.input}
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={data.password}
-          onChange={handleChange}
-          required
-          autoComplete="current-password"
-        />
-
-        <button
-          type="submit"
-          style={loginButtonStyle}
-          onMouseEnter={() => setHoverLogin(true)}
-          onMouseLeave={() => setHoverLogin(false)}
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in..." : "Log In"}
-        </button>
-
-        <button
-          type="button"
-          style={guestButtonStyle}
-          onClick={handleContinueAsGuest}
-          onMouseEnter={() => setHoverGuest(true)}
-          onMouseLeave={() => setHoverGuest(false)}
-        >
-          Continue as Guest
-        </button>
-
-        <div style={styles.secondaryActions}>
-          <button type="button" onClick={handleForgotPassword} style={styles.textButton}>
-            Forgot Password?
-          </button>
-          <span style={styles.divider}>|</span>
-          <button type="button" onClick={handleRegisterRedirect} style={styles.textButton}>
-            Create Account
-          </button>
+      {/* Back Logo */}
+      <div className="category-logo-circle" style={{ position: 'absolute', top: 32, left: 32, cursor: 'pointer', zIndex: 10 }} onClick={() => navigate(-1)}>
+        <img src={logo} alt="BookedIn Logo" style={{ width: 40, height: 40, borderRadius: '50%' }} />
+      </div>
+      {/* Centered Large Logo */}
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 32, marginBottom: 0 }}>
+        <img src={logo} alt="BookedIn Logo" style={{ width: 110, height: 'auto', borderRadius: 24, background: 'transparent' }} />
+      </div>
+      {/* Main Content Card */}
+      <main style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', minHeight: '60vh', margin: '2.2rem 0 1.5rem 0' }}>
+        <div className="cta-glassy-purple-card" style={{ maxWidth: 400, padding: '3rem 2.5rem', width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <span className="refined-title" style={{ fontSize: 28, color: '#7c3aed', fontWeight: 700 }}>BookedIn</span>
+            <div className="footer-glassy-slogan" style={{ marginBottom: 18 }}>click.book.enjoy</div>
+          </div>
+          <form style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onSubmit={handleSubmit}>
+            <h2 className="refined-title" style={{ fontSize: 22, textAlign: 'center', marginBottom: 8 }}>Login</h2>
+            {error && <div style={{ color: '#e74c3c', fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>{error}</div>}
+            {success && <div style={{ color: 'green', fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>{success}</div>}
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={data.email}
+              onChange={handleChange}
+              required
+              autoComplete="username"
+              style={{ padding: '12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16, marginBottom: 6 }}
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={data.password}
+              onChange={handleChange}
+              required
+              autoComplete="current-password"
+              style={{ padding: '12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16, marginBottom: 6 }}
+            />
+            <button
+              type="submit"
+              className="refined-book-btn"
+              style={{
+                marginBottom: 10,
+                width: '100%',
+                background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
+                color: '#fff',
+                fontWeight: 700,
+                boxShadow: '0 2px 8px #a78bfa22',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging in..." : "Log In"}
+            </button>
+            <button
+              type="button"
+              className="refined-more-btn"
+              style={{
+                marginBottom: 18,
+                width: '100%',
+                background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
+                color: '#fff',
+                fontWeight: 600,
+                boxShadow: '0 2px 8px #a78bfa22',
+              }}
+              onClick={handleContinueAsGuest}
+            >
+              Continue as Guest
+            </button>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+              <button type="button" className="refined-more-btn" style={{ color: '#7c3aed', background: 'none', fontWeight: 600 }} onClick={handleForgotPassword}>
+                Forgot Password?
+              </button>
+              <span style={{ color: '#a78bfa', fontWeight: 600 }}>|</span>
+              <button type="button" className="refined-more-btn" style={{ color: '#7c3aed', background: 'none', fontWeight: 600 }} onClick={handleRegisterRedirect}>
+                Create Account
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
-
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>© 2025 BookedIn. All rights reserved.</p>
-        <div style={styles.footerLinks}>
-          <Link to="/contact" style={styles.footerLink}>Contact</Link>
-          <span style={styles.footerDivider}>|</span>
-          <Link to="/privacy" style={styles.footerLink}>Privacy</Link>
-          <span style={styles.footerDivider}>|</span>
-          <Link to="/about" style={styles.footerLink}>About</Link>
-        </div>
-      </footer>
-
-      {/* Animations */}
-      <style>
-        {`
-          @keyframes bounceIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            60% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); }
-          }
-
-          @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-          }
-
-          @keyframes slideInRight {
-            0% { opacity: 0; transform: translateX(50px); }
-            100% { opacity: 1; transform: translateX(0); }
-          }
-        `}
-      </style>
+      </main>
+      {/* Footer */}
+      <div className="footer-glassy-outer">
+        <footer className="footer-glassy-purple">
+          <div className="footer-glassy-inner">
+            <div className="footer-glassy-brand">
+              BookedIn
+              <div className="footer-glassy-slogan">click.book.enjoy</div>
+            </div>
+            <div className="footer-glassy-links">
+              <div className="footer-glassy-col">
+                <a href="/public-event">All Tickets on Sale</a>
+                <a href="#">Hot Events</a>
+                <a href="#">Outlets</a>
+              </div>
+              <div className="footer-glassy-col">
+                <a href="/about">About Us</a>
+                <a href="/contact">Contact Us</a>
+                <a href="/policies">Policies</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/faqs">FAQs</a>
+              </div>
+            </div>
+            <a href="/contact" className="footer-glassy-help-btn">
+              <span className="footer-glassy-help-icon">?</span>
+              <span className="footer-glassy-help-text">Need some help? Contact us</span>
+            </a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg, #667eea, #764ba2)",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    padding: "20px",
-  },
-  logoContainer: {
-    textAlign: "center",
-    marginBottom: "25px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  logoImage: {
-    width: "200px",
-    height: "auto",
-    marginBottom: "15px",
-  },
-  brandContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  brandName: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: "white",
-    letterSpacing: "1.2px",
-    marginBottom: "4px",
-    textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
-    fontFamily: "'Arial Black', sans-serif",
-  },
-   brandTagline: {
-    fontSize: "12px",
-    color: "white",
-    letterSpacing: "2.5px",
-    textTransform: "uppercase",
-    fontFamily: "Arial, sans-serif",
-  },
-  form: {
-    backgroundColor: "white",
-    padding: "40px 30px",
-    borderRadius: "10px",
-    boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
-    width: "320px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  title: {
-    marginBottom: "24px",
-    color: "#333",
-    textAlign: "center",
-  },
-  input: {
-    padding: "12px",
-    marginBottom: "16px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-    outlineColor: "#764ba2",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  error: {
-    marginBottom: "12px",
-    color: "#e74c3c",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  secondaryActions: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "10px",
-    width: "100%",
-  },
-  textButton: {
-    background: "none",
-    border: "none",
-    color: "#764ba2",
-    cursor: "pointer",
-    fontSize: "14px",
-    textDecoration: "underline",
-    padding: 0,
-    fontWeight: "600",
-  },
-  divider: {
-    color: "#764ba2",
-    fontWeight: "600",
-  },
-  footer: {
-    marginTop: "30px",
-    color: "white",
-    fontSize: "12px",
-    textAlign: "center",
-  },
-  footerText: {
-    marginBottom: "6px",
-  },
-  footerLinks: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "10px",
-  },
-  footerLink: {
-    color: "white",
-    textDecoration: "none",
-    fontWeight: "600",
-  },
-  footerDivider: {
-    color: "white",
-  },
-};
